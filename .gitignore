@@ -1,1 +1,4 @@
 .iflow/
+dist
+node_modules
+.idea

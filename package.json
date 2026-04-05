@@ -1,0 +1,31 @@
+{
+  "name": "claude-code-annotated",
+  "version": "0.1.0",
+  "description": "Claude Code CLI 源码复刻项目 — 交互式 AI 编码助手终端工具",
+  "type": "module",
+  "author": "hank",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:friendlyhank/claude-code-annotated.git"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  },
+  "bin": {
+    "cca": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun run build.ts",
+    "dev": "bun run src/entrypoints/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "^1.3.11",
+    "typescript": "^6.0.2"
+  }
+}
