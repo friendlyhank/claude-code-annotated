@@ -1,10 +1,12 @@
 /**
  * 构建脚本
  * 
- * 实现原理（参考源码 build.ts）：
+ * 源码复刻参考: claude-code/build.ts
+ * 
+ * 实现原理:
  * 1. 清理输出目录
- * 2. 使用 Bun.build 打包
- * 3. 后处理
+ * 2. 使用 Bun.build 打包 ESM 模块
+ * 3. 输出构建结果
  */
 
 import { readdir } from 'fs/promises'
@@ -12,17 +14,23 @@ import { rmSync } from 'fs'
 
 const outdir = 'dist'
 
+// ========================================
 // Step 1: 清理输出目录
+// ========================================
 rmSync(outdir, { recursive: true, force: true })
 
+// ========================================
 // Step 2: 使用 Bun.build 打包
+// 参考: 源码 build.ts
+// ========================================
 const result = await Bun.build({
-  entrypoints: ['src/entrypoints/cli.ts'],
+  entrypoints: ['src/entrypoints/cli.tsx'],
   outdir,
   target: 'bun',
   splitting: true,
   define: {
-    MACRO_VERSION: '"0.1.0"',
+    // 构建时内联版本号，避免运行时读取 package.json
+    'MACRO.VERSION': '"2.1.888"',
   },
 })
 

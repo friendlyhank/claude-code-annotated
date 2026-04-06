@@ -45,8 +45,9 @@
 | 任务 | 状态 | 优先级 |
 |---|---|---|
 | 项目结构初始化 | `done` | high |
-| CLI 入口与参数解析 | `planned` | high |
-| 基础 REPL 循环 | `backlog` | high |
+| CLI 入口与参数解析 | `done` | high |
+| 主命令模块框架 | `done` | high |
+| 基础 REPL 循环 | `today` | high |
 | 简单输入输出 | `backlog` | high |
 
 **关键文件**：

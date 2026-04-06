@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "types": ["bun"],
+    "ignoreDeprecations": "6.0",
     "paths": {
       "src/*": ["./src/*"]
     },
