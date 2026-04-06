@@ -28,6 +28,10 @@ const result = await Bun.build({
   outdir,
   target: 'bun',
   splitting: true,
+  external: [
+    // ink 的可选依赖，构建时不需要打包
+    'react-devtools-core',
+  ],
   define: {
     // 构建时内联版本号，避免运行时读取 package.json
     'MACRO.VERSION': '"2.1.888"',

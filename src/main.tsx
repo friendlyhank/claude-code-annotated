@@ -28,6 +28,10 @@ import {
   Command as CommanderCommand,
   Option,
 } from '@commander-js/extra-typings'
+import { setIsInteractive } from './bootstrap/state.js'
+import { createRoot, type Root } from './ink.js'
+import { getRenderContext, renderAndRun } from './interactiveHelpers.js'
+import { launchRepl } from './replLauncher.js'
 
 /**
  * 全局宏定义
@@ -40,12 +44,7 @@ declare const MACRO: {
 }
 
 // ========================================
-// TODO: 状态设置函数 (来自 src/utils/... 模块)
-// 参考: 源码 main.tsx 第 340-375 行的 import
-// - setIsInteractive (来自某个 utils 模块)
-// - setClientType
-// - setQuestionPreviewFormat
-// - setSessionSource
+// 状态管理已移至 bootstrap/state.ts
 // ========================================
 
 /**
@@ -165,17 +164,12 @@ async function run(): Promise<CommanderCommand> {
   // 定义主命令 (源码第 1311-1320 行)
   // ========================================
   program
-    .name('cca')
+    .name('claude')
     .description(
       `Claude Code - starts an interactive session by default, use -p/--print for non-interactive output`,
     )
     .argument('[prompt]', 'Your prompt', String)
     .helpOption('-h, --help', 'Display help for command')
-
-  // ========================================
-  // 核心选项 (源码第 1321-1400+ 行)
-  // ========================================
-  program
     .option(
       '-d, --debug [filter]',
       'Enable debug mode with optional category filtering',
@@ -211,11 +205,6 @@ async function run(): Promise<CommanderCommand> {
       'Skip all permission prompts (use with caution)',
       false,
     )
-
-  // ========================================
-  // 更多选项 (addOption 形式)
-  // ========================================
-  program
     .addOption(
       new Option(
         '--output-format <format>',
@@ -233,26 +222,48 @@ async function run(): Promise<CommanderCommand> {
       'Path to config file',
       String,
     )
+    .action(async (prompt, options) => {
+      // TODO: profileCheckpoint('action_handler_start')
 
-  // ========================================
-  // 默认 action (源码中使用 program.action())
-  // 参考: 源码第 1706 行
-  //
-  // Commander.js 会在 program.parse() 解析完命令行参数后，
-  // 如果没有匹配到子命令，就自动调用此回调函数。
-  // - prompt: 命令行中传入的提示文本（第一个非选项参数）
-  // - options: 解析后的选项对象，包含所有 --flag 参数
-  // ========================================
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  program.action(async (prompt: any, options: any) => {
-    if (options.print) {
-      // --print 模式：非交互模式，直接输出结果后退出
-      await runPrintMode(prompt, options)
-    } else {
-      // 默认模式：交互模式，启动 REPL 会话
-      await runInteractiveMode(prompt, options)
-    }
-  })
+      // TODO: --bare 模式处理 (源码第 1712-1718 行)
+      // TODO: prompt === 'code' 处理 (源码第 1721-1729 行)
+      // TODO: 单词 prompt 日志 (源码第 1732-1740 行)
+      // TODO: Assistant mode 处理 (源码第 1758-1820 行)
+      // TODO: 解构 options (源码第 1849-1870 行)
+      // TODO: 处理 prefill (源码第 1872-1874 行)
+      // TODO: agent CLI 处理 (源码第 1876-1880 行)
+      // ... 大量前置逻辑 ...
+
+      // Ink root is only needed for interactive sessions (源码第 3221 行)
+      let root!: Root
+      let getFpsMetrics!: () => unknown
+      let stats!: unknown
+
+      // TODO: isNonInteractiveSession 分支 (源码第 3624-3650 行)
+      // TODO: showSetupScreens() (源码第 ~4100 行)
+
+      if (true) {
+        // TODO: 替换为 if (!isNonInteractiveSession)
+        const ctx = getRenderContext(false)
+        getFpsMetrics = () => undefined // TODO: ctx.getFpsMetrics
+        stats = undefined // TODO: ctx.stats
+
+        root = await createRoot(ctx.renderOptions)
+
+        // TODO: logEvent('tengu_timer', ...)
+        // TODO: showSetupScreens()
+      }
+
+      // 启动 REPL (源码第 5180 行)
+      await launchRepl(
+        root,
+        { getFpsMetrics, stats, initialState: {} },
+        {
+          // replProps - TODO: 添加 sessionConfig, initialMessages 等
+        },
+        renderAndRun,
+      )
+    })
 
   // ========================================
   // 解析参数
@@ -260,43 +271,4 @@ async function run(): Promise<CommanderCommand> {
   program.parse()
 
   return program
-}
-
-/**
- * 非交互模式处理
- *
- * 参考 claude-code/src/print.ts
- */
-async function runPrintMode(
-  prompt: string | undefined,
-  options: Record<string, unknown>,
-): Promise<void> {
-  if (!prompt) {
-    console.error('Error: prompt is required in print mode')
-    process.exit(1)
-  }
-
-  // TODO: 实现实际的 LLM 调用
-  console.log('Print mode (TODO: implement LLM call)')
-  console.log(`Prompt: ${prompt}`)
-  console.log('Options:', JSON.stringify(options, null, 2))
-}
-
-/**
- * 交互模式处理
- *
- * 参考 claude-code/src/main.tsx 中的 REPL 启动逻辑
- */
-async function runInteractiveMode(
-  prompt: string | undefined,
-  options: Record<string, unknown>,
-): Promise<void> {
-  // TODO: 实现实际的 REPL 循环
-  console.log(`Claude Code v${MACRO.VERSION}`)
-  console.log('')
-  console.log('Interactive mode (TODO: implement REPL)')
-  if (prompt) {
-    console.log(`Initial prompt: ${prompt}`)
-  }
-  console.log('Options:', JSON.stringify(options, null, 2))
 }
