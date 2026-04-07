@@ -7,8 +7,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 735 |
-| 覆盖率 | **0.14%** |
+| 累计复刻目标文件代码数 | 906 |
+| 覆盖率 | **0.17%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -17,7 +17,7 @@
 | 阶段 | 状态 | 完成度 |
 |---|---|---:|
 | 阶段 1：最小闭环 | `done` | 100% |
-| 阶段 2：核心查询引擎 | `planned` | 0% |
+| 阶段 2：核心查询引擎 | `doing` | 5% |
 | 阶段 3：工具系统 | `backlog` | 0% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
@@ -29,15 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| query() 生成器函数框架 | `planned` | high |
-| QueryEngineConfig 类型定义 | `planned` | high |
-| createUserMessage() 实现 | `planned` | high |
+| queryLoop 主循环实现 | `planned` | high |
+| 消息预处理流程 | `planned` | high |
+| API 调用框架 | `planned` | high |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| 代理循环主流程规划 | 2026-04-07 | 基于源码分析拆解任务 |
+| queryLoop 主循环 | 2026-04-07 | 框架已搭建，待补齐核心逻辑 |
 
 ### 已完成
 
@@ -48,6 +48,7 @@
 | 主命令模块框架 | 2026-04-06 | main() + run() 结构, preAction hook |
 | 基础 REPL 循环 | 2026-04-06 | Ink 渲染, REPL 组件, 交互式输入 |
 | 核心类型定义 | 2026-04-07 | Message, Tool, ID 类型体系 |
+| query() 生成器函数框架 | 2026-04-07 | State 类型, query/queryLoop 框架 |
 | 复刻规划文档初始化 | 2026-04-05 | 创建 notes 文档体系 |
 
 ## 阻塞与风险
@@ -106,16 +107,19 @@
 - 判别联合模式（discriminated union）
 - Anthropic SDK 类型（ContentBlockParam, ContentBlock, BetaUsage）
 - 全局声明文件（.d.ts）
+- AsyncGenerator 模式（yield/return 区分流式输出和终止）
+- 依赖注入模式（QueryDeps 接口）
+- 状态集中管理模式（State 类型）
+- 代理循环架构（query → queryLoop → State）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
-- 代理循环核心架构（query.ts 主循环结构）
-- State 状态管理模式（跨迭代可变状态）
 - 工具执行编排（并行安全 vs 串行执行）
-- 流式处理模式（AsyncGenerator + yield）
 - 错误恢复机制（Fallback、Reactive Compact）
 - QueryEngine 类结构
 - 消息构建工具函数
+- 消息预处理流程（compact, snip, microcompact）
+- API 调用流程（callModel）
 
 ### 待确认
 
@@ -129,6 +133,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-07 | 0.14% → 0.17% | query() 生成器函数框架完成（State 类型, query/queryLoop 框架） |
 | 2026-04-07 | 0.08% → 0.14% | 核心类型定义完成（Message, Tool, ID 类型体系） |
 | 2026-04-06 | 0.02% → 0.08% | REPL 交互框架、Ink 渲染、全局状态完成 |
 | 2026-04-06 | 0.01% → 0.02% | CLI 入口、主命令模块框架完成 |
