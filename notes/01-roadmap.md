@@ -48,7 +48,7 @@
 | CLI 入口与参数解析 | `done` | high |
 | 主命令模块框架 | `done` | high |
 | 基础 REPL 循环 | `done` | high |
-| 核心类型定义 | `today` | high |
+| 核心类型定义 | `done` | high |
 | 基础工具类 | `planned` | high |
 
 

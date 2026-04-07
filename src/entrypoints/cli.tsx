@@ -18,15 +18,9 @@
 // Bugfix for corepack auto-pinning, which adds yarnpkg to peoples' package.jsons
 process.env.COREPACK_ENABLE_AUTO_PIN = '0'
 
-/**
- * 全局宏定义
- * 
- * Bun.build 在构建时会通过 define 选项将 MACRO.VERSION 替换为实际值
- * 参考: build.ts define: { 'MACRO.VERSION': '"0.1.0"' }
- */
-declare const MACRO: {
-  VERSION: string
-}
+// MACRO.VERSION 在构建时由 Bun.build 内联
+// 参考: build.ts define: { 'MACRO.VERSION': '"0.1.0"' }
+// 类型声明在 src/types/global.d.ts 中
 
 /**
  * CLI 主入口函数
