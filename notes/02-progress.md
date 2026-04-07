@@ -16,8 +16,8 @@
 
 | 阶段 | 状态 | 完成度 |
 |---|---|---:|
-| 阶段 1：最小闭环 | `in_progress` | 17% |
-| 阶段 2：核心查询引擎 | `backlog` | 0% |
+| 阶段 1：最小闭环 | `done` | 100% |
+| 阶段 2：核心查询引擎 | `planned` | 0% |
 | 阶段 3：工具系统 | `backlog` | 0% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
@@ -29,13 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| 基础工具类 | `planned` | high |
+| query() 生成器函数框架 | `planned` | high |
+| QueryEngineConfig 类型定义 | `planned` | high |
+| createUserMessage() 实现 | `planned` | high |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| - | - | - |
+| 代理循环主流程规划 | 2026-04-07 | 基于源码分析拆解任务 |
 
 ### 已完成
 
@@ -86,7 +88,7 @@
 
 ## 知识点记录
 
-### 已掌握
+### 已掌握（已编码并验证）
 
 - 项目整体结构
 - 入口流程（cli.tsx → main.tsx → run()）
@@ -105,12 +107,23 @@
 - Anthropic SDK 类型（ContentBlockParam, ContentBlock, BetaUsage）
 - 全局声明文件（.d.ts）
 
+### 已识别/已建模（仅阅读源码，未实现）
+
+- 代理循环核心架构（query.ts 主循环结构）
+- State 状态管理模式（跨迭代可变状态）
+- 工具执行编排（并行安全 vs 串行执行）
+- 流式处理模式（AsyncGenerator + yield）
+- 错误恢复机制（Fallback、Reactive Compact）
+- QueryEngine 类结构
+- 消息构建工具函数
+
 ### 待确认
 
 - [ ] 具体的工具实现细节
 - [ ] 消息格式与协议
 - [ ] 状态管理机制细节
 - [ ] LLM API 调用方式
+- [ ] Compact 机制的完整实现
 
 ## 历史记录
 
