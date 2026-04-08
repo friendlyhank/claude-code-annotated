@@ -59,9 +59,21 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/query.ts` | 1,732 | 170 | 10% |
+| `src/query.ts` | 1,732 | 200 | 12% |
 | `src/QueryEngine.ts` | 1,320 | 0 | 0% |
-| `src/types/query.ts` | - | 171 | - |
+| `src/query/deps.ts` | 39 | 30 | 77% |
+| `src/query/transitions.ts` | 3 | 3 | 100% |
+| `src/query/config.ts` | - | 0 | 0% |
+| `src/query/stopHooks.ts` | - | 0 | 0% |
+| `src/query/tokenBudget.ts` | - | 0 | 0% |
+
+### 类型与常量
+
+| 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
+|---|---:|---:|---:|
+| `src/utils/systemPromptType.ts` | 15 | 12 | 80% |
+| `src/constants/querySource.ts` | 3 | 3 | 100% |
+| `src/hooks/useCanUseTool.ts` | - | 3 | - |
 
 ### 消息构建
 

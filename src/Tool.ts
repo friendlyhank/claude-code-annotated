@@ -10,7 +10,7 @@
 
 import type { Message } from './types/message.js'
 import type { AgentId } from './types/ids.js'
-import type { SystemPrompt } from './types/query.js'
+import type { SystemPrompt } from './utils/systemPromptType.js'
 
 // ============================================================================
 // QueryChainTracking type

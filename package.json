@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "bun run build.ts",
-    "dev": "bun run src/entrypoints/cli.ts",
+    "dev": "bun run src/entrypoints/cli.tsx",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },

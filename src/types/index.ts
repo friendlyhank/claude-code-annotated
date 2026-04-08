@@ -91,19 +91,16 @@ export type { DeepImmutable, Permutations } from './utils.js'
 
 // ============================================================================
 // Query types
-// 对齐上游实现：查询引擎相关类型
-// 设计原因：QueryParams 和 State 是代理循环的核心类型
-// 注意：QueryDeps, Terminal, Continue 从 src/query/ 目录导入，保持与源码目录结构一致
+// 对齐上游实现：QueryParams 和 State 定义在 src/query.ts 内部
+// 注意：SystemPrompt 从 src/utils/systemPromptType.ts 导出
+// 注意：QuerySource 从 src/constants/querySource.ts 导出
+// 注意：CanUseToolFn 从 src/hooks/useCanUseTool.ts 导出
+// 注意：QueryDeps, Terminal, Continue 从 src/query/ 目录导入
 // 注意：ToolUseContext, QueryChainTracking 从 src/Tool.ts 导入
-export type {
-  SystemPrompt,
-  QuerySource,
-  AutoCompactTrackingState,
-  CanUseToolFn,
-  QueryParams,
-  State,
-} from './query.js'
-export { asSystemPrompt } from './query.js'
 export type { QueryDeps } from '../query/deps.js'
 export type { Terminal, Continue } from '../query/transitions.js'
 export type { ToolUseContext, QueryChainTracking } from '../Tool.js'
+export type { SystemPrompt } from '../utils/systemPromptType.js'
+export { asSystemPrompt } from '../utils/systemPromptType.js'
+export type { QuerySource } from '../constants/querySource.js'
+export type { CanUseToolFn } from '../hooks/useCanUseTool.js'

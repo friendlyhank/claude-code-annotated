@@ -1,3 +1,5 @@
+// biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+
 /**
  * Query module - Core agent loop implementation.
  * 
@@ -9,41 +11,177 @@
  */
 
 import type {
-  QueryParams,
-  State,
-  Terminal,
-} from './types/query.js'
+  ToolUseBlock,
+} from '@anthropic-ai/sdk/resources/index.mjs'
+import type { CanUseToolFn } from './hooks/useCanUseTool.js'
+// TODO: 已阅读源码，但不在今日最小闭环内
+// import { FallbackTriggeredError } from './services/api/withRetry.js'
+// import { calculateTokenWarningState, isAutoCompactEnabled, type AutoCompactTrackingState } from './services/compact/autoCompact.js'
+// import { buildPostCompactMessages } from './services/compact/compact.js'
+// import { logEvent } from './services/analytics/index.js'
+// import { findToolByName, type ToolUseContext } from './Tool.js'
+import type { ToolUseContext } from './Tool.js'
+import { asSystemPrompt, type SystemPrompt } from './utils/systemPromptType.js'
 import type {
-  StreamEvent,
-  RequestStartEvent,
+  AssistantMessage,
   Message,
-  TombstoneMessage,
+  RequestStartEvent,
+  StreamEvent,
   ToolUseSummaryMessage,
+  TombstoneMessage,
 } from './types/message.js'
-import { productionDeps } from './query/deps.js'
+// TODO: 已阅读源码，但不在今日最小闭环内
+// import { logError } from './utils/log.js'
+// import { createUserMessage, normalizeMessagesForAPI, ... } from './utils/messages.js'
+// import { prependUserContext, appendSystemContext } from './utils/api.js'
+// import { notifyCommandLifecycle } from './utils/commandLifecycle.js'
+// import { getRuntimeMainLoopModel, renderModelName } from './utils/model/model.js'
+// import { doesMostRecentAssistantMessageExceed200k, ... } from './utils/tokens.js'
+import type { QuerySource } from './constants/querySource.js'
+// TODO: 已阅读源码，但不在今日最小闭环内
+// import { StreamingToolExecutor } from './services/tools/StreamingToolExecutor.js'
+// import { runTools } from './services/tools/toolOrchestration.js'
+// import { handleStopHooks } from './query/stopHooks.js'
+// import { buildQueryConfig } from './query/config.js'
+import { productionDeps, type QueryDeps } from './query/deps.js'
+import type { Terminal, Continue } from './query/transitions.js'
+// TODO: 已阅读源码，但不在今日最小闭环内
+// import { getCurrentTurnTokenBudget, getTurnOutputTokens, incrementBudgetContinuationCount } from './bootstrap/state.js'
+// import { createBudgetTracker, checkTokenBudget } from './query/tokenBudget.js'
 
 // Re-export for external use
-export type { QueryParams, State } from './types/query.js'
-export type { QueryDeps, Terminal, Continue } from './query/deps.js'
+export type { QueryDeps } from './query/deps.js'
+export type { Terminal, Continue } from './query/transitions.js'
+
+function* yieldMissingToolResultBlocks(
+  assistantMessages: AssistantMessage[],
+  errorMessage: string,
+) {
+  for (const assistantMessage of assistantMessages) {
+    // Extract all tool use blocks from this assistant message
+    const toolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+      (content: { type: string }) => content.type === 'tool_use',
+    ) as ToolUseBlock[]
+
+    // Emit an interruption message for each tool use
+    for (const toolUse of toolUseBlocks) {
+      // TODO: 已阅读源码，但不在今日最小闭环内
+      // 需要 createUserMessage 函数
+      // yield createUserMessage({
+      //   content: [
+      //     {
+      //       type: 'tool_result',
+      //       content: errorMessage,
+      //       is_error: true,
+      //       tool_use_id: toolUse.id,
+      //     },
+      //   ],
+      //   toolUseResult: errorMessage,
+      //   sourceToolAssistantUUID: assistantMessage.uuid,
+      // })
+    }
+  }
+}
+
+/**
+ * The rules of thinking are lengthy and fortuitous. They require plenty of thinking
+ * of most long duration and deep meditation for a wizard to wrap one's noggin around.
+ *
+ * The rules follow:
+ * 1. A message that contains a thinking or redacted_thinking block must be part of a query whose max_thinking_length > 0
+ * 2. A thinking block may not be the last message in a block
+ * 3. Thinking blocks must be preserved for the duration of an assistant trajectory (a single turn, or if that turn includes a tool_use block then also its subsequent tool_result and the following assistant message)
+ *
+ * Heed these rules well, young wizard. For they are the rules of thinking, and
+ * the rules of thinking are the rules of the universe. If ye does not heed these
+ * rules, ye will be punished with an entire day of debugging and hair pulling.
+ */
+const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
+
+/**
+ * Is this a max_output_tokens error message? If so, the streaming loop should
+ * withhold it from SDK callers until we know whether the recovery loop can
+ * continue. Yielding early leaks an intermediate error to SDK callers (e.g.
+ * cowork/desktop) that terminate the session on any `error` field — the
+ * recovery loop keeps running but nobody is listening.
+ *
+ * Mirrors reactiveCompact.isWithheldPromptTooLong.
+ */
+function isWithheldMaxOutputTokens(
+  msg: Message | StreamEvent | undefined,
+): msg is AssistantMessage {
+  return msg?.type === 'assistant' && msg.apiError === 'max_output_tokens'
+}
+
+// ============================================================================
+// QueryParams type
+// 对齐上游实现：query() 函数的入参类型定义在文件内部
+
+export type QueryParams = {
+  messages: Message[]
+  systemPrompt: SystemPrompt
+  userContext: { [k: string]: string }
+  systemContext: { [k: string]: string }
+  canUseTool: CanUseToolFn
+  toolUseContext: ToolUseContext
+  fallbackModel?: string
+  querySource: QuerySource
+  maxOutputTokensOverride?: number
+  maxTurns?: number
+  skipCacheWrite?: boolean
+  // API task_budget (output_config.task_budget, beta task-budgets-2026-03-13).
+  // Distinct from the tokenBudget +500k auto-continue feature. `total` is the
+  // budget for the whole agentic turn; `remaining` is computed per iteration
+  // from cumulative API usage. See configureTaskBudgetParams in claude.ts.
+  taskBudget?: { total: number }
+  deps?: QueryDeps
+}
+
+// ============================================================================
+// State type
+// 对齐上游实现：query loop 的跨迭代可变状态定义在文件内部
+
+// -- query loop state
+
+// Mutable state carried between loop iterations
+// 循环迭代间的可变状态
+type State = {
+  // 当前消息历史，随对话演进不断追加
+  messages: Message[]
+  // 工具执行上下文，包含工具注册表、权限等信息
+  toolUseContext: ToolUseContext
+  // 自动压缩追踪状态，记录压缩次数、失败计数等
+  autoCompactTracking: AutoCompactTrackingState | undefined
+  // 输出 token 超限恢复计数，用于限制恢复尝试次数
+  maxOutputTokensRecoveryCount: number
+  // 是否已尝试响应式压缩（超 token 时触发）
+  hasAttemptedReactiveCompact: boolean
+  // 覆盖 max_output_tokens 参数，恢复循环时使用
+  maxOutputTokensOverride: number | undefined
+  // 待处理的工具使用摘要 Promise，异步获取工具执行结果
+  pendingToolUseSummary: Promise<ToolUseSummaryMessage | null> | undefined
+  // stop hook 是否激活中（用户中断处理）
+  stopHookActive: boolean | undefined
+  // 当前轮次计数，用于限制最大轮次
+  turnCount: number
+  // 上次迭代为何继续。首次迭代时为 undefined。
+  // 用于测试断言恢复路径是否触发，无需检查消息内容。
+  transition: Continue | undefined
+}
+
+// TODO: 已阅读源码，但不在今日最小闭环内
+// AutoCompactTrackingState 应从 ./services/compact/autoCompact.js 导入
+type AutoCompactTrackingState = {
+  compacted: boolean
+  turnId: string
+  turnCounter: number
+  consecutiveFailures: number
+}
 
 // ============================================================================
 // query() generator function
 // 对齐上游实现：代理循环入口函数
 
-/**
- * 查询生成器函数 - 代理循环的核心入口
- * 
- * 对齐上游实现：按 claude-code/src/query.ts:219-233 原样复刻
- * 设计原因：
- * 1. 使用 AsyncGenerator 支持流式输出
- * 2. yield 发送 StreamEvent/Message 给调用方
- * 3. return Terminal 标识循环终止
- * 
- * 数据流：
- * - 输入：QueryParams（消息、系统提示、工具上下文等）
- * - 输出：AsyncGenerator<StreamEvent | Message, Terminal>
- * - 状态：通过 State 对象在迭代间传递
- */
 export async function* query(
   params: QueryParams,
 ): AsyncGenerator<
@@ -54,21 +192,17 @@ export async function* query(
   | ToolUseSummaryMessage,
   Terminal
 > {
-  // 对齐上游实现：consumedCommandUuids 用于追踪已消费的命令
   const consumedCommandUuids: string[] = []
-  
-  // 对齐上游实现：调用 queryLoop 执行主循环
   const terminal = yield* queryLoop(params, consumedCommandUuids)
-  
-  // 对齐上游实现：正常退出时通知命令生命周期
-  // 只有 queryLoop 正常返回才会执行到这里
-  // 如果 throw 或 .return() 则跳过此逻辑
+  // Only reached if queryLoop returned normally. Skipped on throw (error
+  // propagates through yield*) and on .return() (Return completion closes
+  // both generators). This gives the same asymmetric started-without-completed
+  // signal as print.ts's drainCommandQueue when the turn fails.
   for (const uuid of consumedCommandUuids) {
     // TODO: 已阅读源码，但不在今日最小闭环内
     // notifyCommandLifecycle(uuid, 'completed')
     console.log(`[query] command completed: ${uuid}`)
   }
-  
   return terminal
 }
 
@@ -76,24 +210,6 @@ export async function* query(
 // queryLoop() - main loop implementation
 // 对齐上游实现：主循环实现
 
-/**
- * 查询循环 - 代理的主循环逻辑
- * 
- * 对齐上游实现：按 claude-code/src/query.ts:235-1300 结构复刻
- * 设计原因：
- * 1. 分离 query 和 queryLoop 便于生命周期管理
- * 2. while(true) 循环直到返回 Terminal
- * 3. State 对象集中管理跨迭代状态
- * 
- * 循环结构：
- * 1. 解构 State 获取当前状态
- * 2. 预处理消息（compact、snip 等）
- * 3. 调用 LLM API
- * 4. 收集工具调用
- * 5. 执行工具
- * 6. 判断是否需要继续
- * 7. 更新 State 并 continue 或 return Terminal
- */
 async function* queryLoop(
   params: QueryParams,
   consumedCommandUuids: string[],
@@ -105,7 +221,7 @@ async function* queryLoop(
   | ToolUseSummaryMessage,
   Terminal
 > {
-  // 对齐上游实现：解构不可变参数
+  // Immutable params — never reassigned during the query loop.
   const {
     systemPrompt,
     userContext,
@@ -116,16 +232,11 @@ async function* queryLoop(
     maxTurns,
     skipCacheWrite,
   } = params
-  
-  // 对齐上游实现：使用 deps 或默认 productionDeps
   const deps = params.deps ?? productionDeps()
 
-  // ============================================================================
-  // State initialization
-  // 对齐上游实现：初始化跨迭代可变状态
-  
-  // 对齐上游实现：每次迭代开始时解构读取，continue 站点写入新对象
-  // 设计原因：避免多个单独赋值，集中管理状态变更
+  // Mutable cross-iteration state. The loop body destructures this at the top
+  // of each iteration so reads stay bare-name (`messages`, `toolUseContext`).
+  // Continue sites write `state = { ... }` instead of 9 separate assignments.
   let state: State = {
     messages: params.messages,
     toolUseContext: params.toolUseContext,
@@ -138,6 +249,10 @@ async function* queryLoop(
     pendingToolUseSummary: undefined,
     transition: undefined,
   }
+  // TODO: 已阅读源码，但不在今日最小闭环内
+  // const budgetTracker = feature('TOKEN_BUDGET') ? createBudgetTracker() : null
+  // let taskBudgetRemaining: number | undefined = undefined
+  // const config = buildQueryConfig()
 
   // ============================================================================
   // Main loop
@@ -197,22 +312,3 @@ async function* queryLoop(
     } as Terminal
   }
 }
-
-// ============================================================================
-// Helper functions
-// 对齐上游实现：辅助函数
-
-/**
- * 生成缺失工具结果的块
- * 
- * 对齐上游实现：按 claude-code/src/query.ts:167-192 原样复刻
- * 设计原因：为没有匹配结果的 tool_use 生成错误消息
- * 
- * TODO: 实现此函数需要先实现 createUserMessage
- */
-// function* yieldMissingToolResultBlocks(
-//   assistantMessages: AssistantMessage[],
-//   errorMessage: string,
-// ) {
-//   // TODO: 已阅读源码，但不在今日最小闭环内
-// }
