@@ -10,7 +10,7 @@
 |---|---|
 | 项目名称 | claude-code-best |
 | 版本 | 1.1.0 |
-| 源码路径 | `~/goproject/go/src/github.com/friendlyhank/claude-code` |
+| 源码路径 | `~/tsproject/claude-code` |
 | 代码行数 | ~537,782 行 (TypeScript/TSX) |
 | 运行时 | Bun >= 1.2.0 |
 | 入口文件 | `src/entrypoints/cli.tsx` |
