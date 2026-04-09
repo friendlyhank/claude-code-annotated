@@ -19,20 +19,20 @@
 
 ```mermaid
 flowchart TB
-    subgraph QueryEngine["查询引擎"]
-        Query[query() 生成器]
-        Loop[queryLoop() 主循环]
+    subgraph QueryEngine [查询引擎]
+        Query[query 生成器]
+        Loop[queryLoop 主循环]
         State[State 状态管理]
         Deps[QueryDeps 依赖]
     end
     
-    subgraph Preprocessing["消息预处理"]
+    subgraph Preprocessing [消息预处理]
         Compact[compact 压缩]
         Snip[snip 裁剪]
         AutoCompact[autocompact 自动压缩]
     end
     
-    subgraph APILayer["API 调用"]
+    subgraph APILayer [API 调用]
         CallModel[callModel]
         Stream[流式处理]
         Error[错误恢复]
@@ -161,18 +161,13 @@ export type QueryParams = {
 ### 生成器执行流程
 
 ```mermaid
-sequenceDiagram
-    participant Caller as 调用者
-    participant Query as query()
-    participant Loop as queryLoop()
-    participant Yield as yield 事件
-    
-    Caller->>Query: 调用 query(params)
-    Query->>Loop: 启动 queryLoop
-    Loop->>Yield: yield stream_request_start
-    Loop->>Yield: yield StreamEvent
-    Loop->>Yield: yield Message
-    Loop->>Caller: return Terminal
+flowchart LR
+    Caller[调用者] --> Query[query]
+    Query --> Loop[queryLoop]
+    Loop --> E1[stream_request_start]
+    Loop --> E2[StreamEvent]
+    Loop --> E3[Message]
+    Loop --> Done[Terminal]
 ```
 
 ## queryLoop() 主循环
@@ -441,17 +436,12 @@ type AutoCompactTrackingState = {
 ### API 调用流程
 
 ```mermaid
-sequenceDiagram
-    participant Loop as queryLoop
-    participant Deps as QueryDeps
-    participant API as API Client
-    participant Stream as 流式响应
-    
-    Loop->>Deps: deps.callModel(params)
-    Deps->>API: 发送请求
-    API->>Stream: 返回流
-    Stream->>Loop: yield 事件
-    Loop->>Loop: 收集响应
+flowchart LR
+    Loop[queryLoop] --> Deps[QueryDeps]
+    Deps --> API[API客户端]
+    API --> Stream[流式响应]
+    Stream --> Yield[yield 事件]
+    Yield --> Loop
 ```
 
 ### 流式响应处理

@@ -2,49 +2,43 @@
 
 ## Relevant source files
 
-- `src/Tool.ts` - 工具系统类型定义，执行上下文
-- `src/types/tools.ts` - 工具相关类型
-- `src/hooks/useCanUseTool.ts` - 权限检查 Hook
-- `src/types/ids.ts` - ID 类型定义
+- `src/Tool.ts` - 工具执行上下文类型定义
+- `src/types/tools.ts` - 工具进度类型（当前为 stub）
+- `src/hooks/useCanUseTool.ts` - 权限检查函数类型（当前为 stub）
+- `src/query.ts` - tool_use 检测与触发点
 
 ## 本页概述
 
-工具执行层负责管理和执行 AI 可以调用的各种工具。本页深入分析工具注册与定义、工具编排（并行/串行调度）、工具执行器（单工具执行逻辑）、结果收集与格式化等核心机制。
+工具执行层负责定义工具执行所需的上下文类型，以及在查询循环中检测和处理 tool_use 块。本页基于当前源码实现状态，说明已实现的内容和 TODO 待完成的部分。
 
-## 核心结构
+> **注意**：工具编排（scheduleTools）、并行/串行执行、权限验证等逻辑在当前源码中尚未实现，仅存在于注释中的 TODO 标记。
 
-### 工具系统组成
+## 当前实现状态
 
 ```mermaid
 flowchart TB
-    subgraph Registration["工具注册"]
-        Define[工具定义]
-        Register[注册工具]
-        List[工具列表]
+    subgraph Implemented["已实现"]
+        Context[ToolUseContext 类型定义]
+        Tracking[QueryChainTracking 类型定义]
+        Detection[tool_use 块检测]
+        Collection[收集 tool_use blocks]
     end
     
-    subgraph Orchestration["工具编排"]
-        Detect[检测 tool_use]
-        Schedule[调度器]
-        Parallel[并行执行]
-        Serial[串行执行]
+    subgraph TODO["待实现"]
+        Schedule[工具编排调度]
+        Execute[工具执行器]
+        Validate[权限验证逻辑]
+        Result[结果格式化]
     end
     
-    subgraph Execution["工具执行"]
-        Validate[权限验证]
-        Execute[执行工具]
-        Collect[收集结果]
-    end
-    
-    Registration --> Orchestration
-    Orchestration --> Execution
+    Implemented --> TODO
 ```
 
-## 工具注册与定义
+## 核心类型定义
 
-### ToolUseContext 类型
+### ToolUseContext - 工具执行上下文
 
-工具执行上下文是工具系统的核心类型，包含执行工具所需的所有依赖和状态：
+`ToolUseContext` 是工具执行的核心类型，定义在 `src/Tool.ts`，包含执行工具所需的所有依赖和状态。
 
 ```typescript
 // src/Tool.ts
@@ -65,7 +59,7 @@ export type ToolUseContext = {
     [key: string]: unknown
   }
   
-  // 控制器
+  // 中断控制
   abortController: AbortController
   
   // 状态访问
@@ -73,10 +67,10 @@ export type ToolUseContext = {
   setAppState(f: (prev: unknown) => unknown): void
   setAppStateForTasks?: (f: (prev: unknown) => unknown) => void
   
-  // 消息
+  // 消息历史
   messages: Message[]
   
-  // 通知
+  // 通知回调
   addNotification?: (notif: unknown) => void
   appendSystemMessage?: (msg: unknown) => void
   sendOSNotification?: (opts: { message: string, notificationType: string }) => void
@@ -85,6 +79,11 @@ export type ToolUseContext = {
   userModified?: boolean
   setInProgressToolUseIDs: (f: (prev: Set<string>) => Set<string>) => void
   setHasInterruptibleToolInProgress?: (v: boolean) => void
+  setResponseLength: (f: (prev: number) => number) => void
+  
+  // 文件历史与归因
+  updateFileHistoryState: (updater: (prev: unknown) => unknown) => void
+  updateAttributionState: (updater: (prev: unknown) => unknown) => void
   
   // 代理相关
   agentId?: AgentId              // 子代理 ID
@@ -114,7 +113,14 @@ export type ToolUseContext = {
 }
 ```
 
-### QueryChainTracking 追踪
+**设计要点**：
+1. `options` - 集中所有配置项，支持子代理继承修改
+2. `abortController` - 支持中断工具执行
+3. `getAppState/setAppState` - 全局状态访问，子代理可覆盖为 no-op
+4. `toolDecisions` - 记录用户的工具权限决策，避免重复询问
+5. `queryTracking` - 追踪嵌套代理调用的层级关系
+
+### QueryChainTracking - 查询链追踪
 
 用于追踪嵌套代理调用的层级关系：
 
@@ -122,308 +128,202 @@ export type ToolUseContext = {
 // src/Tool.ts
 
 export type QueryChainTracking = {
-  chainId: string   // 链 ID
-  depth: number     // 嵌套深度
+  chainId: string   // 链 ID，标识一次查询链
+  depth: number     // 嵌套深度，0 表示顶层
 }
 ```
 
-### 工具定义结构
+## tool_use 检测流程
+
+在 `query.ts` 的 `queryLoop` 中实现了 tool_use 块的检测和收集：
+
+### 检测位置
 
 ```typescript
-// 工具定义示例 (待 tools.ts 实现后替换)
+// src/query.ts:350-380（简化版）
 
-interface Tool {
-  name: string                    // 工具名称
-  description: string             // 工具描述
-  input_schema: JSONSchema        // 输入模式
-  execute: (input: any, context: ToolUseContext) => Promise<ToolResult>
-}
+// 收集 tool_use blocks（用于判断是否需要继续循环）
+const toolUseBlocks: ToolUseBlock[] = []
+// 是否需要继续循环
+let needsFollowUp = false
 
-interface ToolResult {
-  content: string | ContentBlock[]
-  is_error?: boolean
-}
-```
-
-## 工具编排
-
-### 工具检测流程
-
-```mermaid
-sequenceDiagram
-    participant API as API 响应
-    participant Query as 查询引擎
-    participant Detector as 工具检测器
-    participant Scheduler as 调度器
-    
-    API->>Query: 返回 assistant message
-    Query->>Detector: 检查 content blocks
-    Detector->>Detector: 过滤 tool_use blocks
-    Detector->>Scheduler: 返回工具列表
-    Scheduler->>Scheduler: 决定执行策略
-```
-
-### 并行与串行调度
-
-```mermaid
-flowchart TB
-    Tools[工具列表] --> Check{检查依赖}
-    Check -->|无依赖| Parallel[并行执行]
-    Check -->|有依赖| Serial[串行执行]
-    
-    Parallel --> P1[工具 A]
-    Parallel --> P2[工具 B]
-    Parallel --> P3[工具 C]
-    
-    Serial --> S1[工具 A]
-    S1 --> S2[工具 B]
-    S2 --> S3[工具 C]
-    
-    P1 --> Merge[结果合并]
-    P2 --> Merge
-    P3 --> Merge
-    S3 --> Merge
-```
-
-**并行执行条件**：
-- 工具之间无依赖关系
-- 资源不冲突（如不同文件操作）
-- 安全性允许
-
-**串行执行场景**：
-- 后续工具依赖前序工具结果
-- 存在资源冲突
-- 需要顺序保证
-
-### 调度策略
-
-```typescript
-// 伪代码示例
-
-async function scheduleTools(
-  toolUseBlocks: ToolUseBlock[],
-  context: ToolUseContext
-): Promise<ToolResult[]> {
-  // 分析依赖关系
-  const graph = buildDependencyGraph(toolUseBlocks)
+// 在流式响应处理中：
+for await (const message of deps.callModel(...)) {
+  yield typedMessage
   
-  // 拓扑排序
-  const batches = topologicalSort(graph)
-  
-  // 分批执行
-  const results: ToolResult[] = []
-  for (const batch of batches) {
-    // 同一批次并行执行
-    const batchResults = await Promise.all(
-      batch.map(block => executeTool(block, context))
-    )
-    results.push(...batchResults)
+  if (typedMessage.type === 'assistant') {
+    const assistantMessage = typedMessage as AssistantMessage
+    assistantMessages.push(assistantMessage)
+    
+    // 提取 tool_use blocks
+    const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) 
+      ? assistantMessage.message.content 
+      : []
+    ).filter(
+      (content: { type: string }) => content.type === 'tool_use',
+    ) as ToolUseBlock[]
+    
+    if (msgToolUseBlocks.length > 0) {
+      toolUseBlocks.push(...msgToolUseBlocks)
+      needsFollowUp = true
+    }
   }
-  
-  return results
 }
 ```
 
-## 工具执行器
-
-### 单工具执行流程
+### 循环判断
 
 ```mermaid
-sequenceDiagram
-    participant Scheduler as 调度器
-    participant Validator as 权限验证
-    participant Tool as 工具实现
-    participant Result as 结果收集
-    
-    Scheduler->>Validator: 检查权限
-    Validator->>Validator: canUseTool(name, input)
-    Validator->>Tool: 执行工具
-    Tool->>Tool: 处理输入
-    Tool->>Result: 返回结果
-    Result->>Scheduler: 格式化结果
+flowchart LR
+    API[API 流式响应] --> Loop[queryLoop]
+    Loop --> Parse[提取 tool_use blocks]
+    Parse --> Mark[设置 needsFollowUp]
+    Mark --> Check{needsFollowUp}
+    Check -->|true| Exec[执行工具]
+    Check -->|false| End[循环结束]
 ```
 
-### 权限验证
+### 中断处理
+
+```typescript
+// src/query.ts:395-410
+
+if (toolUseContext.abortController.signal.aborted) {
+  // 为未完成的工具生成中断结果
+  yield* yieldMissingToolResultBlocks(
+    assistantMessages,
+    'Interrupted by user',
+  )
+  
+  return { reason: 'aborted_streaming' } as Terminal
+}
+```
+
+`yieldMissingToolResultBlocks` 为每个未完成的 tool_use 生成错误结果：
+
+```typescript
+// src/query.ts:30-50
+
+function* yieldMissingToolResultBlocks(
+  assistantMessages: AssistantMessage[],
+  errorMessage: string,
+) {
+  for (const assistantMessage of assistantMessages) {
+    const toolUseBlocks = (Array.isArray(assistantMessage.message?.content) 
+      ? assistantMessage.message.content 
+      : []
+    ).filter(
+      (content: { type: string }) => content.type === 'tool_use',
+    ) as ToolUseBlock[]
+    
+    for (const toolUse of toolUseBlocks) {
+      // TODO: 需要 createUserMessage 函数
+      // yield createUserMessage({
+      //   content: [{
+      //     type: 'tool_result',
+      //     content: errorMessage,
+      //     is_error: true,
+      //     tool_use_id: toolUse.id,
+      //   }],
+      // })
+    }
+  }
+}
+```
+
+## 待实现部分（TODO）
+
+以下功能在源码中标记为 TODO，尚未实现：
+
+### 1. 工具编排调度
+
+```typescript
+// src/query.ts:1350-1450 注释
+
+// TODO: 已阅读源码，但不在今日最小闭环内
+// 当前仅收集 tool_use blocks，不执行工具
+// 后续迭代实现 runTools 调用
+// 
+// 真实实现会：
+// 1. 调用 runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+// 2. 收集工具结果
+// 3. 更新 state.messages
+// 4. continue 循环
+```
+
+相关注释提及：
+- `StreamingToolExecutor` - 流式工具执行器
+- `runTools` - 工具编排函数
+- 并行/串行调度策略
+
+### 2. 权限验证逻辑
 
 ```typescript
 // src/hooks/useCanUseTool.ts
 
-export type CanUseToolFn = (
-  toolName: string,
-  input: unknown,
-  context: ToolUseContext
-) => Promise<boolean>
-
-// 权限检查逻辑
-async function canUseTool(
-  toolName: string,
-  input: unknown,
-  context: ToolUseContext
-): Promise<boolean> {
-  // 1. 检查跳过权限模式
-  if (context.options.dangerouslySkipPermissions) {
-    return true
-  }
-  
-  // 2. 检查已有决策
-  const decision = context.toolDecisions?.get(toolName)
-  if (decision) {
-    return decision.decision === 'accept'
-  }
-  
-  // 3. 请求用户确认
-  const userDecision = await requestUserPermission(toolName, input)
-  
-  // 4. 记录决策
-  context.toolDecisions?.set(toolName, {
-    source: 'user',
-    decision: userDecision ? 'accept' : 'reject',
-    timestamp: Date.now()
-  })
-  
-  return userDecision
-}
+// Auto-generated stub — replace with real implementation
+export type CanUseToolFn = any;
 ```
 
-### 工具执行实现
+`CanUseToolFn` 类型当前为 `any` stub，实际权限验证逻辑待实现。
+
+### 3. 工具进度类型
 
 ```typescript
-// 伪代码示例
+// src/types/tools.ts
 
-async function executeTool(
-  block: ToolUseBlock,
-  context: ToolUseContext
-): Promise<ToolResult> {
-  const { name, input, id } = block
-  
-  try {
-    // 1. 查找工具
-    const tool = findToolByName(context.options.tools, name)
-    if (!tool) {
-      return {
-        content: `Unknown tool: ${name}`,
-        is_error: true
-      }
-    }
-    
-    // 2. 权限检查
-    const allowed = await context.canUseTool(name, input, context)
-    if (!allowed) {
-      return {
-        content: 'Tool execution denied by user',
-        is_error: true
-      }
-    }
-    
-    // 3. 执行工具
-    const result = await tool.execute(input, context)
-    
-    // 4. 返回结果
-    return {
-      content: result.content,
-      is_error: result.is_error
-    }
-  } catch (error) {
-    return {
-      content: `Tool execution failed: ${error.message}`,
-      is_error: true
-    }
-  }
-}
+// Auto-generated stub — replace with real implementation
+export type AgentToolProgress = any;
+export type BashProgress = any;
+export type MCPProgress = any;
+export type REPLToolProgress = any;
+export type SkillToolProgress = any;
+export type TaskOutputProgress = any;
+export type ToolProgressData = any;
+export type WebSearchProgress = any;
+export type ShellProgress = any;
+export type PowerShellProgress = any;
+export type SdkWorkflowProgress = any;
 ```
 
-## 结果收集与格式化
+所有进度类型当前为 `any` stub。
 
-### 工具结果结构
+### 4. 工具查找辅助函数
 
 ```typescript
-// 工具结果消息
-interface ToolResultMessage {
-  type: 'tool_result'
-  tool_use_id: string        // 对应的 tool_use ID
-  content: string | ContentBlock[]
-  is_error?: boolean         // 是否错误
-}
+// src/Tool.ts 注释
+
+// export function findToolByName(tools: Tools, name: string): Tool | undefined {
+//   return tools.find(tool => toolMatchesName(tool, name))
+// }
+
+// export function toolMatchesName(tool: Tool, name: string): boolean {
+//   return tool.name === name
+// }
 ```
-
-### 结果处理流程
-
-```mermaid
-flowchart LR
-    Execute[工具执行] --> Raw[原始结果]
-    Raw --> Format[格式化]
-    Format --> Validate[验证]
-    Validate --> Append[追加到消息]
-    Append --> Continue[继续查询]
-```
-
-### 结果格式化
-
-```typescript
-// 结果格式化示例
-
-function formatToolResult(
-  block: ToolUseBlock,
-  result: ToolResult
-): ToolResultMessage {
-  return {
-    type: 'tool_result',
-    tool_use_id: block.id,
-    content: typeof result.content === 'string'
-      ? result.content
-      : JSON.stringify(result.content),
-    is_error: result.is_error
-  }
-}
-```
-
-## 工具类型示例
-
-### 文件操作工具
-
-| 工具名 | 功能 | 输入 |
-|--------|------|------|
-| `read_file` | 读取文件内容 | `{ path: string, limit?: number, offset?: number }` |
-| `write_file` | 写入文件内容 | `{ path: string, content: string }` |
-| `list_directory` | 列出目录内容 | `{ path: string }` |
-
-### 搜索工具
-
-| 工具名 | 功能 | 输入 |
-|--------|------|------|
-| `search_file_content` | 搜索文件内容 | `{ pattern: string, path?: string }` |
-| `glob` | 文件模式匹配 | `{ pattern: string }` |
-
-### 执行工具
-
-| 工具名 | 功能 | 输入 |
-|--------|------|------|
-| `run_shell_command` | 执行 Shell 命令 | `{ command: string }` |
 
 ## 设计要点
 
-### 1. 统一上下文
+### 1. 类型先行，实现渐进
 
-所有工具共享 `ToolUseContext`，确保一致的执行环境。
+当前策略是先定义核心类型（`ToolUseContext`、`QueryChainTracking`），工具执行逻辑在后续迭代中补充。
 
-### 2. 权限优先
+### 2. 上下文集中管理
 
-每个工具执行前必须通过权限检查，保护用户安全。
+`ToolUseContext` 包含执行工具所需的全部依赖，便于：
+- 子代理继承和修改上下文
+- 测试时注入 mock
+- 追踪和调试
 
-### 3. 错误隔离
+### 3. 流式处理优先
 
-单个工具执行失败不会影响其他工具，错误被封装在结果中。
-
-### 4. 结果标准化
-
-所有工具返回统一格式的结果，便于处理和追踪。
-
-### 5. 可扩展性
-
-新工具只需实现 `Tool` 接口并注册到工具列表。
+tool_use 检测在流式响应中实时进行，支持：
+- 早发现：收到第一个 tool_use 即可准备执行
+- 早中断：用户中断可立即停止流式处理
+- 结果收集：自然收集所有 tool_use blocks
 
 ## 继续阅读
 
 - [03-query-engine-layer](./03-query-engine-layer.md) - 了解查询引擎如何触发工具执行
-- [05-api-client-layer](./05-api-client-layer.md) - 学习 API 如何返回工具调用
+- [05-api-client-layer](./05-api-client-layer.md) - 学习 API 如何返回 tool_use 块
 - [06-session-management-layer](./06-session-management-layer.md) - 了解工具决策如何被持久化

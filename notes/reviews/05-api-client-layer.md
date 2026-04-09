@@ -16,14 +16,14 @@ API 客户端层负责与 Anthropic Claude API 的通信，是多后端适配的
 
 ```mermaid
 flowchart TB
-    subgraph Client["API 客户端"]
+    subgraph Client [API 客户端]
         Adapter[后端适配器]
         Stream[流式处理器]
         Retry[重试机制]
         Metrics[用量统计]
     end
     
-    subgraph Backends["多后端支持"]
+    subgraph Backends [多后端支持]
         Anthropic[Anthropic API]
         Fallback[Fallback 模型]
         Custom[自定义端点]
@@ -83,20 +83,18 @@ flowchart LR
 ### 流式 API 调用
 
 ```mermaid
-sequenceDiagram
-    participant Query as 查询引擎
-    participant API as API 客户端
-    participant Stream as 流式响应
-    participant Handler as 事件处理器
-    
-    Query->>API: callModel(params)
-    API->>Stream: 创建流式请求
-    Stream->>Handler: content_block_start
-    Stream->>Handler: content_block_delta (x N)
-    Stream->>Handler: content_block_stop
-    Handler->>Query: yield StreamEvent
-    Stream->>Handler: message_stop
-    Handler->>Query: 完成
+flowchart LR
+    Query[查询引擎] --> API[API客户端]
+    API --> Stream[流式请求]
+    Stream --> S1[content_block_start]
+    Stream --> S2[content_block_delta xN]
+    Stream --> S3[content_block_stop]
+    Stream --> S4[message_stop]
+    S1 --> Handler[事件处理器]
+    S2 --> Handler
+    S3 --> Handler
+    S4 --> Handler
+    Handler --> Out[yield StreamEvent]
 ```
 
 ### 流事件类型
@@ -213,17 +211,14 @@ function checkBudget(
 ### 重试策略
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Request: 发送请求
-    Request --> Success: 成功
-    Request --> Error: 失败
-    Error --> Check{可重试?}
-    Check -->|是| Wait: 等待
-    Check -->|否| Fail: 返回错误
-    Wait --> Retry: 重试
+flowchart LR
+    Request[发送请求] --> Success[成功]
+    Request --> Error[失败]
+    Error --> Check{可重试}
+    Check -->|是| Wait[等待]
+    Check -->|否| Fail[返回错误]
+    Wait --> Retry[重试]
     Retry --> Request
-    Success --> [*]: 返回结果
-    Fail --> [*]: 返回错误
 ```
 
 ### 指数退避实现
