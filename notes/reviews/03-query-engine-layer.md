@@ -220,6 +220,169 @@ async function* queryLoop(
 }
 ```
 
+### 核心流程实现 (2026-04-08)
+
+#### 状态解构模式
+
+每次迭代开始时解构 State，保持 bare-name 访问：
+
+```typescript
+// src/query.ts: queryLoop()
+
+while (true) {
+  let { toolUseContext } = state  // 可变部分单独提取
+  const {
+    messages,
+    autoCompactTracking,
+    maxOutputTokensRecoveryCount,
+    hasAttemptedReactiveCompact,
+    maxOutputTokensOverride,
+    pendingToolUseSummary,
+    stopHookActive,
+    turnCount,
+    transition,
+  } = state
+  
+  yield { type: 'stream_request_start' }
+  // ...
+}
+```
+
+#### 消息预处理（简化版）
+
+```typescript
+// 构建完整系统提示
+const fullSystemPrompt = asSystemPrompt(systemPrompt)
+
+// 准备消息用于查询
+let messagesForQuery = [...messages]
+
+// 更新 toolUseContext.messages
+toolUseContext = {
+  ...toolUseContext,
+  messages: messagesForQuery,
+}
+```
+
+#### 初始化收集容器
+
+```typescript
+// 收集 assistant messages（用于后续工具执行和状态更新）
+const assistantMessages: AssistantMessage[] = []
+
+// 收集工具结果（用于下一轮 API 调用）
+const toolResults: Message[] = []
+
+// 收集 tool_use blocks（用于判断是否需要继续循环）
+const toolUseBlocks: ToolUseBlock[] = []
+
+// 是否需要继续循环（有工具调用时为 true）
+let needsFollowUp = false
+```
+
+#### API 调用与流式处理
+
+```typescript
+// 获取当前模型
+const currentModel = toolUseContext.options.mainLoopModel
+
+try {
+  // 调用 callModel，流式遍历响应
+  for await (const message of deps.callModel({
+    messages: messagesForQuery,
+    systemPrompt: fullSystemPrompt,
+    signal: toolUseContext.abortController.signal,
+    options: {
+      model: currentModel,
+      isNonInteractiveSession: toolUseContext.options.isNonInteractiveSession,
+    },
+  })) {
+    // yield message 给调用者
+    yield message
+    
+    // 收集 assistant message
+    if (message.type === 'assistant') {
+      assistantMessages.push(message)
+      
+      // 提取 tool_use blocks
+      const msgToolUseBlocks = (Array.isArray(message.message?.content) 
+        ? message.message.content 
+        : []
+      ).filter(
+        (content) => content.type === 'tool_use',
+      ) as ToolUseBlock[]
+      
+      if (msgToolUseBlocks.length > 0) {
+        toolUseBlocks.push(...msgToolUseBlocks)
+        needsFollowUp = true
+      }
+    }
+  }
+} catch (error) {
+  // 为未完成的 tool_use 生成错误结果
+  yield* yieldMissingToolResultBlocks(
+    assistantMessages,
+    error instanceof Error ? error.message : 'Unknown error',
+  )
+  return { reason: 'model_error', error } as Terminal
+}
+```
+
+#### 中断信号处理
+
+```typescript
+// 检查中断信号
+if (toolUseContext.abortController.signal.aborted) {
+  // 为未完成的工具生成中断结果
+  yield* yieldMissingToolResultBlocks(
+    assistantMessages,
+    'Interrupted by user',
+  )
+  return { reason: 'aborted_streaming' } as Terminal
+}
+```
+
+#### 循环判断逻辑
+
+```typescript
+// 检查是否需要继续循环
+if (!needsFollowUp) {
+  // 没有工具调用，循环结束
+  return { reason: 'completed' } as Terminal
+}
+
+// 有工具调用，返回 tools_pending 状态（等待工具执行实现）
+return {
+  reason: 'tools_pending',
+  message: `Detected ${toolUseBlocks.length} tool use(s)`,
+} as Terminal
+```
+
+#### ModelCallParams 类型
+
+```typescript
+// src/query/deps.ts
+
+type ModelCallParams = {
+  messages: Message[]
+  systemPrompt: SystemPrompt
+  signal: AbortSignal
+  options: {
+    model: string
+    isNonInteractiveSession: boolean
+    [key: string]: unknown
+  }
+}
+```
+
+#### callModel 签名
+
+```typescript
+callModel: (params: ModelCallParams) => AsyncGenerator<
+  StreamEvent | AssistantMessage
+>
+```
+
 ### 循环控制机制
 
 ```mermaid
@@ -293,8 +456,51 @@ sequenceDiagram
 
 ### 流式响应处理
 
+**AsyncGenerator 模式**：通过 `for await` 遍历流式响应，实时 yield 中间状态：
+
 ```typescript
-// 流式事件类型
+for await (const message of deps.callModel(params)) {
+  yield message  // 实时输出给调用者
+  
+  if (message.type === 'assistant') {
+    // 收集 assistant message
+    // 提取 tool_use blocks
+  }
+}
+```
+
+**关键设计**：
+- 流式事件实时输出，用户可看到逐字生成效果
+- 收集 assistant message 用于后续工具执行
+- 提取 tool_use blocks 判断循环条件
+
+### tool_use 检测机制
+
+**核心原理**：通过 `content.type === 'tool_use'` 判断是否有工具调用
+
+```typescript
+// 提取 tool_use blocks
+const msgToolUseBlocks = (Array.isArray(message.message?.content) 
+  ? message.message.content 
+  : []
+).filter(
+  (content) => content.type === 'tool_use',
+) as ToolUseBlock[]
+
+if (msgToolUseBlocks.length > 0) {
+  toolUseBlocks.push(...msgToolUseBlocks)
+  needsFollowUp = true  // 标记需要继续循环
+}
+```
+
+**注意**：
+> stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+> 
+> 实践中通过检测 content.type === 'tool_use' 来判断，这是可靠的循环退出信号。
+
+### 流式事件类型
+
+```typescript
 type StreamEvent = {
   type: 'content_block_start'
   // ...
@@ -309,6 +515,22 @@ type StreamEvent = {
 
 ### 错误恢复机制
 
+**yieldMissingToolResultBlocks**：为未完成的工具生成错误结果
+
+```typescript
+// 当 API 调用出错或用户中断时
+// 为已收集的 assistant message 中未完成的 tool_use 生成错误结果
+yield* yieldMissingToolResultBlocks(
+  assistantMessages,
+  error instanceof Error ? error.message : 'Unknown error',
+)
+```
+
+**错误类型处理**：
+- `model_error`: API 调用失败
+- `aborted_streaming`: 用户中断
+- `max_output_tokens`: 输出令牌超限
+
 **max_output_tokens 恢复**:
 ```typescript
 // 检测 max_output_tokens 错误
@@ -318,6 +540,15 @@ function isWithheldMaxOutputTokens(msg: Message | StreamEvent): boolean {
 
 // 恢复计数限制
 const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
+```
+
+**中断信号处理**：
+```typescript
+// 检查 AbortController.signal.aborted
+if (toolUseContext.abortController.signal.aborted) {
+  yield* yieldMissingToolResultBlocks(assistantMessages, 'Interrupted by user')
+  return { reason: 'aborted_streaming' } as Terminal
+}
 ```
 
 ## QueryDeps 依赖注入
@@ -384,13 +615,51 @@ export type Continue = {
 
 使用 `AsyncGenerator` 流式输出中间状态，调用者可以实时处理。
 
-### 4. 依赖注入
+### 4. AsyncGenerator 流式模式
+
+```typescript
+// 通过 for await 遍历流式响应
+for await (const message of deps.callModel(params)) {
+  yield message  // 实时输出
+  // 收集响应...
+}
+```
+
+### 5. tool_use 检测机制
+
+```typescript
+// 通过 content.type === 'tool_use' 判断是否有工具调用
+const toolUseBlocks = content.filter(c => c.type === 'tool_use')
+needsFollowUp = toolUseBlocks.length > 0
+```
+
+### 6. 中断信号处理
+
+```typescript
+// 通过 AbortController.signal.aborted 检测用户中断
+if (toolUseContext.abortController.signal.aborted) {
+  // 处理中断...
+}
+```
+
+### 7. 依赖注入
 
 核心功能通过 `deps` 参数注入，便于测试和扩展。
 
-### 5. 错误隔离
+### 8. 错误隔离
 
 API 错误、工具错误等都有相应的恢复机制，不会导致整个循环崩溃。
+
+### 9. 收集容器模式
+
+```typescript
+// 收集 assistant messages
+const assistantMessages: AssistantMessage[] = []
+// 收集 tool_use blocks
+const toolUseBlocks: ToolUseBlock[] = []
+// 收集工具结果
+const toolResults: Message[] = []
+```
 
 ## 继续阅读
 

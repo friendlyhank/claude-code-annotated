@@ -10,8 +10,12 @@
   这是核心中的核心，包含：
    - State 状态管理：消息历史、工具上下文、追踪数据
    - query() 生成器：代理循环主流程
+   - queryLoop 主循环：while(true) 无限循环模式
+   - 流式响应处理：AsyncGenerator + for await 遍历
+   - tool_use 检测：content.type === 'tool_use' 判断循环条件
+   - 中断信号处理：AbortController.signal.aborted 检测用户中断
    - 消息预处理：compact、snip、autocompact
-   - LLM 调用编排：流式响应处理、错误恢复
+   - 错误恢复机制：yieldMissingToolResultBlocks 为未完成工具生成错误结果
 
   4. 工具执行层
    - 工具注册与定义
