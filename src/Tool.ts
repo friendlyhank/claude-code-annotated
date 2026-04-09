@@ -10,6 +10,7 @@
 
 import type { Message } from './types/message.js'
 import type { AgentId } from './types/ids.js'
+import type { ToolProgressData } from './types/tools.js'
 import type { SystemPrompt } from './utils/systemPromptType.js'
 
 // ============================================================================
@@ -55,12 +56,13 @@ export type ToolUseContext = {
     commands: unknown[]  // Command[] 类型，待 commands.ts 实现后替换
     debug: boolean
     mainLoopModel: string
-    tools: unknown[]  // Tools 类型，待 tools.ts 实现后替换
+    tools: Tools
     verbose: boolean
     // TODO: 已阅读源码，但不在今日最小闭环内
     // thinkingConfig: ThinkingConfig
     // mcpClients: MCPServerConnection[]
     // mcpResources: Record<string, ServerResource[]>
+    /** 非交互式会话标记：true 表示 print/SDK/批处理模式，不启用 REPL/Ink 交互，也不会进行实时用户提示。 */
     isNonInteractiveSession: boolean
     // agentDefinitions: AgentDefinitionsResult
     maxBudgetUsd?: number
@@ -71,7 +73,7 @@ export type ToolUseContext = {
     /** Override querySource for analytics tracking */
     // querySource?: QuerySource
     /** Optional callback to get the latest tools (e.g., after MCP servers connect mid-query) */
-    refreshTools?: () => unknown[]  // () => Tools
+    refreshTools?: () => Tools
     [key: string]: unknown
   }
   abortController: AbortController
@@ -189,6 +191,39 @@ export type ToolUseContext = {
 }
 
 // ============================================================================
+// Tool base types
+// 对齐上游实现：为工具编排层补齐最小类型与辅助函数
+
+export type AnyObject = {
+  safeParse(input: unknown): { success: boolean; data: Record<string, unknown> }
+}
+
+export type ToolProgress<P extends ToolProgressData = ToolProgressData> = {
+  toolUseID: string
+  data: P
+}
+
+export type Tool<
+  Input extends AnyObject = AnyObject,
+  Output = unknown,
+  P extends ToolProgressData = ToolProgressData,
+> = {
+  name: string
+  aliases?: string[]
+  description?: string
+  inputSchema: Input
+  isConcurrencySafe(input: Record<string, unknown>): boolean
+  isEnabled(): boolean
+  isReadOnly(input: Record<string, unknown>): boolean
+  call?(
+    input: Record<string, unknown>,
+    context: ToolUseContext,
+  ): AsyncGenerator<ToolProgress<P> | Message, Output> | Promise<Output> | Output
+}
+
+export type Tools = readonly Tool[]
+
+// ============================================================================
 // Helper functions
 // 对齐上游实现：辅助函数
 
@@ -198,9 +233,16 @@ export type ToolUseContext = {
  * 对齐上游实现：按 claude-code/src/Tool.ts findToolByName 复刻
  * TODO: 待 tools 系统实现后补齐
  */
-// export function findToolByName(tools: Tools, name: string): Tool | undefined {
-//   return tools.find(tool => toolMatchesName(tool, name))
-// }
+export function toolMatchesName(
+  tool: { name: string; aliases?: string[] },
+  name: string,
+): boolean {
+  return tool.name === name || (tool.aliases?.includes(name) ?? false)
+}
+
+export function findToolByName(tools: Tools, name: string): Tool | undefined {
+  return tools.find(tool => toolMatchesName(tool, name))
+}
 
 /**
  * Check if tool matches name
@@ -208,6 +250,3 @@ export type ToolUseContext = {
  * 对齐上游实现：按 claude-code/src/Tool.ts toolMatchesName 复刻
  * TODO: 待 tools 系统实现后补齐
  */
-// export function toolMatchesName(tool: Tool, name: string): boolean {
-//   return tool.name === name
-// }

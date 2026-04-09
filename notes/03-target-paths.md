@@ -1,6 +1,6 @@
 # 目标路径清单
 
-> 最后更新：2026-04-08
+> 最后更新：2026-04-09
 
 ## 统计口径
 
@@ -18,10 +18,10 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/entrypoints/cli.tsx` | 308 | 18 | 6% |
-| `src/main.tsx` | 6,603 | 151 | 2% |
+| `src/entrypoints/cli.tsx` | 308 | 15 | 5% |
+| `src/main.tsx` | 6,603 | 128 | 2% |
 | `src/entrypoints/init.ts` | - | 0 | 0% |
-| `src/replLauncher.tsx` | 28 | 22 | 79% |
+| `src/replLauncher.tsx` | 28 | 24 | 86% |
 | `src/interactiveHelpers.tsx` | 473 | 65 | 14% |
 
 ### 核心状态
@@ -35,11 +35,11 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/types/ids.ts` | 45 | 18 | 40% |
-| `src/types/message.ts` | 180 | 147 | 82% |
+| `src/types/ids.ts` | 45 | 12 | 27% |
+| `src/types/message.ts` | 180 | 151 | 84% |
 | `src/types/tools.ts` | 12 | 11 | 92% |
 | `src/types/utils.ts` | 8 | 2 | 25% |
-| `src/types/global.d.ts` | 80 | 48 | 60% |
+| `src/types/global.d.ts` | 80 | 47 | 59% |
 | `src/types/index.ts` | - | 65 | - |
 
 ### 渲染层
@@ -51,7 +51,7 @@
 | `src/components/App.tsx` | ~50 | 7 | 14% |
 | `src/screens/REPL.tsx` | ~3,000 | 80 | 3% |
 
-**阶段 1 小计**：~7,900 行目标，已复刻 735 行（纯代码）
+**阶段 1 小计**：~7,900 行目标，已复刻 708 行（纯代码）
 
 ## 阶段 2：核心查询引擎
 
@@ -59,10 +59,10 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/query.ts` | 1,732 | 368 | 21% |
+| `src/query.ts` | 1,732 | 226 | 13% |
 | `src/QueryEngine.ts` | 1,320 | 0 | 0% |
-| `src/query/deps.ts` | 39 | 76 | 195% |
-| `src/query/transitions.ts` | 3 | 3 | 100% |
+| `src/query/deps.ts` | 39 | 21 | 54% |
+| `src/query/transitions.ts` | 3 | 2 | 67% |
 | `src/query/config.ts` | - | 0 | 0% |
 | `src/query/stopHooks.ts` | - | 0 | 0% |
 | `src/query/tokenBudget.ts` | - | 0 | 0% |
@@ -71,9 +71,9 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/utils/systemPromptType.ts` | 15 | 12 | 80% |
-| `src/constants/querySource.ts` | 3 | 3 | 100% |
-| `src/hooks/useCanUseTool.ts` | - | 3 | - |
+| `src/utils/systemPromptType.ts` | 15 | 6 | 40% |
+| `src/constants/querySource.ts` | 3 | 1 | 33% |
+| `src/hooks/useCanUseTool.ts` | - | 1 | - |
 
 ### 消息构建
 
@@ -85,8 +85,8 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/services/tools/toolOrchestration.ts` | 188 | 0 | 0% |
-| `src/services/tools/toolExecution.ts` | 1,745 | 0 | 0% |
+| `src/services/tools/toolOrchestration.ts` | 170 | 170 | 100% |
+| `src/services/tools/toolExecution.ts` | 1,486 | 70 | 5% |
 
 ### API 客户端
 
@@ -101,7 +101,7 @@
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/Tool.ts` | 792 | 0 | 0% |
+| `src/Tool.ts` | 456 | 107 | 23% |
 | `src/tools.ts` | 387 | 0 | 0% |
 | `src/tools/BashTool/` | - | 0 | 0% |
 | `src/tools/FileEditTool/` | - | 0 | 0% |
@@ -151,8 +151,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数（总计） | 537,782 |
-| 累计复刻目标文件代码数 | 1,106 |
-| **覆盖率** | **0.21%** |
+| 累计复刻目标文件代码数 | 1,247 |
+| **覆盖率** | **0.23%** |
 
 ---
 

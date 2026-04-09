@@ -40,7 +40,7 @@ import type {
 import type { QuerySource } from './constants/querySource.js'
 // TODO: 已阅读源码，但不在今日最小闭环内
 // import { StreamingToolExecutor } from './services/tools/StreamingToolExecutor.js'
-// import { runTools } from './services/tools/toolOrchestration.js'
+import { runTools } from './services/tools/toolOrchestration.js'
 // import { handleStopHooks } from './query/stopHooks.js'
 // import { buildQueryConfig } from './query/config.js'
 import { productionDeps, type QueryDeps } from './query/deps.js'
@@ -293,6 +293,7 @@ async function* queryLoop(
 
     // 对齐上游实现：更新 toolUseContext.messages
     // 参考 claude-code/src/query.ts:580-582
+    // 保留复用toolUseContext，只更新 messages
     toolUseContext = {
       ...toolUseContext,
       messages: messagesForQuery,
@@ -370,6 +371,7 @@ async function* queryLoop(
             (content: { type: string }) => content.type === 'tool_use',
           ) as ToolUseBlock[]
           
+          // 说明有工具调用，需要继续循环
           if (msgToolUseBlocks.length > 0) {
             toolUseBlocks.push(...msgToolUseBlocks)
             needsFollowUp = true
@@ -427,28 +429,44 @@ async function* queryLoop(
 
     // ============================================================================
     // 工具执行
-    // 对齐上游实现：按 claude-code/src/query.ts:1350-1450 原样复刻
-    // TODO: 已阅读源码，但不在今日最小闭环内
-    // 当前仅收集 tool_use blocks，不执行工具
-    // 后续迭代实现 runTools 调用
+    // 对齐上游实现：tool_use 出现后进入工具批次编排，再把结果拼回下一轮消息。
+    // 当前闭环只覆盖 runTools 接入；单工具真实执行、summary、attachments 继续延后。
+    let updatedToolUseContext = toolUseContext
 
-    // 对齐上游实现：简化处理 - 直接返回，等待工具系统实现
-    // 真实实现会：
-    // 1. 调用 runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
-    // 2. 收集工具结果
-    // 3. 更新 state.messages
-    // 4. continue 循环
+    for await (const update of runTools(
+      toolUseBlocks,
+      assistantMessages,
+      canUseTool,
+      toolUseContext,
+    )) {
+      if (update.message) {
+        yield update.message
+        toolResults.push(update.message)
+      }
+      updatedToolUseContext = update.newContext
+    }
 
-    // TODO: 已阅读源码，但不在今日最小闭环内
-    // 本次简化：检测到工具调用时，返回 stub 响应
-    // 真实实现见 claude-code/src/query.ts:1350-1730
-    console.log(`[query] Detected ${toolUseBlocks.length} tool use(s), awaiting tool execution implementation`)
-    
-    // 对齐上游实现：更新 state 并继续循环
-    // 由于工具系统未实现，当前返回 stub 终止
-    return {
-      reason: 'tools_pending',
-      message: `Detected ${toolUseBlocks.length} tool use(s) - awaiting tool execution implementation`,
-    } as Terminal
+    if (updatedToolUseContext.abortController.signal.aborted) {
+      return { reason: 'aborted_tools' } as Terminal
+    }
+
+    const nextTurnCount = turnCount + 1
+    if (maxTurns && nextTurnCount > maxTurns) {
+      return { reason: 'max_turns', turnCount: nextTurnCount } as Terminal
+    }
+
+    state = {
+      messages: [...messagesForQuery, ...assistantMessages, ...toolResults],
+      toolUseContext: updatedToolUseContext,
+      autoCompactTracking,
+      maxOutputTokensRecoveryCount: 0,
+      hasAttemptedReactiveCompact: false,
+      maxOutputTokensOverride: undefined,
+      pendingToolUseSummary: undefined,
+      stopHookActive,
+      turnCount: nextTurnCount,
+      transition: { reason: 'next_turn' },
+    }
+    continue
   }
 }
