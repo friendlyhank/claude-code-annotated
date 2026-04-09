@@ -1,14 +1,14 @@
 # 进度面板
 
-> 最后更新：2026-04-07
+> 最后更新：2026-04-08
 
 ## 总体进度
 
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 906 |
-| 覆盖率 | **0.17%** |
+| 累计复刻目标文件代码数 | 1,106 |
+| 覆盖率 | **0.21%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -17,7 +17,7 @@
 | 阶段 | 状态 | 完成度 |
 |---|---|---:|
 | 阶段 1：最小闭环 | `done` | 100% |
-| 阶段 2：核心查询引擎 | `doing` | 5% |
+| 阶段 2：核心查询引擎 | `doing` | 10% |
 | 阶段 3：工具系统 | `backlog` | 0% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
@@ -29,15 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| queryLoop 主循环实现 | `planned` | high |
+| 工具执行编排 (runTools) | `planned` | high |
 | 消息预处理流程 | `planned` | high |
-| API 调用框架 | `planned` | high |
+| 错误恢复机制 | `backlog` | medium |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| queryLoop 主循环 | 2026-04-07 | 框架已搭建，待补齐核心逻辑 |
+| queryLoop 工具执行 | 2026-04-08 | 核心流程已完成，待补齐工具执行 |
 
 ### 已完成
 
@@ -49,6 +49,7 @@
 | 基础 REPL 循环 | 2026-04-06 | Ink 渲染, REPL 组件, 交互式输入 |
 | 核心类型定义 | 2026-04-07 | Message, Tool, ID 类型体系 |
 | query() 生成器函数框架 | 2026-04-07 | State 类型, query/queryLoop 框架 |
+| queryLoop 核心流程 | 2026-04-08 | callModel 调用, 流式处理, tool_use 检测, 循环判断 |
 | 复刻规划文档初始化 | 2026-04-05 | 创建 notes 文档体系 |
 
 ## 阻塞与风险
@@ -111,6 +112,10 @@
 - 依赖注入模式（QueryDeps 接口）
 - 状态集中管理模式（State 类型）
 - 代理循环架构（query → queryLoop → State）
+- 流式响应处理（for await 遍历 AsyncGenerator）
+- tool_use 检测机制（content.type === 'tool_use'）
+- 中断信号处理（AbortController.signal.aborted）
+- ModelCallParams 类型设计
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -119,7 +124,10 @@
 - QueryEngine 类结构
 - 消息构建工具函数
 - 消息预处理流程（compact, snip, microcompact）
-- API 调用流程（callModel）
+- API 调用流程（callModel 完整实现）
+- runTools 工具编排
+- StreamingToolExecutor 流式工具执行
+- stopHooks 停止钩子
 
 ### 待确认
 
@@ -133,6 +141,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-08 | 0.17% → 0.21% | queryLoop 核心流程完成（callModel 调用, 流式处理, tool_use 检测） |
 | 2026-04-07 | 0.14% → 0.17% | query() 生成器函数框架完成（State 类型, query/queryLoop 框架） |
 | 2026-04-07 | 0.08% → 0.14% | 核心类型定义完成（Message, Tool, ID 类型体系） |
 | 2026-04-06 | 0.02% → 0.08% | REPL 交互框架、Ink 渲染、全局状态完成 |

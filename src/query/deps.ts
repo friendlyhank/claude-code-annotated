@@ -1,10 +1,13 @@
 import { randomUUID } from 'crypto'
+
 // TODO: 已阅读源码，但不在今日最小闭环内
 // import { queryModelWithStreaming } from '../services/api/claude.js'
 // import { autoCompactIfNeeded } from '../services/compact/autoCompact.js'
 // import { microcompactMessages } from '../services/compact/microCompact.js'
 
-// -- deps
+// ============================================================================
+// QueryDeps type
+// 对齐上游实现：按 claude-code/src/query/deps.ts 原样复刻
 
 // I/O dependencies for query(). Passing a `deps` override into QueryParams
 // lets tests inject fakes directly instead of spyOn-per-module — the most
@@ -22,7 +25,16 @@ import { randomUUID } from 'crypto'
 export type QueryDeps = {
   // -- model
   // TODO: 已阅读源码，但不在今日最小闭环内
+  // 待 services/api/claude.ts 实现后使用 typeof queryModelWithStreaming
   // callModel: typeof queryModelWithStreaming
+  
+  /**
+   * 调用 LLM API 的函数
+   * 
+   * 对齐上游实现：使用 typeof queryModelWithStreaming
+   * 当前为 stub 类型，待 services/api/claude.ts 完成后替换
+   */
+  callModel: (...args: unknown[]) => AsyncGenerator<unknown>
 
   // -- compaction
   // TODO: 已阅读源码，但不在今日最小闭环内
@@ -33,12 +45,32 @@ export type QueryDeps = {
   uuid: () => string
 }
 
+// ============================================================================
+// productionDeps factory
+// 对齐上游实现：按 claude-code/src/query/deps.ts 原样复刻
+
 export function productionDeps(): QueryDeps {
   return {
-    // TODO: 已阅读源码，但不在今日最小闭环内，后续补齐
+    // TODO: 已阅读源码，但不在今日最小闭环内，后续补齐真实实现
     // callModel: queryModelWithStreaming,
     // microcompact: microcompactMessages,
     // autocompact: autoCompactIfNeeded,
+    
+    // 对齐上游实现：当前使用 mock 实现，仅用于类型检查
+    // 真实实现将在 services/api/claude.ts 完成后替换
+    callModel: async function* mockCallModel(): AsyncGenerator<unknown> {
+      // Mock 实现：返回空响应
+      // TODO: 替换为真实实现
+      yield {
+        type: 'assistant',
+        uuid: randomUUID(),
+        timestamp: new Date().toISOString(),
+        message: {
+          role: 'assistant',
+          content: [{ type: 'text', text: 'Mock response - awaiting real implementation' }],
+        },
+      }
+    },
     uuid: randomUUID,
   }
 }

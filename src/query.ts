@@ -261,9 +261,9 @@ async function* queryLoop(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     // 对齐上游实现：每次迭代开始解构 State
+    let { toolUseContext } = state
     const {
       messages,
-      toolUseContext,
       autoCompactTracking,
       maxOutputTokensRecoveryCount,
       hasAttemptedReactiveCompact,
@@ -278,37 +278,177 @@ async function* queryLoop(
     yield { type: 'stream_request_start' }
 
     // ============================================================================
-    // TODO: 以下为已阅读但不在今日最小闭环内的源码逻辑
-    // 后续迭代将逐步补齐：
-    // 
-    // 1. 消息预处理
-    //    - applyToolResultBudget: 工具结果预算限制
-    //    - snipCompact: 历史裁剪
-    //    - microcompact: 微压缩
-    //    - contextCollapse: 上下文折叠
-    //    - autocompact: 自动压缩
-    // 
-    // 2. API 调用
-    //    - 构建请求参数
-    //    - 调用 deps.callModel
-    //    - 流式处理响应
-    // 
-    // 3. 工具执行
-    //    - 收集 tool_use blocks
-    //    - 并行/串行执行工具
-    //    - 处理工具结果
-    // 
-    // 4. 循环判断
-    //    - needsFollowUp 决定是否继续
-    //    - 更新 State
-    //    - continue 或 return Terminal
-    // ============================================================================
+    // 消息预处理（简化版）
+    // 对齐上游实现：按 claude-code/src/query.ts:340-560 原样复刻
+    // TODO: 完整实现包括 applyToolResultBudget, snipCompact, microcompact, autocompact
 
-    // 对齐上游实现：当前为 stub 实现，直接返回终止状态
-    // TODO: 实现完整的循环逻辑后移除此 stub
+    // 对齐上游实现：构建完整系统提示
+    // fullSystemPrompt = appendSystemContext(systemPrompt, systemContext)
+    // 本次简化：直接使用 systemPrompt
+    const fullSystemPrompt = asSystemPrompt(systemPrompt)
+
+    // 对齐上游实现：准备消息用于查询
+    // 本次简化：直接使用 messages，跳过压缩流程
+    let messagesForQuery = [...messages]
+
+    // 对齐上游实现：更新 toolUseContext.messages
+    // 参考 claude-code/src/query.ts:580-582
+    toolUseContext = {
+      ...toolUseContext,
+      messages: messagesForQuery,
+    }
+
+    // ============================================================================
+    // 初始化收集容器
+    // 对齐上游实现：按 claude-code/src/query.ts:595-605 原样复刻
+
+    // 收集 assistant messages（用于后续工具执行和状态更新）
+    const assistantMessages: AssistantMessage[] = []
+    // 收集工具结果（用于下一轮 API 调用）
+    // TODO: 待 messages.ts 实现后使用 UserMessage | AttachmentMessage 类型
+    const toolResults: Message[] = []
+    // 收集 tool_use blocks（用于判断是否需要继续循环）
+    // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    // Set during streaming whenever a tool_use block arrives — the sole
+    // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    const toolUseBlocks: ToolUseBlock[] = []
+    // 是否需要继续循环（有工具调用时为 true）
+    let needsFollowUp = false
+
+    // ============================================================================
+    // 获取当前模型
+    // 对齐上游实现：按 claude-code/src/query.ts:615-625 原样复刻
+    // TODO: 实现完整的模型选择逻辑（plan mode 检查 200k token 等）
+    const currentModel = toolUseContext.options.mainLoopModel
+
+    // ============================================================================
+    // API 调用
+    // 对齐上游实现：按 claude-code/src/query.ts:690-840 原样复刻
+
+    try {
+      // 对齐上游实现：构建 callModel 参数
+      // 参考 claude-code/src/query.ts:690-770
+      for await (const message of deps.callModel({
+        messages: messagesForQuery,
+        systemPrompt: fullSystemPrompt,
+        signal: toolUseContext.abortController.signal,
+        // TODO: 已阅读源码，但不在今日最小闭环内
+        // thinkingConfig: toolUseContext.options.thinkingConfig,
+        // tools: toolUseContext.options.tools,
+        options: {
+          model: currentModel,
+          isNonInteractiveSession: toolUseContext.options.isNonInteractiveSession,
+          // TODO: 已阅读源码，但不在今日最小闭环内
+          // fallbackModel,
+          // querySource,
+          // getToolPermissionContext: async () => appState.toolPermissionContext,
+        },
+      })) {
+        // ============================================================================
+        // 流式响应处理
+        // 对齐上游实现：按 claude-code/src/query.ts:770-840 原样复刻
+
+        // TODO: 待 services/api/claude.ts 实现后，message 类型将自动正确
+        // 当前需要类型断言，因为 callModel 返回 AsyncGenerator<unknown>
+        const typedMessage = message as Message | StreamEvent
+
+        // 对齐上游实现：yield message 给调用者
+        yield typedMessage
+
+        // 对齐上游实现：收集 assistant message
+        // 参考 claude-code/src/query.ts:810-830
+        if (typedMessage.type === 'assistant') {
+          const assistantMessage = typedMessage as AssistantMessage
+          assistantMessages.push(assistantMessage)
+
+          // 对齐上游实现：提取 tool_use blocks
+          const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) 
+            ? assistantMessage.message.content 
+            : []
+          ).filter(
+            (content: { type: string }) => content.type === 'tool_use',
+          ) as ToolUseBlock[]
+          
+          if (msgToolUseBlocks.length > 0) {
+            toolUseBlocks.push(...msgToolUseBlocks)
+            needsFollowUp = true
+          }
+        }
+      }
+    } catch (error) {
+      // 对齐上游实现：错误处理
+      // 参考 claude-code/src/query.ts:850-895
+      // TODO: 实现完整的错误处理（ImageSizeError, ImageResizeError 等）
+      // const errorMessage = error instanceof Error ? error.message : String(error)
+      
+      // 对齐上游实现：为未完成的 tool_use 生成错误结果
+      // 参考 claude-code/src/query.ts:880-885
+      yield* yieldMissingToolResultBlocks(
+        assistantMessages,
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+
+      // TODO: 已阅读源码，但不在今日最小闭环内
+      // yield createAssistantAPIErrorMessage({ content: errorMessage })
+      
+      return { reason: 'model_error', error } as Terminal
+    }
+
+    // ============================================================================
+    // 循环判断
+    // 对齐上游实现：按 claude-code/src/query.ts:900-1730 原样复刻
+
+    // 对齐上游实现：检查中断信号
+    // 参考 claude-code/src/query.ts:900-940
+    if (toolUseContext.abortController.signal.aborted) {
+      // 对齐上游实现：为未完成的工具生成中断结果
+      yield* yieldMissingToolResultBlocks(
+        assistantMessages,
+        'Interrupted by user',
+      )
+      
+      // TODO: 已阅读源码，但不在今日最小闭环内
+      // yield createUserInterruptionMessage({ toolUse: true })
+      
+      return { reason: 'aborted_streaming' } as Terminal
+    }
+
+    // 对齐上游实现：检查是否需要继续循环
+    // 参考 claude-code/src/query.ts:950-1730
+    if (!needsFollowUp) {
+      // 没有工具调用，循环结束
+      // TODO: 已阅读源码，但不在今日最小闭环内
+      // - 检查 max_output_tokens 错误
+      // - 执行 stop hooks
+      // - token budget 检查
+      return { reason: 'completed' } as Terminal
+    }
+
+    // ============================================================================
+    // 工具执行
+    // 对齐上游实现：按 claude-code/src/query.ts:1350-1450 原样复刻
+    // TODO: 已阅读源码，但不在今日最小闭环内
+    // 当前仅收集 tool_use blocks，不执行工具
+    // 后续迭代实现 runTools 调用
+
+    // 对齐上游实现：简化处理 - 直接返回，等待工具系统实现
+    // 真实实现会：
+    // 1. 调用 runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+    // 2. 收集工具结果
+    // 3. 更新 state.messages
+    // 4. continue 循环
+
+    // TODO: 已阅读源码，但不在今日最小闭环内
+    // 本次简化：检测到工具调用时，返回 stub 响应
+    // 真实实现见 claude-code/src/query.ts:1350-1730
+    console.log(`[query] Detected ${toolUseBlocks.length} tool use(s), awaiting tool execution implementation`)
+    
+    // 对齐上游实现：更新 state 并继续循环
+    // 由于工具系统未实现，当前返回 stub 终止
     return {
-      reason: 'stub_implementation',
-      message: 'Query loop stub - awaiting full implementation',
+      reason: 'tools_pending',
+      message: `Detected ${toolUseBlocks.length} tool use(s) - awaiting tool execution implementation`,
     } as Terminal
   }
 }
