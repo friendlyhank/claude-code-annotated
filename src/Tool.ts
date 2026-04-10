@@ -118,6 +118,7 @@ export type ToolUseContext = {
   /** Skill names surfaced via skill_discovery this session. Telemetry only (feeds was_discovered). */
   discoveredSkillNames?: Set<string>
   userModified?: boolean
+  // 设置工具in-progress正在进行状态
   setInProgressToolUseIDs: (f: (prev: Set<string>) => Set<string>) => void
   /** Only wired in interactive (REPL) contexts; SDK/QueryEngine don't set this. */
   setHasInterruptibleToolInProgress?: (v: boolean) => void

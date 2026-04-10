@@ -25,11 +25,12 @@ export async function returnValue<A>(
   return e.value
 }
 
+// 对齐上游实现：QueuedGenerator 用于并发消费多个 async generator，按产出顺序依次转发。
 type QueuedGenerator<A> = {
-  done: boolean | void
-  value: A | void
-  generator: AsyncGenerator<A, void>
-  promise: Promise<QueuedGenerator<A>>
+  done: boolean | void // 是否完成产出
+  value: A | void // 产出值
+  generator: AsyncGenerator<A, void> // 原始 generator
+  promise: Promise<QueuedGenerator<A>> // 下一次产出的 promise
 }
 
 // 对齐上游实现：并发消费多个 async generator，按产出顺序依次转发。

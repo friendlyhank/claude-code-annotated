@@ -9,6 +9,7 @@ export type ContextModifier = {
   modifyContext: (context: ToolUseContext) => ToolUseContext
 }
 
+//  懒加载消息更新类型定义
 export type MessageUpdateLazy = {
   message?: Message
   contextModifier?: ContextModifier

@@ -36,14 +36,16 @@ export async function* runTools(
         string,
         ((context: ToolUseContext) => ToolUseContext)[]
       > = {}
+      // todo hank 这里修改上下文要调试下
       // 并发批次先收集 contextModifier，不立即修改共享上下文。
-      // 原因：并发到达顺序不稳定，若边收边改会造成非确定性状态。
+      // 原因：并发到达顺序不稳定，若边收边改会造成非确定性状态。（这里异步会执行完）
       for await (const update of runToolsConcurrently(
         blocks,
         assistantMessages,
         canUseTool,
         currentContext,
       )) {
+        // 收集 contextModifier，不立即修改共享上下文。
         if (update.contextModifier) {
           const { toolUseID, modifyContext } = update.contextModifier
           if (!queuedContextModifiers[toolUseID]) {
@@ -51,12 +53,14 @@ export async function* runTools(
           }
           queuedContextModifiers[toolUseID].push(modifyContext)
         }
+        // 并发阶段先把 message 向上透传，但 newContext 仍保持当前共享快照；
+        // 真正的新上下文要等整个批次结束后，统一按输入顺序回放 modifier 才能得到。
         yield {
           message: update.message,
           newContext: currentContext,
         }
       }
-      // 对齐上游实现：按原 tool_use 顺序回放 modifier，保证结果可复现。
+      // 对齐上游实现：按原 tool_use 顺序回放 modifier，保证结果可复现。所有执行完修改上下文。
       for (const block of blocks) {
         const modifiers = queuedContextModifiers[block.id]
         if (!modifiers) {
@@ -68,6 +72,8 @@ export async function* runTools(
       }
       yield { newContext: currentContext }
     } else {
+      // 串行批次的特点是“前一个工具的上下文更新，立刻成为后一个工具的输入”。
+      // 因而这里不需要缓存 modifier，而是边执行边推进 currentContext。
       // 串行批次允许每个工具执行后立即更新上下文，后续工具可见最新状态。
       for await (const update of runToolsSerially(
         blocks,
@@ -86,7 +92,7 @@ export async function* runTools(
     }
   }
 }
-
+// 并发批次定义：
 type Batch = { isConcurrencySafe: boolean; blocks: ToolUseBlock[] }
 
 // 将 tool_use 调用按“执行模式”切分成有序批次：
@@ -127,6 +133,9 @@ function partitionToolCalls(
   }, [])
 }
 
+// 串行批次强调“确定顺序 + 立即生效”：
+// 每个 tool_use 在前一个 tool_use 完整结束后才开始，
+// 因此前一个工具对上下文的修改会直接影响后一个工具的执行视图。
 async function* runToolsSerially(
   toolUseMessages: ToolUseBlock[],
   assistantMessages: AssistantMessage[],
@@ -135,11 +144,15 @@ async function* runToolsSerially(
 ): AsyncGenerator<MessageUpdate, void> {
   let currentContext = toolUseContext
 
+  // for 循环按顺序执行每个 tool_use，每个 tool_use 都会等待前一个 tool_use 完成
+  // 每个 tool_use 都会更新当前上下文，后续 tool_use 可以基于这个最新状态执行。
   for (const toolUse of toolUseMessages) {
     // 状态标记：进入执行前登记 in-progress，供 UI/中断流程感知。
     toolUseContext.setInProgressToolUseIDs(prev =>
       new Set(prev).add(toolUse.id),
     )
+    // runToolUse 负责单个工具的完整执行过程；这里仅负责把所属 assistant 消息匹配出来，
+    // 并将上下文传递给工具执行。 
     for await (const update of runToolUse(
       toolUse,
       assistantMessages.find(_ =>
@@ -151,6 +164,7 @@ async function* runToolsSerially(
       currentContext,
     )) {
       if (update.contextModifier) {
+        // 串行模式下可以立即提交 modifier，因为后续工具就应该看到这个最新状态。
         currentContext = update.contextModifier.modifyContext(currentContext)
       }
       yield {
@@ -163,18 +177,27 @@ async function* runToolsSerially(
   }
 }
 
+// 并发批次的职责只有两件事：
+// 1) 以受限并发方式启动多个 tool_use；
+// 2) 将每个工具产生的 message/contextModifier 原样向上游转发。
+// 注意这里不直接提交 contextModifier 到共享上下文：
+// 并发任务完成顺序不稳定，若在此处立即修改会让最终上下文依赖到达时序。
+// 因此真正的上下文合并在 runTools() 外层完成，并按原始 tool_use 顺序回放。
 async function* runToolsConcurrently(
   toolUseMessages: ToolUseBlock[],
   assistantMessages: AssistantMessage[],
   canUseTool: CanUseToolFn,
   toolUseContext: ToolUseContext,
 ): AsyncGenerator<MessageUpdateLazy, void> {
-  // 对齐上游实现：并发执行走 all(..., limit) 做限流，避免工具洪泛。
+  // 对齐上游实现：并发执行走 all(..., limit) 做限流，避免工具洪泛。这里去并发执行 tool_use。
   yield* all(
     toolUseMessages.map(async function* (toolUse) {
+      // 每个并发任务启动时先登记 in-progress正在进行，供 UI 和中断流程观察当前活跃工具。
       toolUseContext.setInProgressToolUseIDs(prev =>
         new Set(prev).add(toolUse.id),
       )
+      // runToolUse 负责单个工具的完整执行过程；这里仅负责把所属 assistant 消息匹配出来，
+      // 使工具执行时仍能拿到发起它的原始上下文。
       yield* runToolUse(
         toolUse,
         assistantMessages.find(_ =>
@@ -185,6 +208,7 @@ async function* runToolsConcurrently(
         canUseTool,
         toolUseContext,
       )
+      // 无论该工具在并发批次中的完成先后如何，结束时都要清理 in-progress 标记。
       markToolUseAsComplete(toolUseContext, toolUse.id)
     }),
     getMaxToolUseConcurrency(),
