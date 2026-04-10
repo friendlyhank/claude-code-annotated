@@ -7,8 +7,9 @@
  * - launchRepl: 启动 REPL 交互界面
  */
 
-import React, { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type { Root } from './ink.js'
+import type { Props as REPLProps } from './screens/REPL.js'
 
 // ========================================
 // 类型定义
@@ -22,15 +23,6 @@ export type AppWrapperProps = {
   getFpsMetrics: () => unknown // TODO: FpsMetrics | undefined
   stats?: unknown // TODO: StatsStore
   initialState: unknown // TODO: AppState
-}
-
-// TODO: 从 './screens/REPL.js' 导入 Props as REPLProps
-export type REPLProps = {
-  // TODO: 添加 REPL 属性
-  // debug?: boolean
-  // commands?: Command[]
-  // initialMessages?: Message[]
-  // ...
 }
 
 // ========================================

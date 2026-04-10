@@ -1,306 +1,76 @@
 # 核心交互层
 
 ## Relevant source files
-
-- `src/main.tsx` - CLI 主入口，命令行参数解析
-- `src/entrypoints/cli.tsx` - CLI 入口点
-- `src/replLauncher.tsx` - REPL 启动器
-- `src/screens/REPL.tsx` - REPL 屏幕
-- `src/interactiveHelpers.tsx` - 交互辅助函数
+- `src/entrypoints/cli.tsx`
+- `src/main.tsx`
+- `src/replLauncher.tsx`
+- `src/screens/REPL.tsx`
+- `src/interactiveHelpers.tsx`
+- `src/bootstrap/state.ts`
 
 ## 本页概述
 
-本页深入分析核心交互层的实现机制，包括 CLI 入口与参数解析、REPL 循环机制、用户输入捕获与路由、命令解析系统等。这是用户与系统交互的第一层，负责接收输入、解析意图并启动核心流程。
+本页回答两个问题：程序怎样从命令行进入交互态，以及 REPL 怎样把一条输入真正送进 `query()`。  
+不覆盖 `queryLoop` 内部状态推进，也不展开工具编排实现。
 
-## CLI 入口与参数解析
-
-### Commander 程序定义
-
-系统使用 `@commander-js/extra-typings` 构建命令行界面：
+## 核心结构
 
 ```mermaid
 flowchart TB
-    Start[程序启动] --> Parse[解析参数]
-    Parse --> Check{有 -h/--help?}
-    Check -->|是| Help[显示帮助]
-    Check -->|否| PreAction[preAction hook]
-    PreAction --> Init[初始化配置]
-    Init --> Action[action handler]
-    Action --> REPL[启动 REPL]
+    CLIEntry[CLI Entry] --> Main[Main Module]
+    Main --> Root[Ink Root]
+    Root --> Launcher[REPL Launcher]
+    Launcher --> Repl[REPL Screen]
+    Repl --> Query[Query Engine]
 ```
 
-**核心命令参数**：
+代码依据：CLI 入口先处理快速路径，再动态导入 `main`；`main.tsx` 创建 Ink root 后调用 `launchRepl()`；`REPL.tsx` 在提交时直接消费 `query()` 生成器。
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `[prompt]` | String | 直接提供提示词 |
-| `-p, --print` | Boolean | 非交互模式，打印响应后退出 |
-| `--model <model>` | String | 指定使用的模型 |
-| `--resume <sessionId>` | String | 恢复指定会话 |
-| `-c, --continue` | Boolean | 继续最近的对话 |
-| `--dangerously-skip-permissions` | Boolean | 跳过所有权限提示 |
-| `--output-format <format>` | Choice | 输出格式 (text/json/stream-json) |
-| `--permission-mode <mode>` | Choice | 权限模式 (auto/accept/review) |
+## 关键机制
 
-### 参数解析流程
+### 1. CLI 入口分成快速路径和主路径
 
-```typescript
-// src/main.tsx
+- `src/entrypoints/cli.tsx` 先读取 `process.argv.slice(2)`
+- 当参数只有 `--version`、`-v`、`-V` 时，直接输出 `MACRO.VERSION`，不加载主模块
+- 其余情况才动态导入 `../main`
+- 这让版本查询不需要承担整套交互模块初始化成本
 
-// 1. 创建 Commander 程序
-const program = new CommanderCommand()
-  .configureHelp(createSortedHelpConfig())
-  .enablePositionalOptions()
+### 2. `main.tsx` 负责 Commander 装配和模式判定
 
-// 2. 注册 preAction hook
-program.hook('preAction', async () => {
-  // 确保配置加载完成
-  await Promise.all([
-    ensureMdmSettingsLoaded(),
-    ensureKeychainPrefetchCompleted()
-  ])
-  await init()
-  process.title = 'claude'
-})
+- `run()` 用 `@commander-js/extra-typings` 创建 Commander 程序
+- 当前已声明的参数包括 `--print`、`--model`、`--resume`、`--continue`、`--permission-mode`、`--output-format`、`--config`、`--debug`
+- `main()` 会根据 `--print`、`--init-only` 和 `process.stdout.isTTY` 判断是否为非交互模式
+- 判定结果通过 `setIsInteractive()` 写入 `bootstrap/state.ts`
 
-// 3. 定义主命令
-program
-  .name('claude')
-  .description('Claude Code - starts an interactive session...')
-  .argument('[prompt]', 'Your prompt', String)
-  .option('-p, --print', 'Print response and exit', false)
-  // ... 更多选项
-  .action(async (prompt, options) => {
-    // 处理用户输入
-  })
+### 3. `launchRepl()` 保持窄职责
 
-// 4. 解析参数
-program.parse()
-```
+- `src/replLauncher.tsx` 不承载业务逻辑
+- 它只做三件事：动态导入 `App`、动态导入 `REPL`、调用 `renderAndRun(root, <App><REPL /></App>)`
+- 这让启动装配层和 REPL 页面层保持解耦
 
-### 交互模式检测
+### 4. REPL 已切到真实 `query()` 入口
 
-系统在启动时检测运行模式：
+- `src/screens/REPL.tsx` 用 `useInput()` 捕获键盘输入
+- `Enter` 会触发 `handleSubmit()`
+- 提交时先构造 `user` 消息并追加到本地 transcript
+- 然后基于当前消息快照创建最小 `ToolUseContext`
+- 最后直接迭代 `query()` 的异步生成器，把返回的 `Message` 回写到消息列表
 
-```typescript
-// src/main.tsx
+### 5. 当前交互边界仍是最小闭环
 
-const cliArgs = process.argv.slice(2)
-const hasPrintFlag = cliArgs.includes('-p') || cliArgs.includes('--print')
-const isNonInteractive =
-  hasPrintFlag ||
-  cliArgs.includes('--init-only') ||
-  !process.stdout.isTTY
-
-setIsInteractive(!isNonInteractive)
-```
-
-**模式分类**：
-- **交互模式**: 启动 REPL，支持持续对话
-- **非交互模式**: 打印响应后退出，适合脚本集成
-
-## REPL 循环机制
-
-### REPL 启动流程
-
-```mermaid
-sequenceDiagram
-    participant Main as main.tsx
-    participant Render as renderAndRun
-    participant Launch as launchRepl
-    participant Root as Ink Root
-    participant REPL as REPL Screen
-    
-    Main->>Render: getRenderContext()
-    Render->>Render: 创建渲染选项
-    Render->>Root: createRoot()
-    Root->>Launch: launchRepl()
-    Launch->>REPL: 渲染 REPL 屏幕
-    REPL->>REPL: 进入交互循环
-```
-
-### launchRepl 函数
-
-```typescript
-// src/replLauncher.tsx
-
-export async function launchRepl(
-  root: Root,
-  props: ReplProps,
-  replProps: { /* session config, messages, etc */ },
-  renderAndRun: Function
-): Promise<void> {
-  // 启动 REPL 循环
-  // 处理用户输入
-  // 调用查询引擎
-  // 渲染响应
-}
-```
-
-**职责**：
-- 创建 REPL 环境
-- 管理会话状态
-- 协调输入输出
-- 处理中断和恢复
-
-### REPL 状态管理
-
-```mermaid
-stateDiagram-v2
-    [*] --> Idle: 启动
-    Idle --> Processing: 用户输入
-    Processing --> CallingAPI: 调用 API
-    CallingAPI --> Streaming: 流式响应
-    Streaming --> ToolExecuting: 有工具调用
-    Streaming --> Idle: 无工具调用
-    ToolExecuting --> Processing: 工具完成
-    Processing --> Idle: 处理完成
-    Idle --> [*]: 用户退出
-```
-
-## 用户输入捕获与路由
-
-### 输入类型
-
-系统支持多种输入方式：
-
-```mermaid
-flowchart LR
-    Input[用户输入] --> Type{输入类型}
-    Type -->|命令| Command[斜杠命令]
-    Type -->|对话| Chat[对话消息]
-    Type -->|快捷键| Shortcut[快捷键操作]
-    
-    Command --> Router[命令路由器]
-    Chat --> Query[查询引擎]
-    Shortcut --> Handler[快捷键处理器]
-```
-
-**命令类型**：
-- **斜杠命令**: `/help`, `/exit`, `/clear` 等
-- **对话消息**: 普通文本输入
-- **快捷键**: `Ctrl+C`, `Ctrl+D` 等
-
-### 输入路由
-
-```typescript
-// 伪代码示例
-
-function handleUserInput(input: string): void {
-  if (input.startsWith('/')) {
-    // 处理命令
-    handleCommand(input)
-  } else {
-    // 处理对话
-    handleChat(input)
-  }
-}
-```
-
-## 命令解析系统
-
-### 命令注册
-
-系统支持注册自定义命令：
-
-```typescript
-// 命令定义示例
-interface Command {
-  name: string
-  description: string
-  handler: (args: string[]) => Promise<void>
-}
-
-// 注册命令
-const commands: Command[] = [
-  {
-    name: 'help',
-    description: '显示帮助信息',
-    handler: async () => { /* ... */ }
-  },
-  {
-    name: 'exit',
-    description: '退出程序',
-    handler: async () => { /* ... */ }
-  },
-  // ... 更多命令
-]
-```
-
-### 命令执行流程
-
-```mermaid
-sequenceDiagram
-    participant User as 用户
-    participant REPL as REPL
-    participant Router as 命令路由
-    participant Handler as 命令处理器
-    
-    User->>REPL: 输入 /help
-    REPL->>Router: 解析命令
-    Router->>Router: 查找命令
-    Router->>Handler: 执行处理器
-    Handler->>REPL: 返回结果
-    REPL->>User: 显示输出
-```
-
-## 交互反馈机制
-
-### 进度指示器
-
-系统提供多种进度反馈：
-
-- **Spinner**: 旋转加载动画
-- **进度条**: 百分比进度显示
-- **状态消息**: 文本状态更新
-
-### 错误处理
-
-```typescript
-// 错误处理示例
-
-try {
-  await processUserInput(input)
-} catch (error) {
-  if (error instanceof UserError) {
-    // 用户可理解的错误
-    showError(error.message)
-  } else {
-    // 系统错误
-    showError('An unexpected error occurred')
-    logError(error)
-  }
-}
-```
+- 已实现：输入采集、消息显示、`query()` 接线、终止原因显示、`ESC` 退出
+- 未实现：slash commands、历史导航、session restore UI、权限弹窗、完整 hook 体系
+- 所以当前交互层的结论应收敛为“主链路已打通”，而不是“完整 REPL 已复刻”
 
 ## 设计要点
 
-### 1. 分离关注点
-
-- CLI 参数解析与 REPL 逻辑分离
-- 命令处理与对话处理分离
-- 输入捕获与业务逻辑分离
-
-### 2. 可扩展性
-
-- 命令系统支持注册新命令
-- 快捷键系统可配置
-- 输入处理器可插拔
-
-### 3. 用户体验
-
-- 即时反馈（进度、状态）
-- 友好的错误提示
-- 支持中断和恢复
-
-### 4. 类型安全
-
-- 使用 TypeScript 强类型
-- Commander extra-typings 提供类型推导
-- 所有接口都有类型定义
+- 入口分层明确：`cli.tsx` 管路由，`main.tsx` 管命令与启动，`REPL.tsx` 管交互
+- REPL 不直接请求模型，而是统一把输入送入 `query()`
+- 全局交互态通过 `bootstrap/state.ts` 集中维护
+- 当前最重要的源码事实是：`Enter -> query() -> transcript update` 已成立
 
 ## 继续阅读
 
-- [03-query-engine-layer](./03-query-engine-layer.md) - 了解查询引擎如何处理输入
-- [04-tool-execution-layer](./04-tool-execution-layer.md) - 学习工具如何执行
-- [07-tui-rendering-layer](./07-tui-rendering-layer.md) - 深入终端 UI 渲染机制
+- [03-query-engine-layer](./03-query-engine-layer.md)：继续看 `query()` 怎样推进一轮代理回合。
+- [06-session-management-layer](./06-session-management-layer.md)：继续看消息历史和交互态如何跨层承载。
+- [07-tui-rendering-layer](./07-tui-rendering-layer.md)：继续看 Ink root、渲染辅助和终端界面如何挂载。

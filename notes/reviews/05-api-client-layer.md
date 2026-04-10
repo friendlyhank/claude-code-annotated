@@ -1,375 +1,78 @@
 # API 客户端层
 
 ## Relevant source files
-
-- `src/query/deps.ts` - 依赖注入，包含 callModel
-- `package.json` - Anthropic SDK 依赖配置
-- `src/types/message.ts` - 消息类型定义
+- `src/query/deps.ts`
+- `src/query.ts`
+- `src/types/message.ts`
+- `src/utils/systemPromptType.ts`
+- `package.json`
 
 ## 本页概述
 
-API 客户端层负责与 Anthropic Claude API 的通信，是多后端适配的核心。本页分析多后端适配、流式响应处理、用量统计与计费、错误重试机制等关键功能，揭示系统如何高效可靠地与 AI 模型交互。
+本页只讨论当前仓库里“模型调用抽象”这一层已经落地到哪里。  
+结论很明确：接口边界已经有了，但真实 API 客户端还没有接入，当前 `callModel` 仍是 mock 流式实现。
 
 ## 核心结构
 
-### API 客户端组成
-
-```mermaid
-flowchart TB
-    subgraph Client [API 客户端]
-        Adapter[后端适配器]
-        Stream[流式处理器]
-        Retry[重试机制]
-        Metrics[用量统计]
-    end
-    
-    subgraph Backends [多后端支持]
-        Anthropic[Anthropic API]
-        Fallback[Fallback 模型]
-        Custom[自定义端点]
-    end
-    
-    Client --> Backends
-```
-
-## 多后端适配
-
-### Anthropic SDK 集成
-
-项目使用 `@anthropic-ai/sdk` 作为主要 API 客户端：
-
-```json
-// package.json
-{
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0"
-  }
-}
-```
-
-### API 配置
-
-```typescript
-// API 配置示例
-
-interface APIConfig {
-  apiKey: string              // API 密钥
-  baseUrl?: string            // 自定义端点
-  model: string               // 模型名称
-  maxTokens?: number          // 最大输出令牌
-  temperature?: number        // 温度参数
-}
-```
-
-### 模型选择
-
 ```mermaid
 flowchart LR
-    Request[请求] --> Primary{主模型可用?}
-    Primary -->|是| Main[使用主模型]
-    Primary -->|否| Fallback{后备模型?}
-    Fallback -->|是| Back[使用后备模型]
-    Fallback -->|否| Error[返回错误]
-    Main --> Response[响应]
-    Back --> Response
+    Query[Query Engine] --> Deps[Query Deps]
+    Deps --> Call[Model Call]
+    Call --> Stream[AsyncGenerator]
+    Stream --> Query
 ```
 
-**模型参数**：
-- `--model <model>`: 指定模型
-- `fallbackModel`: 后备模型配置
+代码依据：`query.ts` 通过 `params.deps ?? productionDeps()` 获取依赖，再调用 `deps.callModel(...)`；`src/query/deps.ts` 提供生产工厂。
 
-## 流式响应处理
+## 关键机制
 
-### 流式 API 调用
+### 1. 查询层通过 `QueryDeps` 间接调用模型
 
-```mermaid
-flowchart LR
-    Query[查询引擎] --> API[API客户端]
-    API --> Stream[流式请求]
-    Stream --> S1[content_block_start]
-    Stream --> S2[content_block_delta xN]
-    Stream --> S3[content_block_stop]
-    Stream --> S4[message_stop]
-    S1 --> Handler[事件处理器]
-    S2 --> Handler
-    S3 --> Handler
-    S4 --> Handler
-    Handler --> Out[yield StreamEvent]
-```
+- `QueryDeps` 当前至少声明了两个依赖：`callModel` 和 `uuid`
+- `callModel` 的签名是“接收消息参数，返回 `AsyncGenerator<unknown>`”
+- 这种写法让 `query.ts` 不需要知道底层究竟是 Anthropic SDK、测试假对象还是其它实现
 
-### 流事件类型
+### 2. `productionDeps()` 目前返回 mock 版本
 
-```typescript
-// 流事件定义
+- `productionDeps()` 没有接入真实 `services/api/claude.ts`
+- 当前 `callModel` 是内联的 `mockCallModel`
+- 它会从传入消息里反向查找最后一条 `user` 消息
+- 然后产出一条 `assistant` 消息，内容是 `Mock response from query loop:\n<userText>`
 
-type StreamEvent =
-  | { type: 'content_block_start'; index: number; content_block: ContentBlock }
-  | { type: 'content_block_delta'; index: number; delta: Delta }
-  | { type: 'content_block_stop'; index: number }
-  | { type: 'message_start'; message: Message }
-  | { type: 'message_delta'; delta: MessageDelta }
-  | { type: 'message_stop' }
-  | { type: 'ping' }
-  | { type: 'error'; error: Error }
-```
+### 3. mock 实现的价值是验证主链路，而不是模拟完整 API
 
-### 流式处理实现
+- 它证明 `REPL -> query() -> callModel -> assistant message` 已经接通
+- 它也让今日的最小闭环可以不依赖真实网络请求完成验证
+- 但它没有实现真实流式事件分片、重试、预算控制、多模型切换或错误恢复
 
-```typescript
-// 流式处理伪代码
+### 4. 模型配置仍通过查询层参数透传
 
-async function* streamAPIResponse(
-  params: APIParams
-): AsyncGenerator<StreamEvent> {
-  const stream = await client.messages.stream({
-    model: params.model,
-    messages: params.messages,
-    system: params.systemPrompt,
-    max_tokens: params.maxTokens,
-    tools: params.tools,
-    stream: true
-  })
-  
-  for await (const event of stream) {
-    yield event
-  }
-}
-```
+- `query.ts` 会把 `messages`、`systemPrompt`、`signal` 和 `options` 传给 `callModel`
+- `options.model` 当前来自 `toolUseContext.options.mainLoopModel`
+- `isNonInteractiveSession` 也会被一起透传
+- 这说明模型层边界已经开始和交互态、查询态对齐
 
-### 流式响应优势
+### 5. 外部依赖已经预埋到工程里
 
-- **实时反馈**: 用户可以立即看到 AI 开始响应
-- **降低延迟感知**: 无需等待完整响应
-- **资源高效**: 逐步处理，无需缓存完整响应
-- **用户体验**: 打字机效果更自然
+- `package.json` 已声明 `@anthropic-ai/sdk`
+- 但当前仓库没有对应的真实 API 调用模块落地
+- 所以更准确的判断是“依赖已准备，接线待补”
 
-## 用量统计与计费
+## 当前实现边界
 
-### Token 统计
-
-```typescript
-// Token 使用统计
-
-interface TokenUsage {
-  input_tokens: number         // 输入令牌数
-  output_tokens: number        // 输出令牌数
-  cache_creation_input_tokens?: number  // 缓存创建令牌
-  cache_read_input_tokens?: number      // 缓存读取令牌
-}
-```
-
-### 成本追踪
-
-```mermaid
-flowchart LR
-    API[API 响应] --> Usage[使用量数据]
-    Usage --> Calculate[计算成本]
-    Calculate --> Check{超预算?}
-    Check -->|是| Alert[警告/停止]
-    Check -->|否| Record[记录统计]
-    Record --> Display[显示给用户]
-```
-
-### 预算控制
-
-```typescript
-// 预算配置
-
-interface BudgetConfig {
-  maxBudgetUsd?: number        // 最大预算（美元）
-  warnThreshold?: number       // 警告阈值（百分比）
-  stopThreshold?: number       // 停止阈值（百分比）
-}
-
-// 预算检查
-function checkBudget(
-  currentUsage: number,
-  budget: BudgetConfig
-): 'ok' | 'warn' | 'stop' {
-  if (!budget.maxBudgetUsd) return 'ok'
-  
-  const percentage = (currentUsage / budget.maxBudgetUsd) * 100
-  
-  if (percentage >= budget.stopThreshold) return 'stop'
-  if (percentage >= budget.warnThreshold) return 'warn'
-  return 'ok'
-}
-```
-
-## 错误重试机制
-
-### 错误类型
-
-| 错误类型 | HTTP 状态码 | 重试策略 |
-|----------|-------------|----------|
-| Rate Limit | 429 | 指数退避重试 |
-| Server Error | 500-503 | 指数退避重试 |
-| Timeout | - | 固定间隔重试 |
-| Invalid Request | 400 | 不重试 |
-| Auth Error | 401 | 不重试 |
-
-### 重试策略
-
-```mermaid
-flowchart LR
-    Request[发送请求] --> Success[成功]
-    Request --> Error[失败]
-    Error --> Check{可重试}
-    Check -->|是| Wait[等待]
-    Check -->|否| Fail[返回错误]
-    Wait --> Retry[重试]
-    Retry --> Request
-```
-
-### 指数退避实现
-
-```typescript
-// 指数退避重试
-
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: {
-    maxRetries: number
-    baseDelay: number
-    maxDelay: number
-  }
-): Promise<T> {
-  let lastError: Error
-  
-  for (let attempt = 0; attempt < options.maxRetries; attempt++) {
-    try {
-      return await fn()
-    } catch (error) {
-      lastError = error
-      
-      if (!isRetryable(error)) {
-        throw error
-      }
-      
-      const delay = Math.min(
-        options.baseDelay * Math.pow(2, attempt),
-        options.maxDelay
-      )
-      
-      await sleep(delay)
-    }
-  }
-  
-  throw lastError
-}
-```
-
-### max_output_tokens 恢复
-
-特殊处理 `max_output_tokens` 错误：
-
-```typescript
-// max_output_tokens 恢复机制
-
-function isWithheldMaxOutputTokens(msg: Message | StreamEvent): boolean {
-  return msg?.type === 'assistant' && msg.apiError === 'max_output_tokens'
-}
-
-// 恢复计数限制
-const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
-
-// 恢复逻辑
-if (isWithheldMaxOutputTokens(response)) {
-  if (state.maxOutputTokensRecoveryCount < MAX_OUTPUT_TOKENS_RECOVERY_LIMIT) {
-    // 减少输出令牌限制，重试
-    state.maxOutputTokensOverride = Math.floor(
-      (state.maxOutputTokensOverride ?? defaultMaxTokens) * 0.8
-    )
-    state.maxOutputTokensRecoveryCount++
-    continue  // 继续循环
-  }
-}
-```
-
-## API 请求构建
-
-### 消息规范化
-
-```typescript
-// 将内部消息格式转换为 API 格式
-
-function normalizeMessagesForAPI(
-  messages: Message[]
-): APIMessage[] {
-  return messages
-    .filter(msg => msg.type !== 'tombstone')  // 过滤墓碑消息
-    .map(msg => {
-      switch (msg.type) {
-        case 'user':
-          return { role: 'user', content: msg.content }
-        case 'assistant':
-          return { role: 'assistant', content: msg.message.content }
-        case 'tool_result':
-          return {
-            role: 'user',
-            content: [{
-              type: 'tool_result',
-              tool_use_id: msg.tool_use_id,
-              content: msg.content
-            }]
-          }
-        default:
-          throw new Error(`Unknown message type: ${msg.type}`)
-      }
-    })
-}
-```
-
-### 系统提示构建
-
-```typescript
-// 构建系统提示
-
-function buildSystemPrompt(
-  basePrompt: SystemPrompt,
-  userContext: Record<string, string>,
-  systemContext: Record<string, string>
-): string {
-  let prompt = asSystemPrompt(basePrompt)
-  
-  // 添加用户上下文
-  for (const [key, value] of Object.entries(userContext)) {
-    prompt += `\n\n${key}: ${value}`
-  }
-  
-  // 添加系统上下文
-  for (const [key, value] of Object.entries(systemContext)) {
-    prompt += `\n\n${key}: ${value}`
-  }
-  
-  return prompt
-}
-```
+- 已实现：查询层调用抽象、生产依赖工厂、mock `assistant` 流式产出
+- 已实现：从最后一条 `user` 消息反推 mock 响应内容，便于验证接线
+- 未实现：真实 Claude API 请求、流事件细分、重试、fallback、预算与统计
+- 当前页面不能写成“多后端适配已完成”，因为源码还没有这个事实
 
 ## 设计要点
 
-### 1. 抽象层
-
-通过 `QueryDeps` 抽象 API 调用，便于测试和替换实现。
-
-### 2. 流式优先
-
-所有 API 调用都采用流式响应，提供最佳用户体验。
-
-### 3. 错误恢复
-
-完善的错误处理和重试机制，确保请求可靠性。
-
-### 4. 预算透明
-
-实时统计用量，帮助用户控制成本。
-
-### 5. 安全性
-
-API 密钥通过安全存储管理，不在代码中硬编码。
+- `QueryDeps` 是当前最重要的扩展点，未来真实 API 接入也会复用这个边界
+- mock 实现的目的不是“像真的一样复杂”，而是“足够证明 query loop 已经跑起来”
+- 模型层目前仍然服务于主链路验证，而不是产品级稳定性
 
 ## 继续阅读
 
-- [03-query-engine-layer](./03-query-engine-layer.md) - 了解查询引擎如何使用 API 客户端
-- [04-tool-execution-layer](./04-tool-execution-layer.md) - 学习工具结果如何反馈给 API
-- [06-session-management-layer](./06-session-management-layer.md) - 了解 API 配置如何管理
+- [03-query-engine-layer](./03-query-engine-layer.md)：看 `query()` 如何消费 `callModel` 的产出。
+- [02-core-interaction-layer](./02-core-interaction-layer.md)：看 REPL 怎样触发这一层。
+- [04-tool-execution-layer](./04-tool-execution-layer.md)：看模型响应中的 `tool_use` 怎样进入工具编排层。

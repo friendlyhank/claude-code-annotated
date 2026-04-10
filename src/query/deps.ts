@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import type { Message } from '../types/message.js'
 
 // TODO: 已阅读源码，但不在今日最小闭环内
 // import { queryModelWithStreaming } from '../services/api/claude.js'
@@ -34,7 +35,10 @@ export type QueryDeps = {
    * 对齐上游实现：使用 typeof queryModelWithStreaming
    * 当前为 stub 类型，待 services/api/claude.ts 完成后替换
    */
-  callModel: (...args: unknown[]) => AsyncGenerator<unknown>
+  callModel: (params: {
+    messages: Message[]
+    [key: string]: unknown
+  }) => AsyncGenerator<unknown>
 
   // -- compaction
   // TODO: 已阅读源码，但不在今日最小闭环内
@@ -48,7 +52,7 @@ export type QueryDeps = {
 // ============================================================================
 // productionDeps factory
 // 对齐上游实现：按 claude-code/src/query/deps.ts 原样复刻
-
+// 生产环境依赖工厂函数
 export function productionDeps(): QueryDeps {
   return {
     // TODO: 已阅读源码，但不在今日最小闭环内，后续补齐真实实现
@@ -58,16 +62,28 @@ export function productionDeps(): QueryDeps {
     
     // 对齐上游实现：当前使用 mock 实现，仅用于类型检查
     // 真实实现将在 services/api/claude.ts 完成后替换
-    callModel: async function* mockCallModel(): AsyncGenerator<unknown> {
-      // Mock 实现：返回空响应
-      // TODO: 替换为真实实现
+    callModel: async function* mockCallModel(params): AsyncGenerator<unknown> {
+      const lastUserMessage = [...params.messages]
+        .reverse()
+        .find(message => message.type === 'user')
+      const userText =
+        typeof lastUserMessage?.message?.content === 'string'
+          ? lastUserMessage.message.content
+          : 'Mock response - awaiting real implementation'
+
+      // 当前仍是 API stub，但显式读取 messages，便于验证 REPL -> query() 已真正接通。
       yield {
         type: 'assistant',
         uuid: randomUUID(),
         timestamp: new Date().toISOString(),
         message: {
           role: 'assistant',
-          content: [{ type: 'text', text: 'Mock response - awaiting real implementation' }],
+          content: [
+            {
+              type: 'text',
+              text: `Mock response from query loop:\n${userText}`,
+            },
+          ],
         },
       }
     },

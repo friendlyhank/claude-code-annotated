@@ -259,7 +259,7 @@ async function run(): Promise<CommanderCommand> {
         root,
         { getFpsMetrics, stats, initialState: {} },
         {
-          // replProps - TODO: 添加 sessionConfig, initialMessages 等
+          debug: Boolean(options.debug),
         },
         renderAndRun,
       )

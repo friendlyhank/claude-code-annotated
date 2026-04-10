@@ -1,405 +1,80 @@
 # 会话管理层
 
 ## Relevant source files
-
-- `src/bootstrap/state.ts` - 全局状态管理
-- `src/types/message.ts` - 消息类型定义
-- `src/types/ids.ts` - ID 类型定义
+- `src/bootstrap/state.ts`
+- `src/Tool.ts`
+- `src/types/message.ts`
+- `src/screens/REPL.tsx`
+- `src/main.tsx`
 
 ## 本页概述
 
-会话管理层负责用户会话的生命周期管理，包括会话持久化、历史记录管理、配置系统和全局状态同步。本页分析这些关键机制，揭示系统如何维护用户会话的连续性和一致性。
+本页讨论“当前仓库里会话和状态到底由谁承载”。  
+结论是：已经有最小全局状态和消息历史载体，但持久化、恢复、配置分层等完整会话系统还没有落地。
 
 ## 核心结构
 
-### 会话管理组成
-
 ```mermaid
 flowchart TB
-    subgraph Session["会话管理"]
-        Persistence[会话持久化]
-        History[历史记录]
-        Config[配置系统]
-        State[全局状态]
-    end
-    
-    subgraph Storage["存储层"]
-        LocalStorage[本地存储]
-        FileSystem[文件系统]
-        SecureStorage[安全存储]
-    end
-    
-    Session --> Storage
+    Bootstrap[Bootstrap State] --> Main[Main Module]
+    Main --> Repl[REPL]
+    Repl --> Transcript[Transcript Messages]
+    Transcript --> QueryContext[Tool Context Messages]
+    QueryContext --> Query[Query Engine]
 ```
 
-## 会话持久化
+代码依据：`main.tsx` 写入交互态；`REPL.tsx` 维护本地 `messages` 并把它传进 `ToolUseContext.messages`；`types/message.ts` 定义 transcript 的基础结构。
 
-### 会话数据结构
+## 关键机制
 
-```typescript
-// 会话定义
+### 1. `bootstrap/state.ts` 管的是全局启动态，不是完整会话存储
 
-interface Session {
-  id: SessionId                // 会话 ID
-  messages: Message[]          // 消息历史
-  createdAt: number            // 创建时间
-  updatedAt: number            // 更新时间
-  metadata?: SessionMetadata   // 元数据
-}
+- 当前全局状态包含 `originalCwd`、`cwd`、`isInteractive`、`clientType`、`sessionSource`、`startTime`
+- 它提供成对的 getter/setter，例如 `getIsInteractive()` / `setIsInteractive()`
+- 还提供 `resetStateForTests_ONLY()` 供测试重置
+- 这说明它更像“运行时基础状态容器”，而不是“完整 transcript store”
 
-interface SessionMetadata {
-  model?: string               // 使用的模型
-  tokenUsage?: TokenUsage      // Token 使用量
-  title?: string               // 会话标题
-  tags?: string[]              // 标签
-}
-```
+### 2. `Message` 类型体系是会话历史的真正载体
 
-### 持久化策略
+- `src/types/message.ts` 定义了统一的 `Message` 结构
+- 当前复刻里常用的消息子类型包括 `user`、`assistant`、`system`
+- `uuid` 是每条消息的稳定标识
+- `message.content` 支持字符串或 content block 数组，因此同一套 transcript 可以兼容普通文本与 `tool_result`
 
-```mermaid
-flowchart LR
-    Update[状态更新] --> Check{需要持久化?}
-    Check -->|是| Save[保存到存储]
-    Check -->|否| Memory[仅内存]
-    Save --> Local[本地存储]
-    Save --> File[文件系统]
-    Local --> Sync[同步状态]
-    File --> Sync
-    Memory --> Sync
-```
+### 3. REPL 本地状态承担了当前会话历史
 
-**持久化时机**：
-- 每轮对话结束后
-- 用户手动保存时
-- 会话切换时
-- 程序退出前
+- `src/screens/REPL.tsx` 用 `useState<Message[]>` 持有当前 transcript
+- `appendMessage()` 会同时更新 React state 和 `messagesRef`
+- 提交一条输入时，REPL 先把用户消息写进 transcript，再启动 `query()`
+- 之后 `query()` 产出的消息也会持续追加回同一份 transcript
 
-### 会话恢复
+### 4. `ToolUseContext.messages` 是查询层和工具层共享的状态桥梁
 
-```typescript
-// 会话恢复流程
+- `createReplToolUseContext()` 会把当前消息快照注入 `ToolUseContext`
+- `queryLoop()` 每轮又会把 `messagesForQuery` 写回 `toolUseContext.messages`
+- 这使得工具层、查询层和 REPL 在“当前看到的消息历史”上保持最小同步
 
-async function resumeSession(sessionId: string): Promise<Session> {
-  // 1. 从存储加载会话
-  const session = await loadSession(sessionId)
-  
-  // 2. 验证会话完整性
-  if (!validateSession(session)) {
-    throw new Error('Invalid session')
-  }
-  
-  // 3. 恢复状态
-  restoreState(session)
-  
-  // 4. 返回会话
-  return session
-}
-```
+### 5. 会话恢复能力目前只停留在 CLI 选项层
 
-### --resume 参数实现
+- `main.tsx` 已声明 `--resume` 和 `--continue`
+- 但当前 action handler 还没有实现真实恢复逻辑
+- 所以不能把“会话恢复已支持”写成当前仓库事实
 
-```typescript
-// CLI 参数处理
+## 当前实现边界
 
-program.option(
-  '--resume <sessionId>',
-  'Resume a previous session by ID',
-  String
-)
-
-// action handler 中
-if (options.resume) {
-  const session = await resumeSession(options.resume)
-  initialMessages = session.messages
-}
-```
-
-### -c/--continue 参数实现
-
-```typescript
-// 继续最近会话
-
-program.option(
-  '-c, --continue',
-  'Continue the most recent conversation',
-  false
-)
-
-// action handler 中
-if (options.continue) {
-  const recentSession = await getMostRecentSession()
-  if (recentSession) {
-    initialMessages = recentSession.messages
-  }
-}
-```
-
-## 历史记录管理
-
-### 消息历史结构
-
-```typescript
-// 消息类型
-
-type Message =
-  | UserMessage
-  | AssistantMessage
-  | ToolResultMessage
-  | SystemMessage
-  | TombstoneMessage
-
-// 消息数组
-messages: Message[]
-```
-
-### 历史记录操作
-
-```mermaid
-flowchart TB
-    Operations[历史操作] --> Append[追加消息]
-    Operations --> Compact[压缩历史]
-    Operations --> Trim[裁剪历史]
-    Operations --> Search[搜索历史]
-    
-    Append --> Update[更新会话]
-    Compact --> Update
-    Trim --> Update
-    Search --> Display[显示结果]
-```
-
-### 历史压缩机制
-
-```typescript
-// 自动压缩条件
-
-function shouldCompact(messages: Message[]): boolean {
-  const tokenCount = estimateTokens(messages)
-  return tokenCount > COMPACTION_THRESHOLD
-}
-
-// 压缩实现
-async function compactHistory(
-  messages: Message[]
-): Promise<Message[]> {
-  // 1. 保留关键消息（系统提示、最近对话）
-  // 2. 将中间消息压缩为摘要
-  // 3. 返回压缩后的消息列表
-}
-```
-
-### 历史裁剪
-
-```typescript
-// 裁剪过长消息
-
-function trimMessage(message: Message, maxTokens: number): Message {
-  if (estimateTokens(message) <= maxTokens) {
-    return message
-  }
-  
-  // 裁剪内容
-  return {
-    ...message,
-    content: truncateContent(message.content, maxTokens)
-  }
-}
-```
-
-## 配置系统
-
-### 配置层级
-
-```mermaid
-flowchart TB
-    Config[配置] --> Default[默认配置]
-    Config --> Global[全局配置]
-    Config --> Project[项目配置]
-    Config --> Session[会话配置]
-    Config --> CLI[CLI 参数]
-    
-    Default --> Merge[合并]
-    Global --> Merge
-    Project --> Merge
-    Session --> Merge
-    CLI --> Merge
-    
-    Merge --> Final[最终配置]
-```
-
-**优先级**（从低到高）：
-1. 默认配置（代码中定义）
-2. 全局配置（~/.claude/config.json）
-3. 项目配置（.claude/config.json）
-4. 会话配置（会话特定）
-5. CLI 参数（命令行）
-
-### 配置结构
-
-```typescript
-// 配置定义
-
-interface Config {
-  // 模型配置
-  model: string
-  fallbackModel?: string
-  maxTokens?: number
-  
-  // 权限配置
-  permissionMode: 'auto' | 'accept' | 'review'
-  dangerouslySkipPermissions?: boolean
-  
-  // 输出配置
-  outputFormat?: 'text' | 'json' | 'stream-json'
-  verbose?: boolean
-  debug?: boolean
-  
-  // 预算配置
-  maxBudgetUsd?: number
-  
-  // 自定义配置
-  customSystemPrompt?: string
-  appendSystemPrompt?: string
-  
-  // 其他配置
-  [key: string]: unknown
-}
-```
-
-### 配置加载
-
-```typescript
-// 配置加载流程
-
-async function loadConfig(): Promise<Config> {
-  // 1. 默认配置
-  let config = defaultConfig()
-  
-  // 2. 全局配置
-  const globalConfig = await loadGlobalConfig()
-  config = merge(config, globalConfig)
-  
-  // 3. 项目配置
-  const projectConfig = await loadProjectConfig()
-  config = merge(config, projectConfig)
-  
-  // 4. CLI 参数覆盖
-  const cliConfig = parseCLIOptions()
-  config = merge(config, cliConfig)
-  
-  return config
-}
-```
-
-### 配置文件位置
-
-| 配置类型 | 位置 | 说明 |
-|----------|------|------|
-| 全局配置 | `~/.claude/config.json` | 用户级别配置 |
-| 项目配置 | `.claude/config.json` | 项目级别配置 |
-| 安全存储 | Keychain / Secret Storage | API 密钥等敏感信息 |
-
-## 全局状态同步
-
-### Bootstrap State
-
-```typescript
-// src/bootstrap/state.ts
-
-// 全局状态访问接口
-export function getAppState(): AppState
-export function setAppState(f: (prev: AppState) => AppState): void
-
-// 交互模式标志
-export function setIsInteractive(value: boolean): void
-export function isInteractive(): boolean
-```
-
-### 状态结构
-
-```typescript
-// 全局状态定义
-
-interface AppState {
-  // 会话状态
-  currentSession?: SessionId
-  messages: Message[]
-  
-  // 配置状态
-  config: Config
-  
-  // UI 状态
-  isInteractive: boolean
-  isLoading: boolean
-  
-  // 统计状态
-  tokenUsage: TokenUsage
-  budgetUsage: number
-  
-  // 其他状态
-  [key: string]: unknown
-}
-```
-
-### 状态更新模式
-
-```typescript
-// 原子更新
-
-setAppState(prev => ({
-  ...prev,
-  messages: [...prev.messages, newMessage],
-  updatedAt: Date.now()
-}))
-
-// 批量更新
-setAppState(prev => ({
-  ...prev,
-  messages: newMessages,
-  tokenUsage: newUsage,
-  config: newConfig
-}))
-```
-
-### 状态同步机制
-
-```mermaid
-sequenceDiagram
-    participant Component as 组件
-    participant State as 全局状态
-    participant Storage as 存储
-    
-    Component->>State: setAppState()
-    State->>State: 更新内存状态
-    State->>Storage: 异步持久化
-    Storage->>State: 持久化完成
-    State->>Component: 状态更新通知
-```
+- 已实现：全局交互态、cwd 状态、消息类型体系、REPL 本地 transcript、消息跨层透传
+- 已实现：`ToolUseContext` 作为共享状态容器的最小版本
+- 未实现：持久化存储、历史检索、完整会话恢复、配置分层、预算与统计累积
+- 因此此层当前更接近“状态承载层”，而不是“完整会话系统”
 
 ## 设计要点
 
-### 1. 分层持久化
-
-会话数据、配置、安全信息分别存储，职责清晰。
-
-### 2. 渐进式加载
-
-配置按优先级加载，后加载覆盖前加载。
-
-### 3. 原子更新
-
-状态更新采用原子操作，避免竞态条件。
-
-### 4. 异步持久化
-
-存储操作异步执行，不阻塞主流程。
-
-### 5. 会话恢复
-
-支持多种恢复方式，保证用户体验连续性。
+- 全局状态和 transcript 被刻意分离：前者保运行时基础信息，后者保对话历史
+- `Message` 类型比任何单独 store 都更关键，因为它跨 UI、查询、工具三层流动
+- 当前仓库优先打通“状态能在一轮代理回合里流动”，还没进入“长期会话管理”
 
 ## 继续阅读
 
-- [02-core-interaction-layer](./02-core-interaction-layer.md) - 了解 CLI 如何触发会话恢复
-- [03-query-engine-layer](./03-query-engine-layer.md) - 学习消息历史如何被处理
-- [05-api-client-layer](./05-api-client-layer.md) - 了解配置如何影响 API 调用
+- [02-core-interaction-layer](./02-core-interaction-layer.md)：看 REPL 怎样写入和维护 transcript。
+- [03-query-engine-layer](./03-query-engine-layer.md)：看 `messages` 怎样参与每一轮 `queryLoop`。
+- [04-tool-execution-layer](./04-tool-execution-layer.md)：看 `ToolUseContext` 怎样在工具编排中被复用。
