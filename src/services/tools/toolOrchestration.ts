@@ -89,18 +89,27 @@ export async function* runTools(
 
 type Batch = { isConcurrencySafe: boolean; blocks: ToolUseBlock[] }
 
+// 将 tool_use 调用按“执行模式”切分成有序批次：
+// 1) 仅当输入通过 schema 校验，且 tool.isConcurrencySafe(...) 返回 true 时，
+//    当前调用才被判定为可并发；
+// 2) 可并发调用只会与“前一个同为可并发”的批次合并（保持原始顺序，不跨批合并）；
+// 3) 工具缺失、参数不合法、并发判断抛错等场景统一降级为串行，优先保证安全与确定性。
 function partitionToolCalls(
   toolUseMessages: ToolUseBlock[],
   toolUseContext: ToolUseContext,
 ): Batch[] {
   return toolUseMessages.reduce((acc: Batch[], toolUse) => {
     const tool = findToolByName(toolUseContext.options.tools, toolUse.name)
+    // 参数校验合法，且输入参数符合工具定义的 schema。
     const parsedInput = tool?.inputSchema.safeParse(toolUse.input)
     // 边界处理：schema 校验失败或并发判断抛错时，保守降级为串行，
     // 优先保证行为安全而不是追求吞吐。
     const isConcurrencySafe = parsedInput?.success
       ? (() => {
           try {
+            // 调用工具实现的并发安全判断方法，返回结果。
+            // 若抛错，保守回退为串行。
+            // 若返回 false，保守回退为串行。
             return Boolean(tool?.isConcurrencySafe(parsedInput.data))
           } catch {
             // 对齐上游实现：并发安全判断异常时，保守回退为串行。
@@ -108,10 +117,11 @@ function partitionToolCalls(
           }
         })()
       : false
+    // 当前这个调用时可并发的，并且上一批也是可并发的批次，合并到上一批。
     if (isConcurrencySafe && acc[acc.length - 1]?.isConcurrencySafe) {
       acc[acc.length - 1]!.blocks.push(toolUse)
     } else {
-      acc.push({ isConcurrencySafe, blocks: [toolUse] })
+      acc.push({ isConcurrencySafe, blocks: [toolUse] }) // 不满足条件则新开一批
     }
     return acc
   }, [])

@@ -212,7 +212,7 @@ export type Tool<
   aliases?: string[]
   description?: string
   inputSchema: Input
-  isConcurrencySafe(input: Record<string, unknown>): boolean
+  isConcurrencySafe(input: Record<string, unknown>): boolean // true为可并发，false为串行
   isEnabled(): boolean
   isReadOnly(input: Record<string, unknown>): boolean
   call?(
