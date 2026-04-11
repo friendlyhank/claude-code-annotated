@@ -24,8 +24,9 @@
 
 5. 模型调用与依赖注入
  - `QueryDeps` 抽象与 `productionDeps()` 工厂
- - `callModel` 当前 mock 流式实现
+ - `callModel` 已接入最小真实 API 适配链路
  - 模型调用参数如何从查询层透传
+ - `queryModelWithStreaming()` 与 `getAnthropicClient()` 的职责拆分
 
 6. 会话与全局状态承载
  - `bootstrap/state.ts` 的全局会话态与交互态

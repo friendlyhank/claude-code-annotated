@@ -9,7 +9,7 @@
 - `src/Tool.ts`
 - `notes/reviews/core-features-breakdown.md`
 
-本仓库是 `Claude Code` 主链路的复刻与注释化学习工程，当前重点覆盖 CLI 入口、REPL 交互、`query()` 代理循环、工具编排和终端渲染这几条最核心链路。它运行在 `Bun + TypeScript` 上，终端 UI 基于 `Ink`，构建入口是 `src/entrypoints/cli.tsx`，运行时主入口落在 `src/main.tsx`。目前仓库还处于增量对齐阶段，因此文档只记录已经被当前源码证实的能力，不把上游完整特性提前写成已实现。
+本仓库是 `Claude Code` 主链路的复刻与注释化学习工程，当前重点覆盖 CLI 入口、REPL 交互、`query()` 代理循环、工具编排、最小 API 适配层和终端渲染这几条最核心链路。它运行在 `Bun + TypeScript` 上，终端 UI 基于 `Ink`，构建入口是 `src/entrypoints/cli.tsx`，运行时主入口落在 `src/main.tsx`。目前仓库还处于增量对齐阶段，因此文档只记录已经被当前源码证实的能力，不把上游完整特性提前写成已实现。
 
 ## Architecture and Runtime
 
@@ -39,6 +39,9 @@
 │   ├── screens/
 │   │   └── REPL.tsx                 # REPL 输入、消息回写与 query 接线
 │   ├── services/
+│   │   ├── api/
+│   │   │   ├── claude.ts            # 消息归一化与 Anthropic 最小调用边界
+│   │   │   └── client.ts            # Anthropic SDK 客户端创建与缓存
 │   │   └── tools/
 │   │       ├── toolExecution.ts     # 单个 tool_use 的最小执行入口
 │   │       └── toolOrchestration.ts # 工具分批、串并行调度与上下文汇总
@@ -68,6 +71,7 @@
 
 - 想看程序从哪里启动：先读 `src/entrypoints/cli.tsx`、`src/main.tsx`
 - 想看输入如何进入代理循环：读 `src/screens/REPL.tsx`、`src/query.ts`
+- 想看模型请求如何进入真实 API 适配层：读 `src/query/deps.ts`、`src/services/api/`
 - 想看工具调用如何被执行：读 `src/services/tools/`
 - 想看终端 UI 如何挂载：读 `src/ink.ts`、`src/interactiveHelpers.tsx`
 - 想看全局状态和 transcript 类型：读 `src/bootstrap/state.ts`、`src/types/message.ts`
@@ -78,6 +82,6 @@
 - [02-core-interaction-layer](./02-core-interaction-layer.md)：看 CLI、REPL 和 `query()` 入口如何接线。
 - [03-query-engine-layer](./03-query-engine-layer.md)：看 `queryLoop` 如何推进一轮代理回合。
 - [04-tool-execution-layer](./04-tool-execution-layer.md)：看 `tool_use` 如何被分批、调度和回传。
-- [05-api-client-layer](./05-api-client-layer.md)：看模型调用抽象与当前 mock 流式实现。
+- [05-api-client-layer](./05-api-client-layer.md)：看 `QueryDeps` 如何接入最小真实 API 适配层。
 - [06-session-management-layer](./06-session-management-layer.md)：看全局状态、消息历史和跨层上下文承载。
 - [07-tui-rendering-layer](./07-tui-rendering-layer.md)：看 Ink 运行时、渲染辅助与终端界面装配。
