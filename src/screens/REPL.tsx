@@ -31,6 +31,10 @@ export type Props = {
 const DEFAULT_SYSTEM_PROMPT = asSystemPrompt([
   'You are Claude Code Annotated, a replica-in-progress of Claude Code.',
 ])
+const DEFAULT_MAIN_LOOP_MODEL =
+  process.env.ANTHROPIC_MODEL ??
+  process.env.ANTHROPIC_DEFAULT_SONNET_MODEL ??
+  'claude-sonnet-4-6'
 
 function createMessageUUID(): UUID {
   return randomUUID() as UUID
@@ -137,7 +141,7 @@ function createReplToolUseContext(
     options: {
       commands: [],
       debug,
-      mainLoopModel: 'mock-main-loop-model',
+      mainLoopModel: DEFAULT_MAIN_LOOP_MODEL,
       tools,
       verbose: debug,
       isNonInteractiveSession: false,
@@ -208,6 +212,20 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
             typeof step.value.reason === 'string'
           ) {
             setLastTerminalReason(step.value.reason)
+            if (
+              step.value.reason === 'model_error' &&
+              'error' in step.value &&
+              step.value.error instanceof Error
+            ) {
+              appendMessage({
+                type: 'system',
+                uuid: createMessageUUID(),
+                message: {
+                  role: 'system',
+                  content: step.value.error.message,
+                },
+              } as Message)
+            }
           }
           break
         }
