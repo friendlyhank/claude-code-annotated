@@ -169,13 +169,10 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const [lastTerminalReason, setLastTerminalReason] = useState<string>()
   const messagesRef = useRef<Message[]>(initialMessages ?? [])
 
-  // appendMessage 用于在消息列表末尾添加新消息。
   const appendMessage = useCallback((message: Message): void => {
-    setMessages(prev => {
-      const next = [...prev, message]
-      messagesRef.current = next
-      return next
-    })
+    const next = [...messagesRef.current, message]
+    messagesRef.current = next
+    setMessages(next)
   }, [])
 
   const handleSubmit = useCallback(async (): Promise<void> => {
