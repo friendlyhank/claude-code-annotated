@@ -7,7 +7,6 @@
 - `src/main.tsx`
 - `src/query.ts`
 - `src/Tool.ts`
-- `notes/reviews/core-features-breakdown.md`
 
 本仓库是 `Claude Code` 主链路的复刻与注释化学习工程，当前重点覆盖 CLI 入口、REPL 交互、`query()` 代理循环、工具编排、最小 API 适配层和终端渲染这几条最核心链路。它运行在 `Bun + TypeScript` 上，终端 UI 基于 `Ink`，构建入口是 `src/entrypoints/cli.tsx`，运行时主入口落在 `src/main.tsx`。目前仓库还处于增量对齐阶段，因此文档只记录已经被当前源码证实的能力，不把上游完整特性提前写成已实现。
 
@@ -17,6 +16,48 @@
 - 运行时：`bun` 执行与打包，`tsc --noEmit` 做类型检查
 - 交互方式：CLI 启动后进入 Ink 驱动的 REPL
 - 主链路：输入先进入交互层，再交给 `query()` 驱动代理回合，需要工具时转入工具编排层
+
+## Technical Foundation
+
+- `Commander + Bun` 负责命令入口、脚本运行和构建打包，是整个终端应用的启动基础
+- `Ink` 提供终端组件树、渲染 root 和退出生命周期，让 REPL 保持 React 风格的交互模型
+- `query()` 与 `QueryDeps` 形成查询引擎的稳定窄口，把主回合推进和外部 I/O 隔离开
+- `Tool`、`Tools`、`ToolUseContext` 定义工具编排的通用边界，让 `tool_use` 可以被统一调度与回放
+- `bootstrap/state.ts` 与 `types/message.ts` 提供全局会话态、transcript 载体与跨层消息约束
+
+## High-Level System Flow
+
+```mermaid
+flowchart LR
+    Input[用户输入] --> Entry[CLI / REPL]
+    Entry --> Query[query()]
+    Query --> Model[callModel]
+    Model --> Decide{是否产生 tool_use}
+    Decide -->|否| Output[assistant / error 写回 transcript]
+    Decide -->|是| Tools[runTools]
+    Tools --> Query
+```
+
+代码依据：当前主入口落在 `src/entrypoints/cli.tsx` 与 `src/main.tsx`，交互提交从 `src/screens/REPL.tsx` 进入 `src/query.ts`，模型依赖通过 `src/query/deps.ts` 接入，工具调用经 `src/services/tools/` 返回查询层继续下一轮。
+
+## Key Capabilities
+
+| 能力域 | 关键代码实体 | 作用 |
+|--------|--------------|------|
+| 架构与主流程 | `src/main.tsx`、`src/replLauncher.tsx`、`src/query.ts` | 建立启动路径、回合骨架与阅读主线 |
+| 交互入口 | `src/entrypoints/cli.tsx`、`src/screens/REPL.tsx` | 接收用户输入并触发查询回合 |
+| 查询引擎 | `src/query.ts`、`src/query/transitions.ts` | 推进状态、消费模型输出、决定终止或继续 |
+| 工具编排 | `src/Tool.ts`、`src/services/tools/` | 管理工具匹配、执行顺序与结果回传 |
+| 模型适配 | `src/query/deps.ts`、`src/services/api/` | 连接查询层与最小真实 API 适配边界 |
+| 状态承载 | `src/bootstrap/state.ts`、`src/types/message.ts` | 保存全局交互态与 transcript 结构 |
+| TUI 运行时 | `src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx` | 管理终端渲染 root、组件挂载和退出 |
+
+## System Integration Map
+
+- Interface：`src/entrypoints/cli.tsx`、`src/main.tsx`、`src/screens/REPL.tsx`，负责启动、输入采集与交互回显
+- Core：`src/query.ts`、`src/query/deps.ts`、`src/Tool.ts`，负责查询推进、依赖注入与工具边界定义
+- Infra：`src/services/api/`、`src/services/tools/`、`src/bootstrap/state.ts`，负责外部 API、工具执行和全局状态承载
+- Runtime：`src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx`，负责终端渲染环境与组件生命周期
 
 ## 仓库目录地图
 
