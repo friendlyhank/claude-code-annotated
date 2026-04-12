@@ -1,4 +1,4 @@
-- 最新已处理提交：`9d8ef75a821700824c283f46775bad2235b7052c`
+- 最新已处理提交：`697a73c59ca162384b1b3f9a72e0d21ccb5018e1`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -11,7 +11,7 @@
  - 文档：`notes/reviews/02-core-interaction-layer.md`
  - `src/entrypoints/cli.tsx` 负责快速路径和主模块动态导入
  - `src/main.tsx` 用 Commander 定义命令、参数和交互会话启动动作
- - `src/screens/REPL.tsx` 负责输入采集、消息回写和最小 `query()` 接线
+- `src/screens/REPL.tsx` 负责输入采集、消息回写，以及 `handleSubmit -> onQuery -> onQueryImpl -> onQueryEvent` 的提交编排后再接入 `query()`
  - 交互层当前只覆盖最小闭环，print/setup/agent 等上游分支仍未落地
 
 3. 查询引擎与回合推进
@@ -40,11 +40,13 @@
  - `src/bootstrap/state.ts` 保存进程级交互态、cwd 和 session source
  - `src/types/message.ts` 是 transcript、流事件和工具结果的统一消息模型
  - `ToolUseContext` 承载查询层与工具层共享的会话级可变状态
- - 当前 React 全局 AppState 尚未接入，状态主要分散在进程态、查询态与 REPL 本地态
+- `messagesRef` 作为 REPL 提交编排层的最新 transcript 快照，补齐了异步查询消费前的本地状态桥接
+- 当前 React 全局 AppState 尚未接入，状态主要分散在进程态、查询态与 REPL 本地态
 
 7. TUI 渲染与终端运行时
  - 文档：`notes/reviews/07-tui-rendering-layer.md`
  - `src/ink.ts` 封装 Ink root/render API
  - `src/interactiveHelpers.tsx` 负责渲染运行、退出和消息式错误收尾
  - `src/components/App.tsx` 提供未来全局 Provider 的挂载位
+- `REPL.tsx` 当前由 `handleSubmit`、`onQueryEvent`、`onQueryImpl` 分别驱动处理中提示、消息回写与 terminal reason 展示
  - 当前 TUI 已能支撑最小 REPL，会话指标、对话框与复杂 UI 基础设施仍待补齐

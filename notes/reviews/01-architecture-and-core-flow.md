@@ -26,7 +26,7 @@ flowchart LR
 | 层次 | 主要模块 | 负责什么 | 不负责什么 |
 | --- | --- | --- | --- |
 | CLI 入口层 | `src/entrypoints/cli.tsx`、`src/main.tsx` | 解析命令、建立交互模式、启动 REPL | 不推进具体查询回合 |
-| 交互层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` | 收集输入、显示 transcript、把一次提交交给 `query()` | 不直接操作 SDK 或工具调度 |
+| 交互层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` | 收集输入、显示 transcript、通过提交编排层把一次提交交给 `query()` | 不直接操作 SDK 或工具调度 |
 | 查询引擎层 | `src/query.ts`、`src/query/deps.ts` | 持有主循环状态、决定继续还是终止 | 不直接持有 TUI 渲染逻辑 |
 | 工具编排层 | `src/Tool.ts`、`src/services/tools/` | 处理 `tool_use` 批次、顺序和结果回灌 | 当前不提供真实工具执行结果 |
 | 模型适配层 | `src/services/api/` | 归一化消息、创建 Anthropic 客户端、发起模型请求 | 不决定 query loop 的状态推进 |
@@ -44,8 +44,8 @@ flowchart LR
 ### 交互链路
 
 - `src/screens/REPL.tsx` 维护本地输入和 transcript 展示
-- 用户提交后，REPL 只负责把消息拼好并调用 `query()`
-- `query()` 的流式产出再回写给 REPL 进行显示
+- 用户提交后，REPL 先经过 `handleSubmit -> onQuery -> onQueryImpl -> onQueryEvent` 的编排链路，再把请求送入 `query()`
+- `query()` 的流式产出再由交互层回写给 REPL 进行显示
 
 ### 回合链路
 
@@ -98,7 +98,7 @@ flowchart LR
 
 ### 3. 分层清楚但实现深度不均衡
 
-- 入口层、REPL 接线、查询主循环骨架已经比较清晰
+- 入口层、REPL 提交编排、查询主循环骨架已经比较清晰
 - 工具执行层和 API 适配层已经有边界，但内部仍是最小实现
 - 状态层与类型层的覆盖比较全，便于后续继续复刻
 
@@ -116,7 +116,7 @@ flowchart LR
 当前仓库的核心认知不是“功能很多”，而是“骨架已经稳定”：
 
 - 入口负责把会话启动起来
-- REPL 负责把交互转成查询请求
+- REPL 负责把交互转成带提交编排边界的查询请求
 - `query()` 负责推进主回合
 - 工具层和 API 层分别作为两个外部协作窄口
 - 状态层和 TUI 层提供运行时承载

@@ -108,7 +108,7 @@ sequenceDiagram
 - terminal reason
 - 输入行与光标
 
-界面本身不复杂，但已经足够承载最小对话闭环。
+界面本身不复杂，但已经足够承载最小对话闭环。当前这几个 UI 反馈分别由 REPL 提交编排层驱动：`handleSubmit` 切换 `isProcessing`，`onQueryEvent` 回写消息，`onQueryImpl` 写入 `lastTerminalReason`。
 
 ## 伪代码
 

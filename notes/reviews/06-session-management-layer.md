@@ -31,6 +31,7 @@ flowchart TD
     B --> B2[messages]
     B --> B3[isProcessing]
     B --> B4[lastTerminalReason]
+    B --> B5[messagesRef]
 
     C[query.ts State] --> C1[messages]
     C --> C2[toolUseContext]
@@ -121,8 +122,9 @@ flowchart TD
 - `messages`
 - `isProcessing`
 - `lastTerminalReason`
+- `messagesRef`
 
-这些状态天然属于界面层，因为它们决定输入框内容、消息列表和界面反馈。
+其中 `messagesRef` 的职责和普通 React state 不同：它不是直接面向渲染，而是作为提交编排层读取“最新 transcript 快照”的可变引用。这样 `onQuery` 先追加 `newMessages` 后，`onQueryImpl` 可以立即读到已更新的消息历史，而不需要等待下一次 render。
 
 ### 3. query loop 状态
 
@@ -141,10 +143,11 @@ flowchart TD
 ```text
 1. 启动时写入全局进程态
 2. REPL 维护当前输入和展示用 transcript
-3. 提交时把 messages 与 ToolUseContext 交给 query()
-4. query loop 用内部 State 保存跨轮次状态
-5. 工具层通过 ToolUseContext 读取和更新共享上下文
-6. 产出的 Message 再回写给 REPL 展示
+3. 提交时先把 newMessages 同步写入 `messages` 与 `messagesRef`
+4. 再用最新 transcript 与 ToolUseContext 交给 query()
+5. query loop 用内部 State 保存跨轮次状态
+6. 工具层通过 ToolUseContext 读取和更新共享上下文
+7. 产出的 Message 再回写给 REPL 展示
 ```
 
 ## 当前边界

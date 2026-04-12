@@ -6,7 +6,7 @@
 
 1. CLI 快速路径与主模块加载
 2. Commander 主命令与交互会话装配
-3. REPL 输入采集、消息回写与 `query()` 接线
+3. REPL 输入采集、提交编排、消息回写与 `query()` 接线
 
 当前源码证实，这一层已经形成最小闭环，但仍只覆盖交互模式的主路径。
 
@@ -34,9 +34,9 @@
 
 `src/screens/REPL.tsx` 则只负责交互输入与输出。这样入口装配不会污染 UI 逻辑，REPL 也不需要知道命令解析细节。
 
-### 3. REPL 只接线，不承载主回合决策
+### 3. REPL 负责提交编排，不承载主回合决策
 
-REPL 会把用户输入包装成 `UserMessage` 并调用 `query()`，但是否继续下一轮、是否执行工具、为何终止，都交给查询层处理。交互层只消费这些结果并显示出来。
+REPL 现在不再把“生成消息 + 调 `query()` + 消费终态”堆在一个函数里，而是拆成 `handleSubmit -> onQuery -> onQueryImpl -> onQueryEvent` 四段：提交函数负责校验输入和切换界面状态，`onQuery` 负责把新消息并入 transcript，`onQueryImpl` 负责消费 `query()` 迭代器，`onQueryEvent` 负责把过程事件回写界面。是否继续下一轮、是否执行工具、为何终止，仍然全部交给查询层决定。
 
 ## 实现原理
 
@@ -56,9 +56,11 @@ sequenceDiagram
     Main->>Launcher: launchRepl()
     Launcher->>REPL: 挂载 App + REPL
     User->>REPL: 输入文本并回车
-    REPL->>REPL: 生成 UserMessage
-    REPL->>Query: 调用 query()
+    REPL->>REPL: handleSubmit 校验输入并生成 UserMessage
+    REPL->>REPL: onQuery 追加 newMessages 到 transcript
+    REPL->>Query: onQueryImpl 调用 query()
     Query-->>REPL: 流式返回 Message / Terminal
+    REPL->>REPL: onQueryEvent 回写过程消息
     REPL-->>User: 展示消息与终止原因
 ```
 
@@ -92,10 +94,10 @@ sequenceDiagram
 1. 读取本地 `input`
 2. 去掉首尾空白并拒绝空输入
 3. 生成 `UserMessage`
-4. 追加到本地 transcript
-5. 创建最小 `ToolUseContext`
-6. 调用 `query()`
-7. 持续消费产出的消息并展示
+4. 通过 `onQuery` 先把新消息追加到本地 transcript
+5. 基于最新 `messagesRef.current` 创建最小 `ToolUseContext`
+6. 由 `onQueryImpl` 调用 `query()`
+7. 持续消费产出的过程事件并交给 `onQueryEvent`
 8. 若终止原因是 `model_error`，额外回写系统错误消息
 
 这条链路是当前仓库最直接可运行的用户入口。
@@ -108,10 +110,10 @@ sequenceDiagram
 3. 其余情况加载 main() 并建立 Commander 程序
 4. 创建 Ink root 并挂载 REPL
 5. 用户在 REPL 输入文本
-6. REPL 生成 UserMessage 并追加到消息列表
-7. REPL 调用 query() 获取异步消息流
-8. 把每条返回消息写回 transcript
-9. 根据 Terminal reason 更新界面状态
+6. handleSubmit 生成 UserMessage 并委派给 onQuery
+7. onQuery 先把 newMessages 追加到 transcript，再取最新消息快照
+8. onQueryImpl 调用 query() 获取异步消息流
+9. onQueryEvent 把返回消息写回 transcript，并根据 Terminal reason 更新界面状态
 ```
 
 ## 数据结构
@@ -121,6 +123,7 @@ sequenceDiagram
 | `Props` | `src/screens/REPL.tsx` | 传入 `debug` 和初始消息 |
 | `UserMessage` | `src/types/message.ts` | 把用户输入变成统一 transcript 载体 |
 | `ToolUseContext` | `src/Tool.ts` | 为 `query()` 提供工具列表、中断控制器和会话 setter |
+| `messagesRef` | `src/screens/REPL.tsx` | 在提交编排层保存最新 transcript 快照，避免异步消费读到旧消息 |
 | `lastTerminalReason` | `src/screens/REPL.tsx` | 在 UI 中显示本轮为何结束 |
 
 ## 当前边界
@@ -136,7 +139,7 @@ sequenceDiagram
 
 - `cli.tsx` 负责尽早分流
 - `main.tsx` 负责把运行时装起来
-- `REPL.tsx` 负责把一次输入送进 `query()`
+- `REPL.tsx` 负责把一次输入送进提交编排层，再进入 `query()`
 
 因此后续无论补 print 模式、更多命令，还是完善 REPL 交互，核心边界都不会变化。
 

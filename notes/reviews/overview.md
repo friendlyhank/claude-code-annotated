@@ -2,7 +2,7 @@
 
 ## 项目定位
 
-`claude-code-annotated` 是一个围绕 Claude Code 主链路做源码复刻与注释化沉淀的 Bun + TypeScript 工程。当前仓库已经打通最小交互闭环：CLI 启动后进入 Ink 驱动的 REPL，用户输入交给 `query()`，模型响应若包含 `tool_use` 则进入工具编排层，再把 `tool_result` 回灌到下一轮。
+`claude-code-annotated` 是一个围绕 Claude Code 主链路做源码复刻与注释化沉淀的 Bun + TypeScript 工程。当前仓库已经打通最小交互闭环：CLI 启动后进入 Ink 驱动的 REPL，用户输入先经过 REPL 提交编排层，再进入 `query()` 代理循环；模型响应若包含 `tool_use` 则进入工具编排层，再把 `tool_result` 回灌到下一轮。
 
 阅读这套文档时，建议先看本页建立目录地图，再看 `01-architecture-and-core-flow.md` 建立分层认知，最后按能力域阅读 02-07 专题页。
 
@@ -68,7 +68,7 @@
 | --- | --- | --- |
 | `src/entrypoints/cli.tsx` | CLI 快速路径与主模块动态导入入口 | `src/main.tsx` |
 | `src/main.tsx` | Commander 主命令、参数定义、Ink root 创建、REPL 启动 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` |
-| `src/screens/REPL.tsx` | 输入采集、消息展示、`query()` 接线 | `src/query.ts` |
+| `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层与 `query()` 接线 | `src/query.ts` |
 | `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
 | `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
 | `src/services/tools/` | `tool_use` 分批、串并行调度与结果回传 | `src/services/tools/toolOrchestration.ts` |
@@ -96,7 +96,7 @@
 2. `src/query.ts`
 3. `src/query/deps.ts`
 
-这条路径回答“消息怎样被追加到 transcript、模型调用怎样发生、什么时候进入下一轮”。
+这条路径回答“消息怎样先进入提交编排层、怎样被追加到 transcript、模型调用怎样发生、什么时候进入下一轮”。
 
 ### 3. 想看工具调用怎样被处理
 
