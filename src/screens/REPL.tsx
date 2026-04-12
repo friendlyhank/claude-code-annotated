@@ -16,7 +16,11 @@ import type { QuerySource } from '../constants/querySource.js'
 import { Box, Text, useApp, useInput } from '../ink.js'
 import { query } from '../query.js'
 import type { ToolUseContext, Tools } from '../Tool.js'
-import type { Message, UserMessage } from '../types/message.js'
+import type { Message } from '../types/message.js'
+import {
+  handlePromptSubmit,
+  type PromptInputHelpers,
+} from '../utils/handlePromptSubmit.js'
 import { asSystemPrompt } from '../utils/systemPromptType.js'
 
 // ========================================
@@ -38,17 +42,6 @@ const DEFAULT_MAIN_LOOP_MODEL =
 
 function createMessageUUID(): UUID {
   return randomUUID() as UUID
-}
-
-function createUserTextMessage(content: string): UserMessage {
-  return {
-    type: 'user',
-    uuid: createMessageUUID(),
-    message: {
-      role: 'user',
-      content,
-    },
-  } as UserMessage
 }
 
 function isMessage(event: unknown): event is Message {
@@ -146,6 +139,7 @@ function getMessageColor(message: Message): 'cyan' | 'green' | 'yellow' {
 function createReplToolUseContext(
   messages: Message[],
   debug: boolean,
+  abortController: AbortController,
 ): ToolUseContext {
   const tools: Tools = []
 
@@ -158,7 +152,7 @@ function createReplToolUseContext(
       verbose: debug,
       isNonInteractiveSession: false,
     },
-    abortController: new AbortController(),
+    abortController,
     getAppState: () => ({}),
     setAppState: _updater => {},
     setInProgressToolUseIDs: _updater => {},
@@ -179,6 +173,11 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
   const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
   const [lastTerminalReason, setLastTerminalReason] = useState<string>()
+  // 当前正在处理的那条用户输入文本
+  const [userInputOnProcessing, setUserInputOnProcessing] = useState<string>()
+  const [abortController, setAbortController] = useState<AbortController | null>(
+    null,
+  )
   const messagesRef = useRef<Message[]>(initialMessages ?? [])
 
   const appendMessage = useCallback((message: Message): void => {
@@ -210,14 +209,21 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   // 处理查询实现
   const onQueryImpl = useCallback(
     // 定义一个异步函数，入参是“本轮要发送的完整消息历史”（包含新用户消息）
-    async (messagesIncludingNewMessages: Message[]): Promise<void> => {
+    async (
+      messagesIncludingNewMessages: Message[],
+      queryAbortController: AbortController,
+    ): Promise<void> => {
       const iterator = query({
         messages: messagesIncludingNewMessages,
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         userContext: {},
         systemContext: {},
         canUseTool: async () => true,
-        toolUseContext: createReplToolUseContext(messagesRef.current, debug), // 构建工具调用上下文
+        toolUseContext: createReplToolUseContext(
+          messagesRef.current,
+          debug,
+          queryAbortController,
+        ),
         querySource: 'repl' as QuerySource,
       })
 
@@ -253,32 +259,57 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
 
   // 处理查询
   const onQuery = useCallback(
-    async (newMessages: Message[]): Promise<void> => {
+    async (
+      newMessages: Message[],
+      queryAbortController: AbortController,
+      shouldQuery: boolean,
+      _additionalAllowedTools: string[],
+      _mainLoopModel: string,
+      _onBeforeQuery?: (input: string, newMessages: Message[]) => Promise<boolean>,
+      _input?: string,
+    ): Promise<void> => {
+      if (!shouldQuery) {
+        return
+      }
       // 追加新消息到消息历史
       appendMessages(newMessages)
       // 新消息同步更新到messagesRef.current
       const latestMessages = messagesRef.current
-      await onQueryImpl(latestMessages)
+      await onQueryImpl(latestMessages, queryAbortController)
     },
     [appendMessages, onQueryImpl],
   )
 
   // 处理提交
   const handleSubmit = useCallback(async (): Promise<void> => {
-    const userInput = input.trim()
-    if (!userInput || isProcessing) {
+    if (!input.trim() || isProcessing) {
       return
     }
-
-    // 创建用户消息
-    const userMessage = createUserTextMessage(userInput)
-    setInput('')
     setIsProcessing(true)
     setLastTerminalReason(undefined)
 
+    const helpers: PromptInputHelpers = {
+      setCursorOffset: () => {},
+      clearBuffer: () => {},
+      resetHistory: () => {},
+    }
+
     try {
-      // 执行查询
-      await onQuery([userMessage])
+      // 处理用户输入，包括普通文本和工具调用
+      const queuedCommands = await handlePromptSubmit({
+        input,
+        helpers,
+        onInputChange: setInput,
+        messages: messagesRef.current,
+        mainLoopModel: DEFAULT_MAIN_LOOP_MODEL,
+        querySource: 'repl' as QuerySource,
+        getToolUseContext: (messages, _newMessages, controller, _mainLoopModel) =>
+          createReplToolUseContext(messages, debug, controller),
+        setUserInputOnProcessing,
+        setAbortController,
+        onQuery,
+        canUseTool: async () => true,
+      })
     } catch (error) {
       appendMessage({
         type: 'system',
@@ -293,7 +324,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     } finally {
       setIsProcessing(false)
     }
-  }, [appendMessage, input, isProcessing, onQuery])
+  }, [appendMessage, debug, input, isProcessing, onQuery])
 
   useInput(
     (char, key) => {
@@ -309,6 +340,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
       }
 
       if (key.escape) {
+        abortController?.abort('user_escape')
         exit()
         return
       }
@@ -346,7 +378,10 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
 
       {isProcessing && (
         <Box marginBottom={1}>
-          <Text dimColor>Processing query loop...</Text>
+          <Text dimColor>
+            Processing query loop...
+            {userInputOnProcessing ? ` ${userInputOnProcessing}` : ''}
+          </Text>
         </Box>
       )}
 
