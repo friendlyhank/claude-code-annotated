@@ -1,13 +1,13 @@
 # 进度面板
 
-> 最后更新：2026-04-11
+> 最后更新：2026-04-12
 
 ## 总体进度
 
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 1,548 |
+| 累计复刻目标文件代码数 | 1,577 |
 | 覆盖率 | **0.29%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
@@ -29,14 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
+| REPL 到代理循环主流程对齐（提交编排） | `doing` | high |
 | REPL 到代理循环 API 最小接线 | `doing` | high |
 | 消息预处理流程 | `planned` | high |
-| 错误恢复机制 | `backlog` | medium |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
+| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已完成 onSubmit -> onQuery -> onQueryImpl -> onQueryEvent 分层，待补 StreamEvent 可见渲染 |
 | REPL 到代理循环 API 最小接线 | 2026-04-11 | 生产依赖已切到 services/api，待真实 key 验证 assistant 成功响应 |
 | toolExecution 真实执行 | 2026-04-09 | 编排闭环已打通，待补齐真实单工具执行、消息归一化与 hooks |
 
@@ -122,6 +123,7 @@
 - 工具批次编排模式（并发安全分批、串行/并发执行切换）
 - tool result 回灌主循环模式（runTools -> toolResults -> next_turn）
 - REPL 提交路径接入 query() 模式（用户输入 -> query() -> 事件流回写 transcript）
+- REPL 提交编排分层模式（onSubmit -> onQuery -> onQueryImpl -> onQueryEvent）
 - 交互层最小 ToolUseContext 供给模式（先打通主链路，再补权限和状态细节）
 - QueryDeps 生产依赖切换模式（query loop 只认 callModel 边界，不直接依赖 SDK）
 - Anthropic SDK 最小接线模式（内部 Message -> SDK MessageParam[] -> AssistantMessage）
@@ -148,6 +150,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-12 | 0.29% → 0.29% | REPL 提交路径对齐上游分层编排（新增 onQueryEvent/onQueryImpl/onQuery，提交流程改为委派链路） |
 | 2026-04-11 | 0.26% → 0.29% | REPL 到代理循环 API 最小接线推进到生产边界（新增 services/api/client.ts 与 services/api/claude.ts） |
 | 2026-04-10 | 0.23% → 0.26% | REPL 到代理循环最小接线完成（REPL 提交改为 query() 事件流消费） |
 | 2026-04-09 | 0.21% → 0.23% | 工具执行编排最小闭环完成（runTools 接入 queryLoop, tool_result 回灌下一轮） |

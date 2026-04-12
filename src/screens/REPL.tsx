@@ -60,6 +60,18 @@ function isMessage(event: unknown): event is Message {
   )
 }
 
+// 检查终端状态
+function isTerminalWithReason(
+  value: unknown,
+): value is { reason: string; error?: unknown } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'reason' in value &&
+    typeof value.reason === 'string'
+  )
+}
+
 function formatMessageContent(message: Message): string {
   const content = message.message?.content
 
@@ -165,7 +177,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const { exit } = useApp()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
   const [lastTerminalReason, setLastTerminalReason] = useState<string>()
   const messagesRef = useRef<Message[]>(initialMessages ?? [])
 
@@ -175,43 +187,48 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     setMessages(next)
   }, [])
 
-  const handleSubmit = useCallback(async (): Promise<void> => {
-    const userInput = input.trim()
-    if (!userInput || isProcessing) {
+  const appendMessages = useCallback((nextMessages: Message[]): void => {
+    if (nextMessages.length === 0) {
       return
     }
+    // 新消息同步更新到messagesRef.current
+    const next = [...messagesRef.current, ...nextMessages]
+    messagesRef.current = next
+    setMessages(next)
+  }, [])
 
-    const userMessage = createUserTextMessage(userInput)
-    appendMessage(userMessage)
-    setInput('')
-    setIsProcessing(true)
-    setLastTerminalReason(undefined)
+  // 处理查询事件
+  const onQueryEvent = useCallback(
+    (event: unknown): void => {
+      if (isMessage(event)) {
+        appendMessage(event)
+      }
+    },
+    [appendMessage],
+  )
 
-    try {
-      // 调用 query() 函数(流式对话请求)，获取消息产出。
+  // 处理查询实现
+  const onQueryImpl = useCallback(
+    // 定义一个异步函数，入参是“本轮要发送的完整消息历史”（包含新用户消息）
+    async (messagesIncludingNewMessages: Message[]): Promise<void> => {
       const iterator = query({
-        messages: [...messagesRef.current],
+        messages: messagesIncludingNewMessages,
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         userContext: {},
         systemContext: {},
         canUseTool: async () => true,
-        toolUseContext: createReplToolUseContext(messagesRef.current, debug),
+        toolUseContext: createReplToolUseContext(messagesRef.current, debug), // 构建工具调用上下文
         querySource: 'repl' as QuerySource,
       })
 
       while (true) {
         const step = await iterator.next()
+        // step.done === true 时，查询迭代器完成，step.value拿到最终返回结果
         if (step.done) {
-          if (
-            typeof step.value === 'object' &&
-            step.value !== null &&
-            'reason' in step.value &&
-            typeof step.value.reason === 'string'
-          ) {
+          if (isTerminalWithReason(step.value)) {
             setLastTerminalReason(step.value.reason)
             if (
               step.value.reason === 'model_error' &&
-              'error' in step.value &&
               step.value.error instanceof Error
             ) {
               appendMessage({
@@ -227,10 +244,41 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
           break
         }
 
-        if (isMessage(step.value)) {
-          appendMessage(step.value)
-        }
+        // 流式请求过程，处理查询事件
+        onQueryEvent(step.value)
       }
+    },
+    [appendMessage, debug, onQueryEvent],
+  )
+
+  // 处理查询
+  const onQuery = useCallback(
+    async (newMessages: Message[]): Promise<void> => {
+      // 追加新消息到消息历史
+      appendMessages(newMessages)
+      // 新消息同步更新到messagesRef.current
+      const latestMessages = messagesRef.current
+      await onQueryImpl(latestMessages)
+    },
+    [appendMessages, onQueryImpl],
+  )
+
+  // 处理提交
+  const handleSubmit = useCallback(async (): Promise<void> => {
+    const userInput = input.trim()
+    if (!userInput || isProcessing) {
+      return
+    }
+
+    // 创建用户消息
+    const userMessage = createUserTextMessage(userInput)
+    setInput('')
+    setIsProcessing(true)
+    setLastTerminalReason(undefined)
+
+    try {
+      // 执行查询
+      await onQuery([userMessage])
     } catch (error) {
       appendMessage({
         type: 'system',
@@ -245,7 +293,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     } finally {
       setIsProcessing(false)
     }
-  }, [appendMessage, debug, input, isProcessing])
+  }, [appendMessage, input, isProcessing, onQuery])
 
   useInput(
     (char, key) => {
