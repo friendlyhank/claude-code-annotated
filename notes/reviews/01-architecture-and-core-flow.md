@@ -57,14 +57,17 @@ flowchart LR
 ## 状态主线
 
 ```mermaid
-flowchart TD
-    A[bootstrap/state.ts] --> D[运行期进程态]
-    B[Message[]] --> E[transcript 主线]
-    C[ToolUseContext] --> F[查询层与工具层共享上下文]
-    E --> G[REPL 展示]
-    E --> H[query loop]
-    F --> H
-    D --> I[启动模式与环境判断]
+flowchart LR
+    A["bootstrap/state.ts"] --> A1["进程级状态"]
+    A1 --> A2["交互模式 / cwd / session source"]
+
+    B["Message[]"] --> B1["transcript 主线"]
+    B1 --> B2["REPL 展示"]
+    B1 --> B3["query loop 输入与回写"]
+
+    C["ToolUseContext"] --> C1["查询层与工具层共享上下文"]
+    C1 --> C2["abortController / tools / session setters"]
+    C1 --> B3
 ```
 
 这三条状态主线的分工如下：

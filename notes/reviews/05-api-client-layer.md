@@ -1,93 +1,163 @@
-# API 客户端层
+# 05. 模型调用与 Anthropic API 适配
 
-## Relevant source files
+## 概述
+
+这一层负责把查询层的内部消息格式转换成 Anthropic API 可接受的请求，并把模型响应再还原成内部 `AssistantMessage`。当前仓库已经接通最小真实 API 路径：
+
+`query.ts → QueryDeps.callModel → queryModelWithStreaming() → getAnthropicClient() → anthropic.messages.create()`
+
+它的重点不是“功能很多”，而是“查询层与外部模型 I/O 的边界已经清楚”。
+
+## 关键源码
+
 - `src/query/deps.ts`
 - `src/services/api/claude.ts`
 - `src/services/api/client.ts`
-- `src/screens/REPL.tsx`
-- `src/query.ts`
-- `src/types/message.ts`
 - `src/utils/systemPromptType.ts`
-- `package.json`
 
-## 本页概述
+## 设计原理
 
-本页只讨论当前仓库里“模型调用抽象”这一层已经落地到哪里。  
-当前结论是：查询层和真实 Anthropic API 之间的最小生产边界已经接通，`QueryDeps.callModel` 不再停留在 mock，而是进入 `queryModelWithStreaming() -> getAnthropicClient()` 这条实际适配链路。
+### 1. `QueryDeps` 是查询层的模型窄口
 
-## 核心结构
+`src/query/deps.ts` 把模型调用抽象成 `callModel`，让 `query.ts` 不需要知道 SDK、API key 或请求细节。这个设计让测试替身和生产实现都能从同一个窄口接入。
+
+### 2. 消息归一化集中在 API 层
+
+`src/services/api/claude.ts` 负责两次转换：
+
+- 内部 `Message[]` → Anthropic `MessageParam[]`
+- Anthropic `Message` → 内部 `AssistantMessage`
+
+查询层只关心统一的内部消息，不关心外部协议细节。
+
+### 3. 客户端创建与请求发送拆开
+
+`src/services/api/client.ts` 专注客户端创建、缓存和环境变量解析；`claude.ts` 专注一次请求的组装和响应还原。这样认证策略与消息协议可以分开演进。
+
+## 调用链
 
 ```mermaid
-flowchart LR
-    Query[Query Engine] --> Deps[Query Deps]
-    Deps --> Claude[queryModelWithStreaming]
-    Claude --> Client[getAnthropicClient]
-    Client --> API[Anthropic messages.create]
-    API --> Claude
-    Claude --> Stream[AssistantMessage]
-    Stream --> Query
+sequenceDiagram
+    participant Query as query.ts
+    participant Deps as query/deps.ts
+    participant Claude as services/api/claude.ts
+    participant Client as services/api/client.ts
+    participant API as Anthropic API
+
+    Query->>Deps: productionDeps().callModel
+    Deps->>Claude: queryModelWithStreaming(...)
+    Claude->>Client: getAnthropicClient(...)
+    Client->>API: 创建 SDK client
+    Claude->>API: messages.create(...)
+    API-->>Claude: message
+    Claude-->>Query: AssistantMessage
 ```
 
-代码依据：`query.ts` 通过 `params.deps ?? productionDeps()` 获取依赖，再调用 `deps.callModel(...)`；`src/query/deps.ts` 已把 `callModel` 直接绑定到 `queryModelWithStreaming`；`src/services/api/claude.ts` 负责参数归一化与请求发送；`src/services/api/client.ts` 负责客户端创建。
+## 实现原理
 
-## 关键机制
+### 1. 生产依赖装配
 
-### 1. 查询层通过 `QueryDeps` 间接调用模型
+`productionDeps()` 当前做的事情非常少：
 
-- `QueryDeps` 当前至少声明了两个依赖：`callModel` 和 `uuid`
-- `callModel` 的类型直接对齐 `typeof queryModelWithStreaming`
-- 这种写法让 `query.ts` 继续不知道底层是 SDK 调用、测试替身还是未来的多提供商实现，只依赖稳定函数边界
+- `callModel` 绑定到 `queryModelWithStreaming`
+- `uuid` 绑定到 `randomUUID`
 
-### 2. `productionDeps()` 已切到真实 API 适配层
+这种“先保持依赖面窄，再逐步扩展”的方式，和当前最小闭环策略一致。
 
-- `productionDeps()` 现在直接返回 `callModel: queryModelWithStreaming`
-- 查询层的生产依赖已经不再自己拼 mock 响应，而是把模型调用委托给 `src/services/api/claude.ts`
-- 这让 `REPL -> query() -> productionDeps.callModel` 进入真实外部 I/O 边界，但又没有把 SDK 细节泄漏回 `query.ts`
+### 2. 消息归一化
 
-### 3. `queryModelWithStreaming()` 负责窄口适配，不负责上游所有能力
+`normalizeMessagesForApi()` 当前遵循的规则是：
 
-- 该函数先把内部 `Message[]` 归一化成 Anthropic `MessageParam[]`
-- 再把 `SystemPrompt` 折叠成 `messages.create()` 可接受的 `system` 字段
-- 请求返回后，它当前只 `yield` 一条完整 `AssistantMessage`，还没有展开成更细粒度的流事件
-- 这说明“真实请求边界已打通”和“完整 streaming 能力已复刻”是两件不同的事
+- 只保留 `user` 与 `assistant`
+- 若内容是字符串，直接传给 API
+- 若内容是数组，按 `MessageParam['content']` 透传
+- 其他消息类型直接忽略
 
-### 4. 模型配置仍通过查询层参数透传
+这说明 API 层当前聚焦的是最小可用协议，而不是完整 transcript 兼容。
 
-- `query.ts` 会把 `messages`、`systemPrompt`、`signal` 和 `options` 传给 `callModel`
-- `options.model` 当前来自 `toolUseContext.options.mainLoopModel`
-- `isNonInteractiveSession` 也会被一起透传
-- `REPL.tsx` 会优先从 `ANTHROPIC_MODEL`、`ANTHROPIC_DEFAULT_SONNET_MODEL` 读取默认模型名，最后才回退到 `'claude-sonnet-4-6'`
-- 这说明交互层、查询层和 API 层已经围绕同一套模型参数边界对齐
+### 3. 客户端缓存
 
-### 5. `getAnthropicClient()` 只实现最小客户端创建职责
+`getAnthropicClient()` 当前按 `maxRetries + apiKey` 组成缓存键：
 
-- `src/services/api/client.ts` 直接从显式参数或 `ANTHROPIC_API_KEY` 解析认证信息
-- 它按 `maxRetries + apiKey` 做简单缓存，避免重复创建 SDK 客户端
-- 目前只覆盖第一方 API key 直连场景，没有展开 OAuth、Bedrock、Vertex、Foundry 或自定义 header 分支
+- 先解析显式传入的 `apiKey`
+- 否则回退到 `process.env.ANTHROPIC_API_KEY`
+- 若没有 key，直接抛错
+- 创建后放入 `clientCache`
 
-### 6. 错误可见性已经回到 REPL 交互层
+这里的缓存目标是避免同配置下重复创建 SDK 客户端。
 
-- `REPL.tsx` 在回合终态为 `model_error` 时，会把错误文本追加到 transcript
-- 这让当前环境即使缺少 `ANTHROPIC_API_KEY`，也能证明主链路已经真正走到 API 适配层，而不是停在静默 mock
-- 它解决的是“失败可见”，不是“请求必然成功”
+### 4. 响应回填
 
-## 当前实现边界
+`queryModelWithStreaming()` 当前并没有真正做 streaming 事件拆分，而是：
 
-- 已实现：`QueryDeps` 与真实 API 适配函数对齐，生产依赖进入 `queryModelWithStreaming`
-- 已实现：消息归一化、`SystemPrompt` 折叠、Anthropic SDK 客户端最小创建与缓存
-- 已实现：REPL 在 `model_error` 时回写错误文本，便于验证真实调用边界
-- 未实现：真实流式事件拆分、usage 深度处理、重试、fallback、多提供商分支与真实 key 成功响应证据
-- 当前页面不能写成“完整 API 客户端已复刻完成”，因为源码只证明了最小链路已打通
+1. 一次性调用 `anthropic.messages.create()`
+2. 把最终响应转换成内部 `AssistantMessage`
+3. 以生成器形式 `yield` 给查询层
 
-## 设计要点
+因此“带 streaming 接口形态的最小非流式实现”是当前这层的真实状态。
 
-- `QueryDeps` 是当前最重要的扩展点，未来真实 API 接入也会复用这个边界
-- `queryModelWithStreaming()` 的职责应保持狭窄：做内部消息与外部 SDK 之间的窄口转换
-- `getAnthropicClient()` 单独拆出后，认证、缓存和 provider 扩展可以独立演进
-- 模型层当前已经进入真实生产边界，但稳定性能力仍明显落后于上游完整实现
+## 伪代码
 
-## 继续阅读
+```text
+1. query loop 调用 deps.callModel
+2. productionDeps 把调用转发给 queryModelWithStreaming
+3. API 层把 Message[] 归一化为 MessageParam[]
+4. 读取或创建 Anthropic client
+5. 组装 model、max_tokens、messages、system 参数
+6. 调用 anthropic.messages.create()
+7. 把返回值转换成 AssistantMessage
+8. 产出给 query loop
+```
 
-- [03-query-engine-layer](./03-query-engine-layer.md)：看 `query()` 如何消费 `callModel` 的产出。
-- [02-core-interaction-layer](./02-core-interaction-layer.md)：看 REPL 怎样触发这一层。
-- [04-tool-execution-layer](./04-tool-execution-layer.md)：看模型响应中的 `tool_use` 怎样进入工具编排层。
+## 关键数据结构
+
+| 结构 | 位置 | 作用 |
+| --- | --- | --- |
+| `QueryDeps` | `src/query/deps.ts` | 查询层与模型调用层的抽象契约 |
+| `SystemPrompt` | `src/utils/systemPromptType.ts` | 保持系统提示的品牌化数组语义 |
+| `Options` | `src/services/api/claude.ts` | 承载 model 与非交互模式等查询选项 |
+| `clientCache` | `src/services/api/client.ts` | 复用 Anthropic SDK 客户端 |
+
+## 当前边界
+
+### 已落地
+
+- 生产查询依赖已接到真实 API 适配层
+- API key 缺失时会明确报错
+- 消息归一化与 assistant 回填逻辑已经成形
+- 查询层与 API 层的职责边界已经稳定
+
+### 未落地
+
+- 真正的 streaming 事件拆分
+- retry / fallback / usage 细节处理
+- 多 provider 分支
+- 更完整的系统提示、工具参数与 thinking 配置透传
+
+## 设计取舍
+
+### 优点
+
+- 查询层不依赖 SDK，层次清晰
+- 客户端创建与请求组装职责分离
+- 未来补 streaming 时不需要改动 query loop 的外部接口
+
+### 代价
+
+- 当前函数名带 `Streaming`，但实现仍是单次请求
+- 消息归一化规则还比较窄
+- provider、header、认证等复杂路径尚未接入
+
+## 小结
+
+这一层已经证明：
+
+- 查询引擎和外部模型之间的窄口是稳定的
+- 最小真实 Anthropic 请求已经可达
+- 后续更复杂的 streaming、retry、fallback 都应继续落在这层，而不是回流到 `query.ts`
+
+## 组合使用
+
+- 和 `03-query-engine-layer.md` 组合，能看清 `callModel` 如何成为 query loop 的唯一模型出口
+- 和 `06-session-management-layer.md` 组合，能看清 transcript 消息是如何被 API 层重新编码的
+- 和 `02-core-interaction-layer.md` 组合，能看清 REPL 输入最终怎样走到外部模型

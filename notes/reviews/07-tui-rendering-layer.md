@@ -1,82 +1,168 @@
-# TUI 渲染层
+# 07. TUI 渲染与终端运行时
 
-## Relevant source files
+## 概述
+
+这一层负责把“CLI 会话”变成“可显示、可退出、可持续重渲染的终端 React 应用”。它覆盖：
+
+- Ink root 的创建与复用
+- 主界面的渲染与退出
+- `App` 包装层的挂载位
+- `REPL` 在终端里的展示形式
+
+当前实现已经足够支撑最小交互闭环，但复杂 UI 基础设施仍未接入。
+
+## 关键源码
+
 - `src/ink.ts`
 - `src/interactiveHelpers.tsx`
 - `src/components/App.tsx`
-- `src/screens/REPL.tsx`
 - `src/replLauncher.tsx`
-- `package.json`
+- `src/screens/REPL.tsx`
 
-## 本页概述
+## 设计原理
 
-本页只讨论当前仓库里的终端运行时和渲染装配，不讨论查询引擎或工具业务。  
-当前实现的重点是把 Ink root、顶层包装组件和 REPL 屏幕连接起来，形成可运行的终端界面。
+### 1. 先抽象 root，再谈组件
 
-## 核心结构
+`src/ink.ts` 没有直接在各处调用 `ink.render()`，而是先封装 `createRoot()` 与 `render()`。这让终端渲染拥有接近 `react-dom` 的 root 语义：
+
+- 可以先创建实例
+- 再多次 `render`
+- 最后 `unmount`
+
+### 2. 渲染运行与页面组件分离
+
+`interactiveHelpers.tsx` 负责：
+
+- `renderAndRun()`
+- `gracefulShutdown()`
+- `exitWithError()`
+- `exitWithMessage()`
+- `showDialog()`
+
+而真正的页面内容则由 `App` 和 `REPL` 提供。这样运行时控制与界面结构不会混在一起。
+
+### 3. `App` 是未来 Provider 的装配位
+
+`src/components/App.tsx` 当前几乎不做事，只是透传 `children`。但它的存在非常重要，因为它预留了未来的 FPS、统计、应用状态 provider 挂载点。
+
+## 渲染链路
 
 ```mermaid
-flowchart TB
-    Ink[Ink Module] --> Root[Render Root]
-    Root --> Helpers[Interactive Helpers]
-    Helpers --> Launcher[REPL Launcher]
-    Launcher --> App[App Wrapper]
-    App --> Repl[REPL Screen]
+sequenceDiagram
+    participant Main as main.tsx
+    participant Ink as ink.ts
+    participant Helper as interactiveHelpers.tsx
+    participant Launcher as replLauncher.tsx
+    participant App as App.tsx
+    participant REPL as REPL.tsx
+
+    Main->>Ink: createRoot()
+    Main->>Launcher: launchRepl(root, ...)
+    Launcher->>Helper: renderAndRun(root, <App><REPL /></App>)
+    Helper->>Ink: root.render(...)
+    Ink->>App: 挂载组件树
+    App->>REPL: 渲染 REPL
+    REPL-->>Ink: 用户输入触发重渲染
+    Helper->>Ink: waitUntilExit()
 ```
 
-代码依据：`ink.ts` 提供 `createRoot()` 与组件导出；`interactiveHelpers.tsx` 提供 `renderAndRun()`；`replLauncher.tsx` 负责把 `App` 与 `REPL` 组合并挂载到 root。
+## 实现原理
 
-## 关键机制
+### 1. `createRoot()`
 
-### 1. `ink.ts` 封装了最小 root API
+`src/ink.ts` 中的 `createRoot()` 通过闭包维护 `instance`：
 
-- `createRoot()` 内部调用 `ink` 的 `render`
-- 返回的 `Root` 暴露 `render()`、`unmount()`、`waitUntilExit()`
-- 这让上层代码不需要直接操作 Ink 实例细节
-- 文件同时二次导出了 `Box`、`Text`、`useApp`、`useInput` 等常用组件和 hooks
+- 第一次 `render` 时调用 `inkRender`
+- 后续 `render` 时调用 `instance.rerender`
+- `unmount()` 时清空实例
+- `waitUntilExit()` 则等待 Ink 生命周期结束
 
-### 2. `interactiveHelpers.tsx` 管渲染运行和退出路径
+这让上层不必关心底层实例细节。
 
-- `renderAndRun(root, element)` 先 `root.render(element)`，再 `await root.waitUntilExit()`
-- 结束后调用 `gracefulShutdown(0)`
-- `getRenderContext()` 当前只返回 `renderOptions`，其中固定开启 `patchConsole: true`
-- `exitWithError()`、`exitWithMessage()` 提供了基于 React 树输出错误消息的退出方式
+### 2. `renderAndRun()`
 
-### 3. `App` 现在是最薄的一层包装组件
+`renderAndRun()` 当前的职责很明确：
 
-- `src/components/App.tsx` 当前几乎只做 `children` 透传
-- 文件里已经明确预留了 FPS、统计、AppState 等 provider 的位置
-- 这说明顶层包装边界已经搭好，但真正的上下文系统还未补齐
+1. 调用 `root.render(element)`
+2. 等待 `root.waitUntilExit()`
+3. 退出前调用 `gracefulShutdown(0)`
 
-### 4. `replLauncher.tsx` 负责把 UI 树拼起来
+也就是说，它是交互模式的统一“渲染并驻留”入口。
 
-- `launchRepl()` 动态导入 `App` 和 `REPL`
-- 然后执行 `<App {...appProps}><REPL {...replProps} /></App>`
-- 这是交互层和渲染层之间的直接装配点
+### 3. 错误与消息式退出
 
-### 5. REPL 组件本身承担当前终端界面
+`exitWithError()` 和 `exitWithMessage()` 的意义在于：
 
-- `src/screens/REPL.tsx` 使用 `Box` 和 `Text` 组织界面
-- 顶部有标题和提示语
-- 中间按消息数组逐条渲染 transcript
-- 底部显示输入光标、快捷键提示和处理中状态
-- `useApp()` 提供 `exit()`，`useInput()` 提供键盘事件接入
+- Ink 开启 `patchConsole` 后，直接 `console.error` 不一定能得到理想输出
+- 因此错误更适合先作为 React 节点渲染，再退出
 
-## 当前实现边界
+这说明终端 UI 层已经开始考虑“输出方式也属于渲染协议”的问题。
 
-- 已实现：Ink root 创建、render/rerender、退出等待、REPL 基础界面、键盘输入接线
-- 已实现：渲染辅助函数与文本型错误退出
-- 未实现：复杂布局组件、主题系统、状态栏、性能指标面板、完整 provider 树
-- 因此当前渲染层的准确定位是“可运行的最小终端壳”
+### 4. REPL 视图
 
-## 设计要点
+`REPL.tsx` 当前的界面结构很直接：
 
-- 渲染层和交互业务层解耦，业务不直接碰底层 Ink 实例
-- `App` 保持极薄，有利于后续逐步补 provider 而不改 REPL 主逻辑
-- 当前 UI 价值在于承接代理循环验证，而不是复刻全部终端体验
+- 标题和提示
+- transcript 列表
+- 处理中提示
+- terminal reason
+- 输入行与光标
 
-## 继续阅读
+界面本身不复杂，但已经足够承载最小对话闭环。
 
-- [02-core-interaction-layer](./02-core-interaction-layer.md)：看输入事件怎样从 REPL 进入 `query()`。
-- [06-session-management-layer](./06-session-management-layer.md)：看 REPL 渲染的消息数组由什么数据结构承载。
-- [01-architecture-and-core-flow](./01-architecture-and-core-flow.md)：回到全局视角看这一层在整体链路里的位置。
+## 伪代码
+
+```text
+1. main.tsx 创建 Ink root
+2. replLauncher.tsx 组合 App 和 REPL
+3. renderAndRun 把组件树挂到 root
+4. REPL 通过 React state 驱动终端重渲染
+5. 用户退出后等待 Ink 生命周期结束
+6. 统一执行 gracefulShutdown
+```
+
+## 当前边界
+
+### 已落地
+
+- Ink root 抽象
+- 交互模式统一渲染入口
+- 基础退出与消息式错误输出
+- 最小 REPL 终端界面
+
+### 未落地
+
+- App 级 provider 体系
+- 更复杂的弹窗、选择器和状态联动 UI
+- FPS / stats 等运行指标
+- 更完整的优雅关闭清理逻辑
+
+## 设计取舍
+
+### 优点
+
+- 渲染运行时和界面组件职责清晰
+- `App` 预留了未来扩展位
+- `createRoot()` 让终端渲染接口更接近 React 常见心智模型
+
+### 代价
+
+- 当前 UI 能力仍然很薄
+- `gracefulShutdown()` 还没有真正的清理逻辑
+- `showDialog()` 已有接口，但实际复杂交互还未接入
+
+## 小结
+
+这一层证明了当前仓库已经不只是“能在终端里跑脚本”，而是已经具备一个最小可重渲染的 TUI 运行时：
+
+- 入口层能创建 root
+- 运行时层能托管渲染和退出
+- 组件层能显示对话和输入
+
+后续补任何复杂 UI，都应该继续建立在这套 root → helper → App → screen 的结构上。
+
+## 组合使用
+
+- 和 `02-core-interaction-layer.md` 组合，能看清 REPL 为什么能被挂载、重渲染和退出
+- 和 `06-session-management-layer.md` 组合，能看清哪些状态属于 UI 本地态
+- 和 `01-architecture-and-core-flow.md` 组合，能把 TUI 运行时放回整体分层中理解

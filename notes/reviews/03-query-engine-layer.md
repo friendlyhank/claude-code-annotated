@@ -1,88 +1,171 @@
-# 查询引擎层
+# 03. 查询引擎与回合推进
 
-## Relevant source files
+## 概述
+
+`src/query.ts` 是当前仓库的核心。它把一次用户请求推进成“模型调用 → 工具执行 → 下一轮或终止”的代理循环，并通过异步生成器持续向上游产出消息。
+
+这一层决定了：
+
+- 哪些状态要跨轮次保留
+- 模型返回后如何判断是否需要继续
+- 工具结果怎样回灌回下一轮
+- 为什么本轮会以 `completed`、`model_error`、`aborted_*`、`max_turns` 结束
+
+## 关键源码
+
 - `src/query.ts`
 - `src/query/deps.ts`
 - `src/query/transitions.ts`
 - `src/types/message.ts`
-- `src/constants/querySource.ts`
-- `src/utils/systemPromptType.ts`
 
-## 本页概述
+## 设计原理
 
-本页只讨论 `query()` 这一层如何维护一轮代理回合：它接收哪些输入、循环内部保存哪些状态、何时继续下一轮、何时返回终止原因。  
-不展开 UI 交互，也不把未实现的压缩、预算、stop hooks 写成既有能力。
+### 1. 查询层只依赖抽象，不依赖 SDK
 
-## 核心流程
+查询层通过 `QueryDeps.callModel` 调模型，而不是直接调用 Anthropic SDK。这样模型适配逻辑可以留在 `services/api/`，查询层只专注回合推进。
+
+### 2. `State` 集中承载跨轮次信息
+
+`State` 把以下信息放在一处维护：
+
+- `messages`
+- `toolUseContext`
+- `turnCount`
+- 各种恢复/压缩相关标记
+- `transition`
+
+这样每次继续下一轮时，只需要构造新的 `state`，不需要散落地修改多个局部变量。
+
+### 3. `tool_use` 是继续循环的唯一硬信号
+
+当前实现并不依赖 `stop_reason === 'tool_use'`，而是直接从 assistant 内容块里收集 `tool_use`。这是比依赖单个标志位更稳的方式。
+
+## 主循环
 
 ```mermaid
-flowchart LR
-    Start[初始化查询参数和状态] --> Request[发出请求开始事件]
-    Request --> Call[调用模型依赖]
-    Call --> Collect[收集 assistant 消息]
-    Collect --> Decide{是否检测到工具调用}
-    Decide -->|否| Done[返回 completed]
-    Decide -->|是| Tools[runTools]
-    Tools --> Merge[拼接 toolResults]
-    Merge --> Next[transition = next_turn]
+flowchart TD
+    A[开始一轮 queryLoop] --> B[yield stream_request_start]
+    B --> C[准备 systemPrompt 与 messagesForQuery]
+    C --> D[调用 deps.callModel]
+    D --> E{assistant 是否包含 tool_use}
+    E -->|否| F[返回 completed]
+    E -->|是| G[runTools]
+    G --> H{工具阶段是否中断}
+    H -->|是| I[返回 aborted_tools]
+    H -->|否| J[拼接 assistantMessages 与 toolResults]
+    J --> K{是否超过 maxTurns}
+    K -->|是| L[返回 max_turns]
+    K -->|否| M[进入下一轮]
 ```
 
-代码依据：`query()` 把控制权交给 `queryLoop()`；每轮先 `yield { type: 'stream_request_start' }`，再消费 `deps.callModel(...)`，发现 `tool_use` 后进入 `runTools(...)`。
+## 实现原理
 
-## 关键机制
+### 1. 入口生成器 `query()`
 
-### 1. `QueryParams` 定义了查询层边界
+`query()` 自身只是一个薄包装：
 
-- 入口消息由 `messages` 提供
-- 系统提示由 `systemPrompt`、`userContext`、`systemContext` 提供
-- 工具权限和工具上下文分别来自 `canUseTool`、`toolUseContext`
-- 模型层通过可替换的 `deps` 注入，而不是直接在 `query.ts` 内部硬编码
+- 创建 `consumedCommandUuids`
+- 把主要逻辑委托给 `queryLoop()`
+- 在 `queryLoop()` 正常返回后做收尾
 
-### 2. `State` 负责跨轮次可变状态
+也就是说，真正的回合推进都发生在 `queryLoop()`。
 
-- `messages` 保存当前已知消息历史
-- `toolUseContext` 保存本轮及下一轮继续复用的工具上下文
-- `turnCount` 和 `transition` 记录轮次推进情况
-- `maxOutputTokensRecoveryCount`、`hasAttemptedReactiveCompact` 等字段已经预留，但当前仓库还未把对应恢复逻辑补齐
+### 2. 每轮固定步骤
 
-### 3. `callModel` 的消费方向是“边流式产出，边收集 assistant”
+当前每轮都有相同骨架：
 
-- `queryLoop()` 通过 `for await` 迭代 `deps.callModel(...)`
-- 每个流式产出都会先向上层 `yield`
-- 当产出对象是 `assistant` 消息时，会被收集到 `assistantMessages`
-- 如果 `assistant.message.content` 中出现 `tool_use` block，就把它们加入 `toolUseBlocks` 并标记 `needsFollowUp = true`
+1. 从 `state` 解构本轮要用的可变状态
+2. 向上游发送 `stream_request_start`
+3. 准备 `fullSystemPrompt` 和 `messagesForQuery`
+4. 更新 `toolUseContext.messages`
+5. 调用 `deps.callModel`
+6. 收集 assistant 消息和 `tool_use`
+7. 若没有 `tool_use`，直接结束
+8. 若有 `tool_use`，调用 `runTools()`
+9. 组装新状态并继续下一轮
 
-### 4. 工具回合已经形成闭环
+### 3. 错误与中断路径
 
-- 没有 `tool_use` 时，当前轮直接返回 `{ reason: 'completed' }`
-- 有 `tool_use` 时，会把检测到的 blocks 交给 `runTools(...)`
-- 工具执行阶段产生的 `update.message` 会继续 `yield` 给上层，同时收集到 `toolResults`
-- 本轮结束后，新的 `state.messages` 会被更新为 `messagesForQuery + assistantMessages + toolResults`
+当前查询层已明确区分三类终止：
 
-### 5. 终止原因目前是显式返回对象
+- 模型阶段异常：返回 `model_error`
+- 流式阶段被中断：返回 `aborted_streaming`
+- 工具阶段被中断：返回 `aborted_tools`
 
-- 模型调用抛错时返回 `{ reason: 'model_error', error }`
-- 流式阶段中断时返回 `{ reason: 'aborted_streaming' }`
-- 工具阶段中断时返回 `{ reason: 'aborted_tools' }`
-- 超过 `maxTurns` 时返回 `{ reason: 'max_turns', turnCount }`
-- 正常完成时返回 `{ reason: 'completed' }`
+此外还保留了 `max_turns` 保护，防止代理循环无限继续。
+
+## 伪代码
+
+```text
+1. 初始化 State
+2. 进入 while(true)
+3. 发出请求开始事件
+4. 准备本轮 messagesForQuery
+5. 调用 callModel 并逐条产出消息
+6. 收集 assistant 消息里的 tool_use
+7. 若模型报错则返回 model_error
+8. 若没有 tool_use 则返回 completed
+9. 若有 tool_use 则执行 runTools
+10. 把 assistant 结果和 tool_result 拼回消息历史
+11. 更新 turnCount 和 transition
+12. 进入下一轮
+```
+
+## 状态结构
+
+| 状态 | 作用 | 为什么放在这里 |
+| --- | --- | --- |
+| `messages` | 保存完整消息历史 | 下一轮模型请求要基于它继续 |
+| `toolUseContext` | 保存共享上下文 | 工具层和查询层都要可见 |
+| `turnCount` | 限制最大轮次 | 防止无限递归式继续 |
+| `transition` | 标记上一轮为何继续 | 便于测试与恢复路径断言 |
+| `maxOutputTokensOverride` 等恢复字段 | 为未来恢复逻辑预留空间 | 对齐上游结构，便于后续继续补齐 |
 
 ## 当前实现边界
 
-- 已实现：`query() -> callModel -> assistant 收集 -> tool_use 检测 -> runTools -> next_turn`
-- 已实现：最小中断检查与错误路径返回
-- 未完全实现：消息归一化、attachment 注入、压缩、token budget、stop hooks、完整 `Transition` 类型
-- 因此这一层现在更准确的定位是“最小代理循环主链路”而不是“完整查询引擎”
+### 已落地
 
-## 设计要点
+- `query()` / `queryLoop()` 的主循环骨架
+- `QueryParams` 和 `State` 的稳定结构
+- assistant 消息收集与 `tool_use` 检测
+- `runTools()` 接线
+- 错误、中断、最大轮次终止
 
-- `query()` 采用异步生成器，让上层可以同时拿到流式事件和最终终止原因
-- 模型调用通过 `QueryDeps` 注入，便于后续替换真实 API 实现
-- `tool_use` 是否存在，决定当前轮是终止还是继续
-- 查询层只负责推进回合，不负责真实工具业务实现
+### 未落地
 
-## 继续阅读
+- compact / auto compact / microcompact
+- token budget 与 task budget
+- fallback 模型切换
+- stop hooks
+- 更完整的 `Terminal` / `Continue` 类型
 
-- [04-tool-execution-layer](./04-tool-execution-layer.md)：看 `tool_use` 怎样被分批、调度和回传结果。
-- [05-api-client-layer](./05-api-client-layer.md)：看 `callModel` 这一依赖目前如何提供流式产出。
-- [06-session-management-layer](./06-session-management-layer.md)：看 `messages` 和 `ToolUseContext` 怎样作为跨轮次状态载体。
+## 设计取舍
+
+### 优点
+
+- 回合骨架已经稳定，后续增强逻辑有明确挂点
+- `QueryDeps` 让查询层与外部 I/O 解耦
+- 异步生成器很适合把流式事件直接透传给 UI
+
+### 代价
+
+- `query.ts` 现在仍偏大，且保留了大量 TODO
+- 很多恢复字段已预留，但当前并未真正发挥作用
+- `transitions.ts` 仍是占位类型，文档和实现之间还有一层未收敛
+
+## 小结
+
+查询引擎层是当前仓库最需要优先理解的一层，因为它把所有模块串成了一个回合系统：
+
+- REPL 把请求送进来
+- API 层返回 assistant 消息
+- 工具层处理 `tool_use`
+- 状态层保存跨轮次上下文
+
+只要抓住这条回合主线，后续再补 streaming、budget 或 compact，理解成本都会低很多。
+
+## 组合使用
+
+- 和 `02-core-interaction-layer.md` 组合，能看清“输入怎样进入 query loop”
+- 和 `04-tool-execution-layer.md` 组合，能看清“tool_use 怎样把 completed 改成 next turn”
+- 和 `05-api-client-layer.md` 组合，能看清“query loop 如何通过依赖注入访问外部模型”

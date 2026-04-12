@@ -1,80 +1,194 @@
-# 会话管理层
+# 06. 会话状态与消息类型
 
-## Relevant source files
+## 概述
+
+当前仓库还没有完整的全局 AppState，但已经形成了三层稳定状态结构：
+
+1. 进程级状态：`bootstrap/state.ts`
+2. 回合级状态：`query.ts` 内部 `State`
+3. 交互级状态：`REPL.tsx` 本地 React state
+
+而把它们串起来的共同载体，是 `Message[]` 和 `ToolUseContext`。
+
+## 关键源码
+
 - `src/bootstrap/state.ts`
-- `src/Tool.ts`
 - `src/types/message.ts`
+- `src/Tool.ts`
 - `src/screens/REPL.tsx`
-- `src/main.tsx`
+- `src/query.ts`
+- `src/types/ids.ts`
 
-## 本页概述
-
-本页讨论“当前仓库里会话和状态到底由谁承载”。  
-结论是：已经有最小全局状态和消息历史载体，但持久化、恢复、配置分层等完整会话系统还没有落地。
-
-## 核心结构
+## 状态分层
 
 ```mermaid
-flowchart TB
-    Bootstrap[Bootstrap State] --> Main[Main Module]
-    Main --> Repl[REPL]
-    Repl --> Transcript[Transcript Messages]
-    Transcript --> QueryContext[Tool Context Messages]
-    QueryContext --> Query[Query Engine]
+flowchart TD
+    A[bootstrap/state.ts] --> A1[是否交互式]
+    A --> A2[cwd]
+    A --> A3[clientType / sessionSource]
+
+    B[REPL 本地 state] --> B1[input]
+    B --> B2[messages]
+    B --> B3[isProcessing]
+    B --> B4[lastTerminalReason]
+
+    C[query.ts State] --> C1[messages]
+    C --> C2[toolUseContext]
+    C --> C3[turnCount]
+    C --> C4[transition]
+
+    D[ToolUseContext] --> D1[options]
+    D --> D2[abortController]
+    D --> D3[messages]
+    D --> D4[会话级 setter]
 ```
 
-代码依据：`main.tsx` 写入交互态；`REPL.tsx` 维护本地 `messages` 并把它传进 `ToolUseContext.messages`；`types/message.ts` 定义 transcript 的基础结构。
+## 设计原理
 
-## 关键机制
+### 1. 进程态和会话态分开
 
-### 1. `bootstrap/state.ts` 管的是全局启动态，不是完整会话存储
+`bootstrap/state.ts` 负责进程启动后的稳定环境信息，例如：
 
-- 当前全局状态包含 `originalCwd`、`cwd`、`isInteractive`、`clientType`、`sessionSource`、`startTime`
-- 它提供成对的 getter/setter，例如 `getIsInteractive()` / `setIsInteractive()`
-- 还提供 `resetStateForTests_ONLY()` 供测试重置
-- 这说明它更像“运行时基础状态容器”，而不是“完整 transcript store”
+- 当前是否交互模式
+- 原始 cwd 和当前 cwd
+- clientType
+- sessionSource
 
-### 2. `Message` 类型体系是会话历史的真正载体
+这些状态与单次 query turn 无关，因此不应该放进 `query.ts` 或 REPL 组件内部。
 
-- `src/types/message.ts` 定义了统一的 `Message` 结构
-- 当前复刻里常用的消息子类型包括 `user`、`assistant`、`system`
-- `uuid` 是每条消息的稳定标识
-- `message.content` 支持字符串或 content block 数组，因此同一套 transcript 可以兼容普通文本与 `tool_result`
+### 2. transcript 作为跨层统一语义
 
-### 3. REPL 本地状态承担了当前会话历史
+无论是 REPL、query loop、工具层还是 API 层，最终都围绕 `Message[]` 协作。这样不同层共享的不是零散字段，而是统一的消息历史。
 
-- `src/screens/REPL.tsx` 用 `useState<Message[]>` 持有当前 transcript
-- `appendMessage()` 会同时更新 React state 和 `messagesRef`
-- 提交一条输入时，REPL 先把用户消息写进 transcript，再启动 `query()`
-- 之后 `query()` 产出的消息也会持续追加回同一份 transcript
+### 3. `ToolUseContext` 作为共享上下文中心
 
-### 4. `ToolUseContext.messages` 是查询层和工具层共享的状态桥梁
+`ToolUseContext` 不是单纯的工具参数包，而是一个会话级共享上下文：
 
-- `createReplToolUseContext()` 会把当前消息快照注入 `ToolUseContext`
-- `queryLoop()` 每轮又会把 `messagesForQuery` 写回 `toolUseContext.messages`
-- 这使得工具层、查询层和 REPL 在“当前看到的消息历史”上保持最小同步
+- 里面有工具列表
+- 有中断控制器
+- 有消息数组
+- 有多个与 UI / 状态联动的 setter
 
-### 5. 会话恢复能力目前只停留在 CLI 选项层
+这说明它承担的是“查询层与工具层的共享运行时环境”。
 
-- `main.tsx` 已声明 `--resume` 和 `--continue`
-- 但当前 action handler 还没有实现真实恢复逻辑
-- 所以不能把“会话恢复已支持”写成当前仓库事实
+## 消息模型
 
-## 当前实现边界
+### 1. `Message` 是最基础的 transcript 载体
 
-- 已实现：全局交互态、cwd 状态、消息类型体系、REPL 本地 transcript、消息跨层透传
-- 已实现：`ToolUseContext` 作为共享状态容器的最小版本
-- 未实现：持久化存储、历史检索、完整会话恢复、配置分层、预算与统计累积
-- 因此此层当前更接近“状态承载层”，而不是“完整会话系统”
+`src/types/message.ts` 通过判别联合和宽松扩展字段，统一承载：
 
-## 设计要点
+- `user`
+- `assistant`
+- `system`
+- `attachment`
+- `progress`
+- `grouped_tool_use`
+- `collapsed_read_search`
 
-- 全局状态和 transcript 被刻意分离：前者保运行时基础信息，后者保对话历史
-- `Message` 类型比任何单独 store 都更关键，因为它跨 UI、查询、工具三层流动
-- 当前仓库优先打通“状态能在一轮代理回合里流动”，还没进入“长期会话管理”
+对当前仓库而言，最关键的仍然是 `user`、`assistant`、`system` 三类。
 
-## 继续阅读
+### 2. message content 的三种形态
 
-- [02-core-interaction-layer](./02-core-interaction-layer.md)：看 REPL 怎样写入和维护 transcript。
-- [03-query-engine-layer](./03-query-engine-layer.md)：看 `messages` 怎样参与每一轮 `queryLoop`。
-- [04-tool-execution-layer](./04-tool-execution-layer.md)：看 `ToolUseContext` 怎样在工具编排中被复用。
+当前类型定义允许 `message.content` 是：
+
+- `string`
+- `ContentBlockParam[]`
+- `ContentBlock[]`
+
+这让内部消息既能容纳纯文本，也能容纳 Anthropic 风格的结构化内容块。
+
+### 3. branded type 辅助语义隔离
+
+`ids.ts` 和 `systemPromptType.ts` 都采用 branded type：
+
+- `SessionId`
+- `AgentId`
+- `SystemPrompt`
+
+这类设计没有运行时成本，但可以在类型层面避免语义混用。
+
+## 实现原理
+
+### 1. 启动期状态写入
+
+`main.tsx` 在判断交互模式后，会通过 `setIsInteractive()` 写入全局状态。这是当前进程态与入口层的主要接点。
+
+### 2. REPL 本地状态
+
+`REPL.tsx` 当前维护：
+
+- `input`
+- `messages`
+- `isProcessing`
+- `lastTerminalReason`
+
+这些状态天然属于界面层，因为它们决定输入框内容、消息列表和界面反馈。
+
+### 3. query loop 状态
+
+`query.ts` 内部 `State` 负责跨轮次保存：
+
+- 本轮之前的消息历史
+- 当前 `ToolUseContext`
+- 轮次计数
+- 恢复/压缩相关标记
+- 上一轮为何继续
+
+这层状态直接决定代理循环是否还能往下跑。
+
+## 伪代码
+
+```text
+1. 启动时写入全局进程态
+2. REPL 维护当前输入和展示用 transcript
+3. 提交时把 messages 与 ToolUseContext 交给 query()
+4. query loop 用内部 State 保存跨轮次状态
+5. 工具层通过 ToolUseContext 读取和更新共享上下文
+6. 产出的 Message 再回写给 REPL 展示
+```
+
+## 当前边界
+
+### 已落地
+
+- 进程级状态 getter / setter
+- transcript 统一消息模型
+- `ToolUseContext` 大量字段占位但结构已稳定
+- REPL 本地状态与 query loop 状态分工清晰
+
+### 未落地
+
+- 真正的全局 AppState provider
+- 更具体的权限、hooks、任务基础设施状态
+- 更严格的 `QuerySource`、`ToolProgressData`、`Terminal` 类型
+
+## 设计取舍
+
+### 优点
+
+- 状态按作用域分层，后续扩展空间充足
+- `Message[]` 作为主线，跨层沟通成本低
+- `ToolUseContext` 已预留大量未来能力挂点
+
+### 代价
+
+- 当前状态分散在多个层次，初读时容易混淆
+- 很多类型还是占位，语义还未完全收窄
+- React 全局状态尚未接入，部分共享状态仍靠手工透传
+
+## 小结
+
+当前仓库的状态管理关键词不是“集中式 store”，而是“按作用域拆层”：
+
+- 进程态放在 `bootstrap/state.ts`
+- 回合态放在 `query.ts`
+- 界面态放在 `REPL.tsx`
+- 共享上下文放在 `ToolUseContext`
+
+理解这四层，就能读清大多数状态为什么出现在那个位置。
+
+## 组合使用
+
+- 和 `03-query-engine-layer.md` 组合，能看清哪些状态决定回合是否继续
+- 和 `04-tool-execution-layer.md` 组合，能看清 `ToolUseContext` 为什么是工具层核心
+- 和 `07-tui-rendering-layer.md` 组合，能看清当前哪些状态仍停留在界面层而未进入全局 provider

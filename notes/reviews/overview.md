@@ -1,128 +1,169 @@
-# Claude Code Annotated
+# Claude Code Annotated 源码总览
 
-## Relevant source files
-- `package.json`
-- `build.ts`
-- `src/entrypoints/cli.tsx`
-- `src/main.tsx`
-- `src/query.ts`
-- `src/Tool.ts`
+## 项目定位
 
-本仓库是 `Claude Code` 主链路的复刻与注释化学习工程，当前重点覆盖 CLI 入口、REPL 交互、`query()` 代理循环、工具编排、最小 API 适配层和终端渲染这几条最核心链路。它运行在 `Bun + TypeScript` 上，终端 UI 基于 `Ink`，构建入口是 `src/entrypoints/cli.tsx`，运行时主入口落在 `src/main.tsx`。目前仓库还处于增量对齐阶段，因此文档只记录已经被当前源码证实的能力，不把上游完整特性提前写成已实现。
+`claude-code-annotated` 是一个围绕 Claude Code 主链路做源码复刻与注释化沉淀的 Bun + TypeScript 工程。当前仓库已经打通最小交互闭环：CLI 启动后进入 Ink 驱动的 REPL，用户输入交给 `query()`，模型响应若包含 `tool_use` 则进入工具编排层，再把 `tool_result` 回灌到下一轮。
 
-## Architecture and Runtime
+阅读这套文档时，建议先看本页建立目录地图，再看 `01-architecture-and-core-flow.md` 建立分层认知，最后按能力域阅读 02-07 专题页。
 
-- 仓库形态：单包 TypeScript 工程，源码集中在 `src/`
-- 运行时：`bun` 执行与打包，`tsc --noEmit` 做类型检查
-- 交互方式：CLI 启动后进入 Ink 驱动的 REPL
-- 主链路：输入先进入交互层，再交给 `query()` 驱动代理回合，需要工具时转入工具编排层
+## 仓库组织
 
-## Technical Foundation
+- 单包工程，核心源码集中在 `src/`
+- 构建脚本是 `build.ts`，打包入口是 `src/entrypoints/cli.tsx`
+- 运行依赖以 `@commander-js/extra-typings`、`ink`、`react`、`@anthropic-ai/sdk` 为主
+- `notes/reviews/` 只沉淀当前仓库已经被源码证明的能力，不把上游完整特性提前写成已实现
 
-- `Commander + Bun` 负责命令入口、脚本运行和构建打包，是整个终端应用的启动基础
-- `Ink` 提供终端组件树、渲染 root 和退出生命周期，让 REPL 保持 React 风格的交互模型
-- `query()` 与 `QueryDeps` 形成查询引擎的稳定窄口，把主回合推进和外部 I/O 隔离开
-- `Tool`、`Tools`、`ToolUseContext` 定义工具编排的通用边界，让 `tool_use` 可以被统一调度与回放
-- `bootstrap/state.ts` 与 `types/message.ts` 提供全局会话态、transcript 载体与跨层消息约束
-
-## High-Level System Flow
-
-```mermaid
-flowchart LR
-    Input[用户输入] --> Entry[CLI / REPL]
-    Entry --> Query[query()]
-    Query --> Model[callModel]
-    Model --> Decide{是否产生 tool_use}
-    Decide -->|否| Output[assistant / error 写回 transcript]
-    Decide -->|是| Tools[runTools]
-    Tools --> Query
-```
-
-代码依据：当前主入口落在 `src/entrypoints/cli.tsx` 与 `src/main.tsx`，交互提交从 `src/screens/REPL.tsx` 进入 `src/query.ts`，模型依赖通过 `src/query/deps.ts` 接入，工具调用经 `src/services/tools/` 返回查询层继续下一轮。
-
-## Key Capabilities
-
-| 能力域 | 关键代码实体 | 作用 |
-|--------|--------------|------|
-| 架构与主流程 | `src/main.tsx`、`src/replLauncher.tsx`、`src/query.ts` | 建立启动路径、回合骨架与阅读主线 |
-| 交互入口 | `src/entrypoints/cli.tsx`、`src/screens/REPL.tsx` | 接收用户输入并触发查询回合 |
-| 查询引擎 | `src/query.ts`、`src/query/transitions.ts` | 推进状态、消费模型输出、决定终止或继续 |
-| 工具编排 | `src/Tool.ts`、`src/services/tools/` | 管理工具匹配、执行顺序与结果回传 |
-| 模型适配 | `src/query/deps.ts`、`src/services/api/` | 连接查询层与最小真实 API 适配边界 |
-| 状态承载 | `src/bootstrap/state.ts`、`src/types/message.ts` | 保存全局交互态与 transcript 结构 |
-| TUI 运行时 | `src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx` | 管理终端渲染 root、组件挂载和退出 |
-
-## System Integration Map
-
-- Interface：`src/entrypoints/cli.tsx`、`src/main.tsx`、`src/screens/REPL.tsx`，负责启动、输入采集与交互回显
-- Core：`src/query.ts`、`src/query/deps.ts`、`src/Tool.ts`，负责查询推进、依赖注入与工具边界定义
-- Infra：`src/services/api/`、`src/services/tools/`、`src/bootstrap/state.ts`，负责外部 API、工具执行和全局状态承载
-- Runtime：`src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx`，负责终端渲染环境与组件生命周期
-
-## 仓库目录地图
+## 目录地图
 
 ```text
 .
 ├── src/
-│   ├── entrypoints/
-│   │   └── cli.tsx                  # CLI 快速路径与动态导入入口
 │   ├── bootstrap/
-│   │   └── state.ts                 # 全局启动状态、交互态与 cwd 状态
+│   │   └── state.ts
 │   ├── components/
-│   │   └── App.tsx                  # 顶层包装组件
+│   │   └── App.tsx
 │   ├── constants/
-│   │   └── querySource.ts           # 查询来源类型存根
+│   │   └── querySource.ts
+│   ├── entrypoints/
+│   │   └── cli.tsx
 │   ├── hooks/
-│   │   └── useCanUseTool.ts         # 工具权限检查函数类型
+│   │   └── useCanUseTool.ts
 │   ├── query/
-│   │   ├── deps.ts                  # query 依赖注入工厂
-│   │   └── transitions.ts           # query 终止/继续类型存根
+│   │   ├── deps.ts
+│   │   └── transitions.ts
 │   ├── screens/
-│   │   └── REPL.tsx                 # REPL 输入、消息回写与 query 接线
+│   │   └── REPL.tsx
 │   ├── services/
 │   │   ├── api/
-│   │   │   ├── claude.ts            # 消息归一化与 Anthropic 最小调用边界
-│   │   │   └── client.ts            # Anthropic SDK 客户端创建与缓存
+│   │   │   ├── claude.ts
+│   │   │   └── client.ts
 │   │   └── tools/
-│   │       ├── toolExecution.ts     # 单个 tool_use 的最小执行入口
-│   │       └── toolOrchestration.ts # 工具分批、串并行调度与上下文汇总
+│   │       ├── toolExecution.ts
+│   │       └── toolOrchestration.ts
 │   ├── types/
-│   │   ├── global.d.ts              # 全局类型声明
-│   │   ├── ids.ts                   # ID 相关类型
-│   │   ├── index.ts                 # 类型出口
-│   │   ├── message.ts               # transcript 与流事件相关类型
-│   │   ├── tools.ts                 # 工具进度类型存根
-│   │   └── utils.ts                 # 工具类型辅助
+│   │   ├── global.d.ts
+│   │   ├── ids.ts
+│   │   ├── index.ts
+│   │   ├── message.ts
+│   │   ├── tools.ts
+│   │   └── utils.ts
 │   ├── utils/
-│   │   ├── generators.ts            # AsyncGenerator 并发与收集工具
-│   │   └── systemPromptType.ts      # SystemPrompt branded type
-│   ├── Tool.ts                      # Tool、Tools、ToolUseContext 等核心类型
-│   ├── ink.ts                       # Ink root/render 封装与组件导出
-│   ├── interactiveHelpers.tsx       # 渲染运行、退出与 render context
-│   ├── main.tsx                     # Commander 主命令与 REPL 启动
-│   ├── query.ts                     # 代理主循环
-│   └── replLauncher.tsx             # App + REPL 组合与启动
-├── build.ts                         # Bun.build 构建脚本
-├── package.json                     # 依赖、脚本、bin 配置
+│   │   ├── generators.ts
+│   │   └── systemPromptType.ts
+│   ├── Tool.ts
+│   ├── ink.ts
+│   ├── interactiveHelpers.tsx
+│   ├── main.tsx
+│   ├── query.ts
+│   └── replLauncher.tsx
+├── build.ts
 ├── bun.lock
+├── package.json
 └── tsconfig.json
 ```
 
-## 文件定位建议
+## 目录职责
 
-- 想看程序从哪里启动：先读 `src/entrypoints/cli.tsx`、`src/main.tsx`
-- 想看输入如何进入代理循环：读 `src/screens/REPL.tsx`、`src/query.ts`
-- 想看模型请求如何进入真实 API 适配层：读 `src/query/deps.ts`、`src/services/api/`
-- 想看工具调用如何被执行：读 `src/services/tools/`
-- 想看终端 UI 如何挂载：读 `src/ink.ts`、`src/interactiveHelpers.tsx`
-- 想看全局状态和 transcript 类型：读 `src/bootstrap/state.ts`、`src/types/message.ts`
+| 路径 | 作用 | 下一步读哪里 |
+| --- | --- | --- |
+| `src/entrypoints/cli.tsx` | CLI 快速路径与主模块动态导入入口 | `src/main.tsx` |
+| `src/main.tsx` | Commander 主命令、参数定义、Ink root 创建、REPL 启动 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` |
+| `src/screens/REPL.tsx` | 输入采集、消息展示、`query()` 接线 | `src/query.ts` |
+| `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
+| `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
+| `src/services/tools/` | `tool_use` 分批、串并行调度与结果回传 | `src/services/tools/toolOrchestration.ts` |
+| `src/bootstrap/state.ts` | 进程级状态，如交互模式、cwd、session source | `src/types/message.ts` |
+| `src/ink.ts` / `src/interactiveHelpers.tsx` | TUI root/render 抽象、退出与消息式收尾 | `src/components/App.tsx` |
 
-## Wiki Navigation
+## 源码阅读入口
 
-- [01-architecture-and-core-flow](./01-architecture-and-core-flow.md)：先建立系统分层、主链路和阅读顺序。
-- [02-core-interaction-layer](./02-core-interaction-layer.md)：看 CLI、REPL 和 `query()` 入口如何接线。
-- [03-query-engine-layer](./03-query-engine-layer.md)：看 `queryLoop` 如何推进一轮代理回合。
-- [04-tool-execution-layer](./04-tool-execution-layer.md)：看 `tool_use` 如何被分批、调度和回传。
-- [05-api-client-layer](./05-api-client-layer.md)：看 `QueryDeps` 如何接入最小真实 API 适配层。
-- [06-session-management-layer](./06-session-management-layer.md)：看全局状态、消息历史和跨层上下文承载。
-- [07-tui-rendering-layer](./07-tui-rendering-layer.md)：看 Ink 运行时、渲染辅助与终端界面装配。
+### 1. 想先看程序怎么跑起来
+
+先读：
+
+1. `package.json`
+2. `build.ts`
+3. `src/entrypoints/cli.tsx`
+4. `src/main.tsx`
+
+这条路径先回答“命令从哪里进来、如何创建交互环境、最终为什么会进入 REPL”。
+
+### 2. 想看用户输入如何进入代理循环
+
+先读：
+
+1. `src/screens/REPL.tsx`
+2. `src/query.ts`
+3. `src/query/deps.ts`
+
+这条路径回答“消息怎样被追加到 transcript、模型调用怎样发生、什么时候进入下一轮”。
+
+### 3. 想看工具调用怎样被处理
+
+先读：
+
+1. `src/Tool.ts`
+2. `src/services/tools/toolOrchestration.ts`
+3. `src/services/tools/toolExecution.ts`
+
+这条路径回答“工具如何被匹配、如何按并发安全性切批、为什么当前返回的是 stub `tool_result`”。
+
+### 4. 想看模型适配与状态边界
+
+先读：
+
+1. `src/services/api/client.ts`
+2. `src/services/api/claude.ts`
+3. `src/bootstrap/state.ts`
+4. `src/types/message.ts`
+
+这条路径回答“查询层如何和 Anthropic SDK 解耦、消息形态如何统一、状态分别落在哪一层”。
+
+## 当前稳定能力域
+
+```mermaid
+mindmap
+  root((Claude Code Annotated))
+    入口装配
+      CLI 快速路径
+      Commander 主命令
+      REPL 启动
+    查询主循环
+      query
+      queryLoop
+      Terminal reason
+    工具编排
+      ToolUseContext
+      串行与并发批次
+      tool_result 回灌
+    模型适配
+      QueryDeps
+      Anthropic client
+      messages.create
+    状态承载
+      bootstrap state
+      Message 类型
+      REPL 本地状态
+    TUI 运行时
+      Ink root
+      renderAndRun
+      App 包装层
+```
+
+## 当前实现边界
+
+- 已实现的是最小主链路，不是完整 Claude Code 全量能力
+- `query.ts` 保留了大量 TODO，占位于压缩、token budget、stop hooks、fallback 等增强能力
+- 工具系统已具备类型边界、批次调度和结果回传框架，但单工具真实执行仍未落地
+- `App.tsx`、`query/transitions.ts`、`constants/querySource.ts`、`types/tools.ts` 仍以占位实现为主
+- 文档结论只以当前仓库源码为准，不把目标仓库里尚未复刻的能力写进现状
+
+## 文档导航
+
+- `01-architecture-and-core-flow.md`：看整体分层、核心协作关系和阅读顺序
+- `02-core-interaction-layer.md`：看 CLI、Commander、REPL 怎样接出最小交互闭环
+- `03-query-engine-layer.md`：看 `queryLoop` 怎样推进一轮代理回合
+- `04-tool-execution-layer.md`：看 `tool_use` 怎样分批、调度、回传 `tool_result`
+- `05-api-client-layer.md`：看查询层怎样通过 `QueryDeps` 进入 Anthropic API 适配层
+- `06-session-management-layer.md`：看进程态、查询态、消息态和 REPL 本地态如何分工
+- `07-tui-rendering-layer.md`：看 Ink root、渲染辅助和终端界面如何装配
