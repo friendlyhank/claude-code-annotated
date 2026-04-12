@@ -1,0 +1,1490 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "build.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/build.ts",
+      "source_location": "L1",
+      "id": "build",
+      "community": 19
+    },
+    {
+      "label": "main.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L1",
+      "id": "main",
+      "community": 8
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L55",
+      "id": "main_main",
+      "community": 8
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L116",
+      "id": "main_run",
+      "community": 8
+    },
+    {
+      "label": "Tool.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/Tool.ts",
+      "source_location": "L1",
+      "id": "tool",
+      "community": 9
+    },
+    {
+      "label": "toolMatchesName()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/Tool.ts",
+      "source_location": "L237",
+      "id": "tool_toolmatchesname",
+      "community": 9
+    },
+    {
+      "label": "findToolByName()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/Tool.ts",
+      "source_location": "L244",
+      "id": "tool_findtoolbyname",
+      "community": 9
+    },
+    {
+      "label": "replLauncher.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/replLauncher.tsx",
+      "source_location": "L1",
+      "id": "repllauncher",
+      "community": 11
+    },
+    {
+      "label": "launchRepl()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/replLauncher.tsx",
+      "source_location": "L37",
+      "id": "repllauncher_launchrepl",
+      "community": 11
+    },
+    {
+      "label": "query.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query.ts",
+      "source_location": "L1",
+      "id": "query",
+      "community": 12
+    },
+    {
+      "label": "isWithheldMaxOutputTokens()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query.ts",
+      "source_location": "L110",
+      "id": "query_iswithheldmaxoutputtokens",
+      "community": 12
+    },
+    {
+      "label": "interactiveHelpers.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L1",
+      "id": "interactivehelpers",
+      "community": 1
+    },
+    {
+      "label": "renderAndRun()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L28",
+      "id": "interactivehelpers_renderandrun",
+      "community": 1
+    },
+    {
+      "label": "gracefulShutdown()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L46",
+      "id": "interactivehelpers_gracefulshutdown",
+      "community": 1
+    },
+    {
+      "label": "gracefulShutdownSync()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L57",
+      "id": "interactivehelpers_gracefulshutdownsync",
+      "community": 1
+    },
+    {
+      "label": "exitWithError()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L72",
+      "id": "interactivehelpers_exitwitherror",
+      "community": 1
+    },
+    {
+      "label": "exitWithMessage()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L83",
+      "id": "interactivehelpers_exitwithmessage",
+      "community": 1
+    },
+    {
+      "label": "showDialog()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L117",
+      "id": "interactivehelpers_showdialog",
+      "community": 1
+    },
+    {
+      "label": "getRenderContext()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L141",
+      "id": "interactivehelpers_getrendercontext",
+      "community": 1
+    },
+    {
+      "label": "ink.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L1",
+      "id": "ink",
+      "community": 10
+    },
+    {
+      "label": "createRoot()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L41",
+      "id": "ink_createroot",
+      "community": 10
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L72",
+      "id": "ink_render",
+      "community": 10
+    },
+    {
+      "label": "ids.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L1",
+      "id": "ids",
+      "community": 4
+    },
+    {
+      "label": "asSessionId()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L28",
+      "id": "ids_assessionid",
+      "community": 4
+    },
+    {
+      "label": "asAgentId()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L36",
+      "id": "ids_asagentid",
+      "community": 4
+    },
+    {
+      "label": "toAgentId()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L52",
+      "id": "ids_toagentid",
+      "community": 4
+    },
+    {
+      "label": "utils.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/utils.ts",
+      "source_location": "L1",
+      "id": "utils",
+      "community": 20
+    },
+    {
+      "label": "message.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/message.ts",
+      "source_location": "L1",
+      "id": "message",
+      "community": 21
+    },
+    {
+      "label": "tools.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/tools.ts",
+      "source_location": "L1",
+      "id": "tools",
+      "community": 22
+    },
+    {
+      "label": "global.d.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/global.d.ts",
+      "source_location": "L1",
+      "id": "global_d",
+      "community": 23
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/index.ts",
+      "source_location": "L1",
+      "id": "index",
+      "community": 24
+    },
+    {
+      "label": "state.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L1",
+      "id": "state",
+      "community": 0
+    },
+    {
+      "label": "getInitialState()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L29",
+      "id": "state_getinitialstate",
+      "community": 0
+    },
+    {
+      "label": "getIsNonInteractiveSession()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L55",
+      "id": "state_getisnoninteractivesession",
+      "community": 0
+    },
+    {
+      "label": "getIsInteractive()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L59",
+      "id": "state_getisinteractive",
+      "community": 0
+    },
+    {
+      "label": "setIsInteractive()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L63",
+      "id": "state_setisinteractive",
+      "community": 0
+    },
+    {
+      "label": "getClientType()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L71",
+      "id": "state_getclienttype",
+      "community": 0
+    },
+    {
+      "label": "setClientType()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L75",
+      "id": "state_setclienttype",
+      "community": 0
+    },
+    {
+      "label": "getOriginalCwd()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L83",
+      "id": "state_getoriginalcwd",
+      "community": 0
+    },
+    {
+      "label": "setOriginalCwd()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L87",
+      "id": "state_setoriginalcwd",
+      "community": 0
+    },
+    {
+      "label": "getCwdState()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L91",
+      "id": "state_getcwdstate",
+      "community": 0
+    },
+    {
+      "label": "setCwdState()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L95",
+      "id": "state_setcwdstate",
+      "community": 0
+    },
+    {
+      "label": "getSessionSource()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L103",
+      "id": "state_getsessionsource",
+      "community": 0
+    },
+    {
+      "label": "setSessionSource()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L107",
+      "id": "state_setsessionsource",
+      "community": 0
+    },
+    {
+      "label": "getTotalDuration()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L115",
+      "id": "state_gettotalduration",
+      "community": 0
+    },
+    {
+      "label": "resetStateForTests_ONLY()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L126",
+      "id": "state_resetstatefortests_only",
+      "community": 0
+    },
+    {
+      "label": "querySource.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/constants/querySource.ts",
+      "source_location": "L1",
+      "id": "querysource",
+      "community": 25
+    },
+    {
+      "label": "handlePromptSubmit.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L1",
+      "id": "handlepromptsubmit",
+      "community": 5
+    },
+    {
+      "label": "createUserTextMessage()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L63",
+      "id": "handlepromptsubmit_createusertextmessage",
+      "community": 5
+    },
+    {
+      "label": "handlePromptSubmit()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L79",
+      "id": "handlepromptsubmit_handlepromptsubmit",
+      "community": 5
+    },
+    {
+      "label": "executeUserInput()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L100",
+      "id": "handlepromptsubmit_executeuserinput",
+      "community": 5
+    },
+    {
+      "label": "generators.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L1",
+      "id": "generators",
+      "community": 3
+    },
+    {
+      "label": "lastX()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L5",
+      "id": "generators_lastx",
+      "community": 3
+    },
+    {
+      "label": "returnValue()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L16",
+      "id": "generators_returnvalue",
+      "community": 3
+    },
+    {
+      "label": "next()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L43",
+      "id": "generators_next",
+      "community": 3
+    },
+    {
+      "label": "toArray()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L82",
+      "id": "generators_toarray",
+      "community": 3
+    },
+    {
+      "label": "systemPromptType.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/systemPromptType.ts",
+      "source_location": "L1",
+      "id": "systemprompttype",
+      "community": 13
+    },
+    {
+      "label": "asSystemPrompt()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/systemPromptType.ts",
+      "source_location": "L12",
+      "id": "systemprompttype_assystemprompt",
+      "community": 13
+    },
+    {
+      "label": "REPL.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L1",
+      "id": "repl",
+      "community": 2
+    },
+    {
+      "label": "createMessageUUID()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L43",
+      "id": "repl_createmessageuuid",
+      "community": 2
+    },
+    {
+      "label": "isMessage()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L47",
+      "id": "repl_ismessage",
+      "community": 2
+    },
+    {
+      "label": "isTerminalWithReason()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L57",
+      "id": "repl_isterminalwithreason",
+      "community": 2
+    },
+    {
+      "label": "formatMessageContent()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L68",
+      "id": "repl_formatmessagecontent",
+      "community": 2
+    },
+    {
+      "label": "getMessageLabel()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L113",
+      "id": "repl_getmessagelabel",
+      "community": 2
+    },
+    {
+      "label": "getMessageColor()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L126",
+      "id": "repl_getmessagecolor",
+      "community": 2
+    },
+    {
+      "label": "createReplToolUseContext()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L139",
+      "id": "repl_createrepltoolusecontext",
+      "community": 2
+    },
+    {
+      "label": "App.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/components/App.tsx",
+      "source_location": "L1",
+      "id": "app",
+      "community": 14
+    },
+    {
+      "label": "App()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/components/App.tsx",
+      "source_location": "L39",
+      "id": "app_app",
+      "community": 14
+    },
+    {
+      "label": "useCanUseTool.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/hooks/useCanUseTool.ts",
+      "source_location": "L1",
+      "id": "usecanusetool",
+      "community": 26
+    },
+    {
+      "label": "cli.tsx",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/entrypoints/cli.tsx",
+      "source_location": "L1",
+      "id": "cli",
+      "community": 15
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/entrypoints/cli.tsx",
+      "source_location": "L30",
+      "id": "cli_main",
+      "community": 15
+    },
+    {
+      "label": "transitions.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query/transitions.ts",
+      "source_location": "L1",
+      "id": "transitions",
+      "community": 27
+    },
+    {
+      "label": "deps.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query/deps.ts",
+      "source_location": "L1",
+      "id": "deps",
+      "community": 16
+    },
+    {
+      "label": "productionDeps()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query/deps.ts",
+      "source_location": "L43",
+      "id": "deps_productiondeps",
+      "community": 16
+    },
+    {
+      "label": "toolOrchestration.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L1",
+      "id": "toolorchestration",
+      "community": 6
+    },
+    {
+      "label": "getMaxToolUseConcurrency()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L10",
+      "id": "toolorchestration_getmaxtooluseconcurrency",
+      "community": 6
+    },
+    {
+      "label": "partitionToolCalls()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L103",
+      "id": "toolorchestration_partitiontoolcalls",
+      "community": 6
+    },
+    {
+      "label": "markToolUseAsComplete()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L218",
+      "id": "toolorchestration_marktooluseascomplete",
+      "community": 6
+    },
+    {
+      "label": "toolExecution.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolExecution.ts",
+      "source_location": "L1",
+      "id": "toolexecution",
+      "community": 17
+    },
+    {
+      "label": "createToolResultMessage()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolExecution.ts",
+      "source_location": "L19",
+      "id": "toolexecution_createtoolresultmessage",
+      "community": 17
+    },
+    {
+      "label": "client.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/client.ts",
+      "source_location": "L1",
+      "id": "client",
+      "community": 18
+    },
+    {
+      "label": "getAnthropicClient()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/client.ts",
+      "source_location": "L7",
+      "id": "client_getanthropicclient",
+      "community": 18
+    },
+    {
+      "label": "claude.ts",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L1",
+      "id": "claude",
+      "community": 7
+    },
+    {
+      "label": "normalizeMessageRole()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L17",
+      "id": "claude_normalizemessagerole",
+      "community": 7
+    },
+    {
+      "label": "normalizeMessagesForApi()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L30",
+      "id": "claude_normalizemessagesforapi",
+      "community": 7
+    },
+    {
+      "label": "toAssistantMessage()",
+      "file_type": "code",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L59",
+      "id": "claude_toassistantmessage",
+      "community": 7
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "main",
+      "_tgt": "main_main",
+      "source": "main",
+      "target": "main_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L116",
+      "weight": 1.0,
+      "_src": "main",
+      "_tgt": "main_run",
+      "source": "main",
+      "target": "main_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/main.tsx",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_src": "main_main",
+      "_tgt": "main_run",
+      "source": "main_main",
+      "target": "main_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/Tool.ts",
+      "source_location": "L237",
+      "weight": 1.0,
+      "_src": "tool",
+      "_tgt": "tool_toolmatchesname",
+      "source": "tool",
+      "target": "tool_toolmatchesname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/Tool.ts",
+      "source_location": "L244",
+      "weight": 1.0,
+      "_src": "tool",
+      "_tgt": "tool_findtoolbyname",
+      "source": "tool",
+      "target": "tool_findtoolbyname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/replLauncher.tsx",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "repllauncher",
+      "_tgt": "repllauncher_launchrepl",
+      "source": "repllauncher",
+      "target": "repllauncher_launchrepl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query.ts",
+      "source_location": "L110",
+      "weight": 1.0,
+      "_src": "query",
+      "_tgt": "query_iswithheldmaxoutputtokens",
+      "source": "query",
+      "target": "query_iswithheldmaxoutputtokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_renderandrun",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_renderandrun",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_gracefulshutdown",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_gracefulshutdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_gracefulshutdownsync",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_gracefulshutdownsync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_exitwitherror",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_exitwitherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L83",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_exitwithmessage",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_exitwithmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L117",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_showdialog",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_showdialog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L141",
+      "weight": 1.0,
+      "_src": "interactivehelpers",
+      "_tgt": "interactivehelpers_getrendercontext",
+      "source": "interactivehelpers",
+      "target": "interactivehelpers_getrendercontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "interactivehelpers_renderandrun",
+      "_tgt": "interactivehelpers_gracefulshutdown",
+      "source": "interactivehelpers_renderandrun",
+      "target": "interactivehelpers_gracefulshutdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/interactiveHelpers.tsx",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_src": "interactivehelpers_exitwitherror",
+      "_tgt": "interactivehelpers_exitwithmessage",
+      "source": "interactivehelpers_exitwitherror",
+      "target": "interactivehelpers_exitwithmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_src": "ink",
+      "_tgt": "ink",
+      "source": "ink",
+      "target": "ink",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "ink",
+      "_tgt": "ink_createroot",
+      "source": "ink",
+      "target": "ink_createroot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/ink.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "ink",
+      "_tgt": "ink_render",
+      "source": "ink",
+      "target": "ink_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "ids",
+      "_tgt": "ids_assessionid",
+      "source": "ids",
+      "target": "ids_assessionid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "ids",
+      "_tgt": "ids_asagentid",
+      "source": "ids",
+      "target": "ids_asagentid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/types/ids.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "ids",
+      "_tgt": "ids_toagentid",
+      "source": "ids",
+      "target": "ids_toagentid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getinitialstate",
+      "source": "state",
+      "target": "state_getinitialstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getisnoninteractivesession",
+      "source": "state",
+      "target": "state_getisnoninteractivesession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getisinteractive",
+      "source": "state",
+      "target": "state_getisinteractive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_setisinteractive",
+      "source": "state",
+      "target": "state_setisinteractive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getclienttype",
+      "source": "state",
+      "target": "state_getclienttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_setclienttype",
+      "source": "state",
+      "target": "state_setclienttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L83",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getoriginalcwd",
+      "source": "state",
+      "target": "state_getoriginalcwd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_setoriginalcwd",
+      "source": "state",
+      "target": "state_setoriginalcwd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getcwdstate",
+      "source": "state",
+      "target": "state_getcwdstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L95",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_setcwdstate",
+      "source": "state",
+      "target": "state_setcwdstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_getsessionsource",
+      "source": "state",
+      "target": "state_getsessionsource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L107",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_setsessionsource",
+      "source": "state",
+      "target": "state_setsessionsource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L115",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_gettotalduration",
+      "source": "state",
+      "target": "state_gettotalduration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_src": "state",
+      "_tgt": "state_resetstatefortests_only",
+      "source": "state",
+      "target": "state_resetstatefortests_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/bootstrap/state.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "_src": "state_resetstatefortests_only",
+      "_tgt": "state_getinitialstate",
+      "source": "state_getinitialstate",
+      "target": "state_resetstatefortests_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "handlepromptsubmit",
+      "_tgt": "handlepromptsubmit_createusertextmessage",
+      "source": "handlepromptsubmit",
+      "target": "handlepromptsubmit_createusertextmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "_src": "handlepromptsubmit",
+      "_tgt": "handlepromptsubmit_handlepromptsubmit",
+      "source": "handlepromptsubmit",
+      "target": "handlepromptsubmit_handlepromptsubmit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L100",
+      "weight": 1.0,
+      "_src": "handlepromptsubmit",
+      "_tgt": "handlepromptsubmit_executeuserinput",
+      "source": "handlepromptsubmit",
+      "target": "handlepromptsubmit_executeuserinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L110",
+      "weight": 1.0,
+      "_src": "handlepromptsubmit_executeuserinput",
+      "_tgt": "handlepromptsubmit_createusertextmessage",
+      "source": "handlepromptsubmit_createusertextmessage",
+      "target": "handlepromptsubmit_executeuserinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/handlePromptSubmit.ts",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "handlepromptsubmit_handlepromptsubmit",
+      "_tgt": "handlepromptsubmit_executeuserinput",
+      "source": "handlepromptsubmit_handlepromptsubmit",
+      "target": "handlepromptsubmit_executeuserinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "generators",
+      "_tgt": "generators_lastx",
+      "source": "generators",
+      "target": "generators_lastx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "generators",
+      "_tgt": "generators_returnvalue",
+      "source": "generators",
+      "target": "generators_returnvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "generators",
+      "_tgt": "generators_next",
+      "source": "generators",
+      "target": "generators_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "generators",
+      "_tgt": "generators_toarray",
+      "source": "generators",
+      "target": "generators_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/generators.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "generators_returnvalue",
+      "_tgt": "generators_next",
+      "source": "generators_returnvalue",
+      "target": "generators_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/utils/systemPromptType.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "systemprompttype",
+      "_tgt": "systemprompttype_assystemprompt",
+      "source": "systemprompttype",
+      "target": "systemprompttype_assystemprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_createmessageuuid",
+      "source": "repl",
+      "target": "repl_createmessageuuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_ismessage",
+      "source": "repl",
+      "target": "repl_ismessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_isterminalwithreason",
+      "source": "repl",
+      "target": "repl_isterminalwithreason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_formatmessagecontent",
+      "source": "repl",
+      "target": "repl_formatmessagecontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L113",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_getmessagelabel",
+      "source": "repl",
+      "target": "repl_getmessagelabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_getmessagecolor",
+      "source": "repl",
+      "target": "repl_getmessagecolor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/screens/REPL.tsx",
+      "source_location": "L139",
+      "weight": 1.0,
+      "_src": "repl",
+      "_tgt": "repl_createrepltoolusecontext",
+      "source": "repl",
+      "target": "repl_createrepltoolusecontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/components/App.tsx",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "app",
+      "_tgt": "app_app",
+      "source": "app",
+      "target": "app_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/entrypoints/cli.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "cli",
+      "_tgt": "cli_main",
+      "source": "cli",
+      "target": "cli_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/query/deps.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "deps",
+      "_tgt": "deps_productiondeps",
+      "source": "deps",
+      "target": "deps_productiondeps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "toolorchestration",
+      "_tgt": "toolorchestration_getmaxtooluseconcurrency",
+      "source": "toolorchestration",
+      "target": "toolorchestration_getmaxtooluseconcurrency",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_src": "toolorchestration",
+      "_tgt": "toolorchestration_partitiontoolcalls",
+      "source": "toolorchestration",
+      "target": "toolorchestration_partitiontoolcalls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolOrchestration.ts",
+      "source_location": "L218",
+      "weight": 1.0,
+      "_src": "toolorchestration",
+      "_tgt": "toolorchestration_marktooluseascomplete",
+      "source": "toolorchestration",
+      "target": "toolorchestration_marktooluseascomplete",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/tools/toolExecution.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "toolexecution",
+      "_tgt": "toolexecution_createtoolresultmessage",
+      "source": "toolexecution",
+      "target": "toolexecution_createtoolresultmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/client.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "client",
+      "_tgt": "client_getanthropicclient",
+      "source": "client",
+      "target": "client_getanthropicclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_src": "claude",
+      "_tgt": "claude_normalizemessagerole",
+      "source": "claude",
+      "target": "claude_normalizemessagerole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "claude",
+      "_tgt": "claude_normalizemessagesforapi",
+      "source": "claude",
+      "target": "claude_normalizemessagesforapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/hank/tsproject/claude-code-annotated/src/services/api/claude.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "claude",
+      "_tgt": "claude_toassistantmessage",
+      "source": "claude",
+      "target": "claude_toassistantmessage",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}

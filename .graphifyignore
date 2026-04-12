@@ -1,0 +1,6 @@
+.idea/
+.trae/
+dist/
+node_modules/
+notes/
+graphify-out/
