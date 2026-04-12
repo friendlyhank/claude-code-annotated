@@ -18,6 +18,7 @@
 - `src/components/App.tsx`
 - `src/replLauncher.tsx`
 - `src/screens/REPL.tsx`
+- `src/utils/handlePromptSubmit.ts`
 
 ## 设计原理
 
@@ -104,11 +105,11 @@ sequenceDiagram
 
 - 标题和提示
 - transcript 列表
-- 处理中提示
+- 带原始输入回显的处理中提示
 - terminal reason
 - 输入行与光标
 
-界面本身不复杂，但已经足够承载最小对话闭环。当前这几个 UI 反馈分别由 REPL 提交编排层驱动：`handleSubmit` 切换 `isProcessing`，`onQueryEvent` 回写消息，`onQueryImpl` 写入 `lastTerminalReason`。
+界面本身不复杂，但已经足够承载最小对话闭环。当前这几个 UI 反馈分别由 REPL 提交编排层驱动：`handlePromptSubmit/executeUserInput` 写入处理中输入文本和共享中断控制器，`onQueryEvent` 回写消息，`onQueryImpl` 写入 `lastTerminalReason`，ESC 则先触发中断再退出 REPL。
 
 ## 伪代码
 
@@ -116,9 +117,10 @@ sequenceDiagram
 1. main.tsx 创建 Ink root
 2. replLauncher.tsx 组合 App 和 REPL
 3. renderAndRun 把组件树挂到 root
-4. REPL 通过 React state 驱动终端重渲染
-5. 用户退出后等待 Ink 生命周期结束
-6. 统一执行 gracefulShutdown
+4. REPL 通过本地 state 驱动终端重渲染，并在处理中提示里显示当前输入
+5. 若用户按下 ESC，先中断当前查询再退出
+6. 用户退出后等待 Ink 生命周期结束
+7. 统一执行 gracefulShutdown
 ```
 
 ## 当前边界

@@ -26,7 +26,7 @@ flowchart LR
 | 层次 | 主要模块 | 负责什么 | 不负责什么 |
 | --- | --- | --- | --- |
 | CLI 入口层 | `src/entrypoints/cli.tsx`、`src/main.tsx` | 解析命令、建立交互模式、启动 REPL | 不推进具体查询回合 |
-| 交互层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` | 收集输入、显示 transcript、通过提交编排层把一次提交交给 `query()` | 不直接操作 SDK 或工具调度 |
+| 交互层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx`、`src/utils/handlePromptSubmit.ts` | 收集输入、显示 transcript、通过提交编排层把一次提交交给 `query()` | 不直接操作 SDK 或工具调度 |
 | 查询引擎层 | `src/query.ts`、`src/query/deps.ts` | 持有主循环状态、决定继续还是终止 | 不直接持有 TUI 渲染逻辑 |
 | 工具编排层 | `src/Tool.ts`、`src/services/tools/` | 处理 `tool_use` 批次、顺序和结果回灌 | 当前不提供真实工具执行结果 |
 | 模型适配层 | `src/services/api/` | 归一化消息、创建 Anthropic 客户端、发起模型请求 | 不决定 query loop 的状态推进 |
@@ -44,7 +44,7 @@ flowchart LR
 ### 交互链路
 
 - `src/screens/REPL.tsx` 维护本地输入和 transcript 展示
-- 用户提交后，REPL 先经过 `handleSubmit -> onQuery -> onQueryImpl -> onQueryEvent` 的编排链路，再把请求送入 `query()`
+- 用户提交后，交互层先经过 `handleSubmit -> handlePromptSubmit -> executeUserInput -> onQuery -> onQueryImpl -> onQueryEvent` 的编排链路，再把请求送入 `query()`
 - `query()` 的流式产出再由交互层回写给 REPL 进行显示
 
 ### 回合链路

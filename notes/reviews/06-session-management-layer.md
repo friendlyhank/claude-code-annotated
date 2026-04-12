@@ -16,6 +16,7 @@
 - `src/types/message.ts`
 - `src/Tool.ts`
 - `src/screens/REPL.tsx`
+- `src/utils/handlePromptSubmit.ts`
 - `src/query.ts`
 - `src/types/ids.ts`
 
@@ -31,7 +32,9 @@ flowchart TD
     B --> B2[messages]
     B --> B3[isProcessing]
     B --> B4[lastTerminalReason]
-    B --> B5[messagesRef]
+    B --> B5[userInputOnProcessing]
+    B --> B6[abortController]
+    B --> B7[messagesRef]
 
     C[query.ts State] --> C1[messages]
     C --> C2[toolUseContext]
@@ -71,6 +74,10 @@ flowchart TD
 - 有多个与 UI / 状态联动的 setter
 
 这说明它承担的是“查询层与工具层的共享运行时环境”。
+
+### 4. 提交生命周期需要一份本地中断桥
+
+第二轮提交流程把 `AbortController` 的创建前移到了 `handlePromptSubmit.ts`。这使得交互层可以在真正进入 `query()` 之前，就把“本轮处理中提示”和“本轮可中断句柄”绑定在一起：REPL 用它展示当前正在处理哪条输入，也能在 ESC 时把同一个控制器传给查询层完成中断。
 
 ## 消息模型
 
@@ -122,9 +129,15 @@ flowchart TD
 - `messages`
 - `isProcessing`
 - `lastTerminalReason`
+- `userInputOnProcessing`
+- `abortController`
 - `messagesRef`
 
-其中 `messagesRef` 的职责和普通 React state 不同：它不是直接面向渲染，而是作为提交编排层读取“最新 transcript 快照”的可变引用。这样 `onQuery` 先追加 `newMessages` 后，`onQueryImpl` 可以立即读到已更新的消息历史，而不需要等待下一次 render。
+其中三类状态分工不同：
+
+- `userInputOnProcessing` 负责把当前提交中的原始输入显示到“Processing query loop...”提示里
+- `abortController` 负责把 ESC 中断与 `query()` 的同一轮请求绑定起来
+- `messagesRef` 的职责和普通 React state 不同：它不是直接面向渲染，而是作为提交编排层读取“最新 transcript 快照”的可变引用。这样 `onQuery` 先追加 `newMessages` 后，`onQueryImpl` 可以立即读到已更新的消息历史，而不需要等待下一次 render。
 
 ### 3. query loop 状态
 
@@ -143,11 +156,13 @@ flowchart TD
 ```text
 1. 启动时写入全局进程态
 2. REPL 维护当前输入和展示用 transcript
-3. 提交时先把 newMessages 同步写入 `messages` 与 `messagesRef`
-4. 再用最新 transcript 与 ToolUseContext 交给 query()
-5. query loop 用内部 State 保存跨轮次状态
-6. 工具层通过 ToolUseContext 读取和更新共享上下文
-7. 产出的 Message 再回写给 REPL 展示
+3. 提交时创建本轮 `AbortController`，并把处理中输入写入本地 state
+4. 再把 newMessages 同步写入 `messages` 与 `messagesRef`
+5. 用最新 transcript 与共享中断控制器构造 ToolUseContext 后交给 query()
+6. query loop 用内部 State 保存跨轮次状态
+7. 工具层通过 ToolUseContext 读取和更新共享上下文
+8. 产出的 Message 再回写给 REPL 展示
+9. 本轮结束后清空处理中输入和中断控制器
 ```
 
 ## 当前边界

@@ -16,6 +16,7 @@
 - `src/main.tsx`
 - `src/replLauncher.tsx`
 - `src/screens/REPL.tsx`
+- `src/utils/handlePromptSubmit.ts`
 
 ## 设计原理
 
@@ -36,7 +37,7 @@
 
 ### 3. REPL 负责提交编排，不承载主回合决策
 
-REPL 现在不再把“生成消息 + 调 `query()` + 消费终态”堆在一个函数里，而是拆成 `handleSubmit -> onQuery -> onQueryImpl -> onQueryEvent` 四段：提交函数负责校验输入和切换界面状态，`onQuery` 负责把新消息并入 transcript，`onQueryImpl` 负责消费 `query()` 迭代器，`onQueryEvent` 负责把过程事件回写界面。是否继续下一轮、是否执行工具、为何终止，仍然全部交给查询层决定。
+REPL 现在不再把“生成消息 + 调 `query()` + 消费终态”堆在一个函数里，而是拆成 `handleSubmit -> handlePromptSubmit -> executeUserInput -> onQuery -> onQueryImpl -> onQueryEvent` 六段：`handleSubmit` 只负责本地防重入和界面状态切换，`handlePromptSubmit` 负责清空输入框并启动提交流程，`executeUserInput` 负责把输入转换为 `newMessages`、创建共享 `AbortController`、写入处理中提示，`onQuery` 负责把新消息并入 transcript，`onQueryImpl` 负责消费 `query()` 迭代器，`onQueryEvent` 负责把过程事件回写界面。是否继续下一轮、是否执行工具、为何终止，仍然全部交给查询层决定。
 
 ## 实现原理
 
@@ -56,7 +57,9 @@ sequenceDiagram
     Main->>Launcher: launchRepl()
     Launcher->>REPL: 挂载 App + REPL
     User->>REPL: 输入文本并回车
-    REPL->>REPL: handleSubmit 校验输入并生成 UserMessage
+    REPL->>REPL: handleSubmit 校验输入并切换界面状态
+    REPL->>REPL: handlePromptSubmit 清空输入框
+    REPL->>REPL: executeUserInput 生成 UserMessage 与 AbortController
     REPL->>REPL: onQuery 追加 newMessages 到 transcript
     REPL->>Query: onQueryImpl 调用 query()
     Query-->>REPL: 流式返回 Message / Terminal
@@ -93,12 +96,15 @@ sequenceDiagram
 
 1. 读取本地 `input`
 2. 去掉首尾空白并拒绝空输入
-3. 生成 `UserMessage`
-4. 通过 `onQuery` 先把新消息追加到本地 transcript
-5. 基于最新 `messagesRef.current` 创建最小 `ToolUseContext`
-6. 由 `onQueryImpl` 调用 `query()`
-7. 持续消费产出的过程事件并交给 `onQueryEvent`
-8. 若终止原因是 `model_error`，额外回写系统错误消息
+3. `handlePromptSubmit` 清空输入框并委派 `executeUserInput`
+4. `executeUserInput` 创建共享 `AbortController`
+5. `executeUserInput` 把 `QueuedCommand` 转成 `UserMessage[]`
+6. `executeUserInput` 写入 `userInputOnProcessing`，并在需要时执行查询前校验
+7. `onQuery` 先把新消息追加到本地 transcript
+8. 基于最新 `messagesRef.current` 创建最小 `ToolUseContext`
+9. 由 `onQueryImpl` 调用 `query()`
+10. 持续消费产出的过程事件并交给 `onQueryEvent`
+11. 若终止原因是 `model_error`，额外回写系统错误消息
 
 这条链路是当前仓库最直接可运行的用户入口。
 
@@ -110,10 +116,12 @@ sequenceDiagram
 3. 其余情况加载 main() 并建立 Commander 程序
 4. 创建 Ink root 并挂载 REPL
 5. 用户在 REPL 输入文本
-6. handleSubmit 生成 UserMessage 并委派给 onQuery
-7. onQuery 先把 newMessages 追加到 transcript，再取最新消息快照
-8. onQueryImpl 调用 query() 获取异步消息流
-9. onQueryEvent 把返回消息写回 transcript，并根据 Terminal reason 更新界面状态
+6. handleSubmit 切换处理中状态并调用 handlePromptSubmit
+7. handlePromptSubmit 清空输入并委派 executeUserInput
+8. executeUserInput 创建共享 AbortController、生成 newMessages、写入处理中输入文本
+9. onQuery 先把 newMessages 追加到 transcript，再取最新消息快照
+10. onQueryImpl 调用 query() 获取异步消息流
+11. onQueryEvent 把返回消息写回 transcript，并根据 Terminal reason 更新界面状态
 ```
 
 ## 数据结构
@@ -122,6 +130,7 @@ sequenceDiagram
 | --- | --- | --- |
 | `Props` | `src/screens/REPL.tsx` | 传入 `debug` 和初始消息 |
 | `UserMessage` | `src/types/message.ts` | 把用户输入变成统一 transcript 载体 |
+| `HandlePromptSubmitParams` | `src/utils/handlePromptSubmit.ts` | 把输入缓冲、处理状态、查询入口和中断控制拼成一次提交的参数面 |
 | `ToolUseContext` | `src/Tool.ts` | 为 `query()` 提供工具列表、中断控制器和会话 setter |
 | `messagesRef` | `src/screens/REPL.tsx` | 在提交编排层保存最新 transcript 快照，避免异步消费读到旧消息 |
 | `lastTerminalReason` | `src/screens/REPL.tsx` | 在 UI 中显示本轮为何结束 |
@@ -129,7 +138,7 @@ sequenceDiagram
 ## 当前边界
 
 - `main.tsx` 仍保留大量 TODO，很多上游参数分支只定义了形态，没有真实执行逻辑
-- REPL 当前只支持最基本的单行输入、回车提交、ESC 退出
+- REPL 当前只支持最基本的单行输入、回车提交、ESC 中断后退出
 - 权限检查目前直接是 `async () => true`
 - 交互层没有真正的全局 AppState、slash commands 或会话恢复 UI
 

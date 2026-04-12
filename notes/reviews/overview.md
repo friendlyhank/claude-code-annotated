@@ -49,6 +49,7 @@
 │   │   └── utils.ts
 │   ├── utils/
 │   │   ├── generators.ts
+│   │   ├── handlePromptSubmit.ts
 │   │   └── systemPromptType.ts
 │   ├── Tool.ts
 │   ├── ink.ts
@@ -68,7 +69,8 @@
 | --- | --- | --- |
 | `src/entrypoints/cli.tsx` | CLI 快速路径与主模块动态导入入口 | `src/main.tsx` |
 | `src/main.tsx` | Commander 主命令、参数定义、Ink root 创建、REPL 启动 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` |
-| `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层与 `query()` 接线 | `src/query.ts` |
+| `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层入口与 `query()` 接线 | `src/utils/handlePromptSubmit.ts`、`src/query.ts` |
+| `src/utils/handlePromptSubmit.ts` | 把用户输入转换成待提交消息，收口输入清空、处理中提示与共享中断控制器创建 | `src/screens/REPL.tsx`、`src/query.ts` |
 | `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
 | `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
 | `src/services/tools/` | `tool_use` 分批、串并行调度与结果回传 | `src/services/tools/toolOrchestration.ts` |
@@ -93,10 +95,11 @@
 先读：
 
 1. `src/screens/REPL.tsx`
-2. `src/query.ts`
-3. `src/query/deps.ts`
+2. `src/utils/handlePromptSubmit.ts`
+3. `src/query.ts`
+4. `src/query/deps.ts`
 
-这条路径回答“消息怎样先进入提交编排层、怎样被追加到 transcript、模型调用怎样发生、什么时候进入下一轮”。
+这条路径回答“消息怎样先进入提交编排层、怎样创建共享中断控制器、怎样被追加到 transcript、模型调用怎样发生、什么时候进入下一轮”。
 
 ### 3. 想看工具调用怎样被处理
 
