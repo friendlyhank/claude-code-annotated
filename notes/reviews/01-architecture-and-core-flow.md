@@ -1,67 +1,121 @@
-# 架构设计和核心流程
+# 01. 架构设计和核心流程
 
-## Relevant source files
-- `src/entrypoints/cli.tsx`
-- `src/main.tsx`
-- `src/replLauncher.tsx`
-- `src/screens/REPL.tsx`
-- `src/query.ts`
-- `src/services/tools/toolOrchestration.ts`
+## 概述
 
-## 本页边界
+当前仓库的目标不是一次性复刻 Claude Code 全量能力，而是先把最小主链路搭起来，并围绕这条主链路持续增量对齐。现阶段最稳定的骨架是：
 
-本页只建立三件事：系统分层、主执行链路、阅读路径。  
-不展开函数级源码细节，也不替代各专题页的实现分析。
+`CLI 入口 → Commander 主命令 → Ink root → REPL → query() 代理循环 → 模型调用 → tool_use 编排 → 下一轮或终止`
 
-## Architecture and Runtime
+这条链路决定了仓库的模块边界，也决定了源码阅读顺序。
 
-- 运行时基础是 `Bun + TypeScript`
-- 命令入口是 `src/entrypoints/cli.tsx`
-- 主命令装配落在 `src/main.tsx`
-- 终端界面由 `Ink` 承担，业务推进围绕 `query()` 代理循环展开
-
-```mermaid
-flowchart TB
-    Entry[CLI Entry] --> Main[Main Command]
-    Main --> Repl[REPL UI]
-    Repl --> Query[Query Engine]
-    Query --> Tools[Tool Orchestration]
-    Query --> Model[Model Layer]
-    Tools --> Query
-    Query --> Repl
-```
-
-代码依据：当前仓库的启动入口、REPL 挂载点、`query()` 主循环和工具编排层分别落在 `src/entrypoints/cli.tsx`、`src/main.tsx`、`src/screens/REPL.tsx`、`src/query.ts`、`src/services/tools/toolOrchestration.ts`。
-
-## High-Level System Flow
+## 架构分层
 
 ```mermaid
 flowchart LR
-    Input[用户输入] --> CLI[CLI Commander]
-    CLI --> UI[REPL]
-    UI --> Query[Query Engine]
-    Query --> Stream[assistant 流式事件]
-    Stream --> Decide{是否包含工具调用}
-    Decide -->|否| Output[回写 transcript 并结束]
-    Decide -->|是| Tools[runTools]
-    Tools --> Query
+    A[CLI 入口层] --> B[交互层]
+    B --> C[查询引擎层]
+    C --> D[工具编排层]
+    C --> E[模型适配层]
+    C --> F[状态承载层]
+    B --> G[TUI 运行时]
+    G --> B
 ```
 
-代码依据：当前 `REPL` 已把输入直接送入 `query()`，`queryLoop` 消费 `callModel` 结果，发现 `tool_use` 后进入 `runTools`，否则以终止原因结束一轮回合。
+## 模块职责
 
-## 分层视图
+| 层次 | 主要模块 | 负责什么 | 不负责什么 |
+| --- | --- | --- | --- |
+| CLI 入口层 | `src/entrypoints/cli.tsx`、`src/main.tsx` | 解析命令、建立交互模式、启动 REPL | 不推进具体查询回合 |
+| 交互层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx` | 收集输入、显示 transcript、把一次提交交给 `query()` | 不直接操作 SDK 或工具调度 |
+| 查询引擎层 | `src/query.ts`、`src/query/deps.ts` | 持有主循环状态、决定继续还是终止 | 不直接持有 TUI 渲染逻辑 |
+| 工具编排层 | `src/Tool.ts`、`src/services/tools/` | 处理 `tool_use` 批次、顺序和结果回灌 | 当前不提供真实工具执行结果 |
+| 模型适配层 | `src/services/api/` | 归一化消息、创建 Anthropic 客户端、发起模型请求 | 不决定 query loop 的状态推进 |
+| 状态承载层 | `src/bootstrap/state.ts`、`src/types/message.ts` | 统一进程态、消息态和跨层上下文的基础类型 | 不承担业务流程控制 |
+| TUI 运行时 | `src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx` | 创建 root、驱动终端渲染、处理退出 | 不理解代理循环语义 |
 
-- 交互入口层：负责参数解析、模式判定和启动 REPL
-- 渲染层：负责终端 root、组件树挂载和退出流程
-- 查询引擎层：负责一轮代理回合的状态推进
-- 工具层：负责 `tool_use` 分批、串并行调度和结果回传
-- 模型依赖层：负责把模型调用封装成 `QueryDeps`
-- 状态承载层：负责全局交互态、cwd、消息历史载体等基础状态
+## 核心协作关系
 
-## 阅读路径
+### 启动链路
 
-- 先读 [overview](./overview.md) 建立目录地图和专题索引
-- 再读 [02-core-interaction-layer](./02-core-interaction-layer.md) 理解输入如何进入系统
-- 然后读 [03-query-engine-layer](./03-query-engine-layer.md) 理解一轮代理回合如何推进
-- 需要工具链路时读 [04-tool-execution-layer](./04-tool-execution-layer.md)
-- 需要运行时和状态支撑时读 [05-api-client-layer](./05-api-client-layer.md)、[06-session-management-layer](./06-session-management-layer.md)、[07-tui-rendering-layer](./07-tui-rendering-layer.md)
+- `src/entrypoints/cli.tsx` 处理极少数快速路径，其余情况动态导入 `main()`
+- `src/main.tsx` 定义 Commander 主命令，并在 action 中创建 Ink root
+- `src/replLauncher.tsx` 负责把 `App` 与 `REPL` 组合后挂到 root
+
+### 交互链路
+
+- `src/screens/REPL.tsx` 维护本地输入和 transcript 展示
+- 用户提交后，REPL 只负责把消息拼好并调用 `query()`
+- `query()` 的流式产出再回写给 REPL 进行显示
+
+### 回合链路
+
+- 查询层每一轮都先发起模型请求
+- 若本轮没有 `tool_use`，直接终止
+- 若出现 `tool_use`，则进入工具编排层生成 `tool_result`
+- 工具结果被拼回消息历史后，再进入下一轮
+
+## 状态主线
+
+```mermaid
+flowchart TD
+    A[bootstrap/state.ts] --> D[运行期进程态]
+    B[Message[]] --> E[transcript 主线]
+    C[ToolUseContext] --> F[查询层与工具层共享上下文]
+    E --> G[REPL 展示]
+    E --> H[query loop]
+    F --> H
+    D --> I[启动模式与环境判断]
+```
+
+这三条状态主线的分工如下：
+
+- `bootstrap/state.ts` 负责进程级环境信息，例如是否交互式、cwd、session source
+- `Message[]` 负责承载对话历史、assistant 响应、`tool_result` 和系统消息
+- `ToolUseContext` 负责工具与查询层共享的可变上下文，例如中断控制器、工具列表和会话级 setter
+
+## 当前架构特征
+
+### 1. 窄口明确
+
+仓库当前最稳定的两个窄口是：
+
+- 查询层到模型层：`QueryDeps.callModel`
+- 查询层到工具层：`runTools`
+
+这意味着后续即便补 streaming、权限、真实工具执行，整体架构骨架也不需要重写。
+
+### 2. 先闭环再扩展
+
+当前架构更重视“最小闭环可跑通”，所以很多复杂能力先被显式留在 TODO：
+
+- 非交互 `print` 模式
+- stop hooks / token budget / compact
+- 多 provider API 支持
+- App 级全局状态与更多 UI provider
+
+### 3. 分层清楚但实现深度不均衡
+
+- 入口层、REPL 接线、查询主循环骨架已经比较清晰
+- 工具执行层和 API 适配层已经有边界，但内部仍是最小实现
+- 状态层与类型层的覆盖比较全，便于后续继续复刻
+
+## 推荐阅读路径
+
+1. 先读 `overview.md` 建立目录地图
+2. 回到本页理解层次和协作关系
+3. 读 `02-core-interaction-layer.md` 看启动和输入接线
+4. 读 `03-query-engine-layer.md` 看主回合怎样推进
+5. 读 `04-tool-execution-layer.md` 与 `05-api-client-layer.md` 看两个外部窄口
+6. 最后读 `06-session-management-layer.md` 与 `07-tui-rendering-layer.md` 补齐状态与运行时认知
+
+## 小结
+
+当前仓库的核心认知不是“功能很多”，而是“骨架已经稳定”：
+
+- 入口负责把会话启动起来
+- REPL 负责把交互转成查询请求
+- `query()` 负责推进主回合
+- 工具层和 API 层分别作为两个外部协作窄口
+- 状态层和 TUI 层提供运行时承载
+
+后续所有增量复刻，基本都会落在这套骨架内部继续加深，而不是推翻重来。
