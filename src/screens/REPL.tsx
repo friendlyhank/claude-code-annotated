@@ -16,7 +16,7 @@ import type { QuerySource } from '../constants/querySource.js'
 import { Box, Text, useApp, useInput } from '../ink.js'
 import { query } from '../query.js'
 import type { ToolUseContext, Tools } from '../Tool.js'
-import type { Message } from '../types/message.js'
+import type { Message, StreamEvent } from '../types/message.js'
 import {
   handlePromptSubmit,
   type PromptInputHelpers,
@@ -50,6 +50,16 @@ function isMessage(event: unknown): event is Message {
     event !== null &&
     'type' in event &&
     'uuid' in event
+  )
+}
+
+function isStreamEvent(event: unknown): event is StreamEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    typeof event.type === 'string' &&
+    !('uuid' in event)
   )
 }
 
@@ -173,6 +183,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
   const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
   const [lastTerminalReason, setLastTerminalReason] = useState<string>()
+  const [lastStreamEventType, setLastStreamEventType] = useState<string>()
   // 当前正在处理的那条用户输入文本
   const [userInputOnProcessing, setUserInputOnProcessing] = useState<string>()
   const [abortController, setAbortController] = useState<AbortController | null>(
@@ -201,6 +212,11 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     (event: unknown): void => {
       if (isMessage(event)) {
         appendMessage(event)
+        return
+      }
+      // 对齐上游事件消费边界：即使暂未复刻完整 handleMessageFromStream，也保留最小可见 stream 反馈。
+      if (isStreamEvent(event)) {
+        setLastStreamEventType(event.type)
       }
     },
     [appendMessage],
@@ -287,6 +303,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     }
     setIsProcessing(true)
     setLastTerminalReason(undefined)
+    setLastStreamEventType(undefined)
 
     const helpers: PromptInputHelpers = {
       setCursorOffset: () => {},
@@ -296,7 +313,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
 
     try {
       // 处理用户输入，包括普通文本和工具调用
-      const queuedCommands = await handlePromptSubmit({
+      await handlePromptSubmit({
         input,
         helpers,
         onInputChange: setInput,
@@ -381,6 +398,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
           <Text dimColor>
             Processing query loop...
             {userInputOnProcessing ? ` ${userInputOnProcessing}` : ''}
+            {lastStreamEventType ? ` [${lastStreamEventType}]` : ''}
           </Text>
         </Box>
       )}

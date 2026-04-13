@@ -1,13 +1,13 @@
 # 进度面板
 
-> 最后更新：2026-04-12
+> 最后更新：2026-04-13
 
 ## 总体进度
 
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 1,868 |
+| 累计复刻目标文件代码数 | 1,881 |
 | 覆盖率 | **0.35%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
@@ -37,7 +37,7 @@
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已补 handlePromptSubmit 最小执行链路与 AbortController 透传，待补 StreamEvent 可见渲染 |
+| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已补 handlePromptSubmit 最小执行链路与 AbortController 透传；已补 StreamEvent 最小可见反馈，待补完整流式渲染 |
 | REPL 到代理循环 API 最小接线 | 2026-04-11 | 生产依赖已切到 services/api，待真实 key 验证 assistant 成功响应 |
 | toolExecution 真实执行 | 2026-04-09 | 编排闭环已打通，待补齐真实单工具执行、消息归一化与 hooks |
 
@@ -152,6 +152,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-13 | 0.35% → 0.35% | REPL 补齐 StreamEvent 最小可见反馈（onQueryEvent 增加 StreamEvent 识别并在 processing 区显示最近事件类型） |
 | 2026-04-12 | 0.29% → 0.35% | 新增 utils/handlePromptSubmit.ts 最小链路并接入 REPL，打通提交层到 query() 的 AbortController 透传 |
 | 2026-04-12 | 0.29% → 0.29% | REPL 提交路径对齐上游分层编排（新增 onQueryEvent/onQueryImpl/onQuery，提交流程改为委派链路） |
 | 2026-04-11 | 0.26% → 0.29% | REPL 到代理循环 API 最小接线推进到生产边界（新增 services/api/client.ts 与 services/api/claude.ts） |
