@@ -7,8 +7,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 1,847 |
-| 覆盖率 | **0.34%** |
+| 累计复刻目标文件代码数 | 2,105 |
+| 覆盖率 | **0.39%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -37,7 +37,7 @@
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已补 handlePromptSubmit 最小执行链路与 AbortController 透传；已补 StreamEvent 最小可见反馈，待补完整流式渲染 |
+| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已改为走 `utils/messages.ts` 的 `handleMessageFromStream` 分支结构；最小事件消费不再使用提示词近似 |
 | REPL 到代理循环 API 最小接线 | 2026-04-11 | 生产依赖已切到 services/api，待真实 key 验证 assistant 成功响应 |
 | toolExecution 真实执行 | 2026-04-09 | 编排闭环已打通，待补齐真实单工具执行、消息归一化与 hooks |
 
@@ -152,6 +152,9 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-13 | 0.39% → 0.39% | 按源码事实复核并二次对齐：`handleMessageFromStream` 签名改为上游同形态，`onStreamingThinking` 回调协议改为函数式更新；tokei 复核 `messages.ts=209`、`REPL.tsx=400` |
+| 2026-04-13 | 0.35% → 0.39% | 按上游 `handleMessageFromStream` 重改：新增 `src/utils/messages.ts`（Code=209），`REPL.tsx` 调整为统一事件消费链（Code=400） |
+| 2026-04-13 | 0.34% → 0.35% | `REPL.tsx` 新增 StreamEvent 语义提示映射（`stream_request_start`/`stream_event` 关键分支），并经 tokei 复核 `Code=393` |
 | 2026-04-13 | 0.35% → 0.34% | tokei 可用后完成统计口径校准：REPL.tsx 实测 Code=351，并统一重算累计复刻代码数 |
 | 2026-04-13 | 0.35% → 0.35% | REPL 补齐 StreamEvent 最小可见反馈（onQueryEvent 增加 StreamEvent 识别并在 processing 区显示最近事件类型） |
 | 2026-04-12 | 0.29% → 0.35% | 新增 utils/handlePromptSubmit.ts 最小链路并接入 REPL，打通提交层到 query() 的 AbortController 透传 |

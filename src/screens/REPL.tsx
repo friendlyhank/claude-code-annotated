@@ -17,6 +17,12 @@ import { Box, Text, useApp, useInput } from '../ink.js'
 import { query } from '../query.js'
 import type { ToolUseContext, Tools } from '../Tool.js'
 import type { Message, StreamEvent } from '../types/message.js'
+import type { SpinnerMode } from '../components/Spinner/types.js'
+import {
+  handleMessageFromStream,
+  type StreamingThinking,
+  type StreamingToolUse,
+} from '../utils/messages.js'
 import {
   handlePromptSubmit,
   type PromptInputHelpers,
@@ -42,15 +48,6 @@ const DEFAULT_MAIN_LOOP_MODEL =
 
 function createMessageUUID(): UUID {
   return randomUUID() as UUID
-}
-
-function isMessage(event: unknown): event is Message {
-  return (
-    typeof event === 'object' &&
-    event !== null &&
-    'type' in event &&
-    'uuid' in event
-  )
 }
 
 function isStreamEvent(event: unknown): event is StreamEvent {
@@ -184,6 +181,14 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
   const [lastTerminalReason, setLastTerminalReason] = useState<string>()
   const [lastStreamEventType, setLastStreamEventType] = useState<string>()
+  const [streamMode, setStreamMode] = useState<SpinnerMode>('requesting')
+  const [streamingText, setStreamingText] = useState<string | null>(null)
+  const [streamingThinking, setStreamingThinking] = useState<StreamingThinking | null>(
+    null,
+  )
+  const [streamingToolUses, setStreamingToolUses] = useState<StreamingToolUse[]>([])
+  const [responseLength, setResponseLength] = useState(0)
+  const [lastTTFTMs, setLastTTFTMs] = useState<number>()
   // 当前正在处理的那条用户输入文本
   const [userInputOnProcessing, setUserInputOnProcessing] = useState<string>()
   const [abortController, setAbortController] = useState<AbortController | null>(
@@ -209,12 +214,32 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
 
   // 处理查询事件
   const onQueryEvent = useCallback(
-    (event: unknown): void => {
-      if (isMessage(event)) {
-        appendMessage(event)
-        return
-      }
-      // 对齐上游事件消费边界：即使暂未复刻完整 handleMessageFromStream，也保留最小可见 stream 反馈。
+    (event: Parameters<typeof handleMessageFromStream>[0]): void => {
+      handleMessageFromStream(
+        event,
+        newMessage => {
+          appendMessage(newMessage)
+        },
+        newContent => {
+          setResponseLength(length => length + newContent.length)
+        },
+        mode => {
+          setStreamMode(mode)
+        },
+        update => {
+          setStreamingToolUses(update)
+        },
+        tombstonedMessage => {
+          setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage))
+        },
+        setStreamingThinking,
+        metrics => {
+          setLastTTFTMs(metrics.ttftMs)
+        },
+        update => {
+          setStreamingText(update)
+        },
+      )
       if (isStreamEvent(event)) {
         setLastStreamEventType(event.type)
       }
@@ -304,6 +329,12 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     setIsProcessing(true)
     setLastTerminalReason(undefined)
     setLastStreamEventType(undefined)
+    setStreamingText(null)
+    setStreamingThinking(null)
+    setStreamingToolUses([])
+    setResponseLength(0)
+    setLastTTFTMs(undefined)
+    setStreamMode('requesting')
 
     const helpers: PromptInputHelpers = {
       setCursorOffset: () => {},
@@ -399,7 +430,23 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
             Processing query loop...
             {userInputOnProcessing ? ` ${userInputOnProcessing}` : ''}
             {lastStreamEventType ? ` [${lastStreamEventType}]` : ''}
+            {` [mode:${streamMode}]`}
+            {` [len:${responseLength}]`}
+            {lastTTFTMs !== undefined ? ` [ttft:${lastTTFTMs}ms]` : ''}
+            {streamingToolUses.length > 0
+              ? ` [tool_uses:${streamingToolUses.length}]`
+              : ''}
           </Text>
+        </Box>
+      )}
+      {isProcessing && streamingText && (
+        <Box marginBottom={1}>
+          <Text dimColor>{streamingText}</Text>
+        </Box>
+      )}
+      {isProcessing && streamingThinking?.thinking && (
+        <Box marginBottom={1}>
+          <Text dimColor>{streamingThinking.thinking}</Text>
         </Box>
       )}
 
