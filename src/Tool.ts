@@ -158,16 +158,16 @@ export type ToolUseContext = {
       timestamp: number
     }
   >
-  queryTracking?: QueryChainTracking
+  queryTracking?: QueryChainTracking // 查询链跟踪
   /** Callback factory for requesting interactive prompts from the user.
    * Returns a prompt callback bound to the given source name.
    * Only available in interactive (REPL) contexts. */
   // TODO: requestPrompt?: ...
-  toolUseId?: string
-  criticalSystemReminder_EXPERIMENTAL?: string
+  toolUseId?: string // 工具调用ID
+  criticalSystemReminder_EXPERIMENTAL?: string // 严重系统提示（实验性）
   /** When true, preserve toolUseResult on messages even for subagents.
    * Used by in-process teammates whose transcripts are viewable by the user. */
-  preserveToolUseResults?: boolean
+  preserveToolUseResults?: boolean // 是否保留工具调用结果
   /** Local denial tracking state for async subagents whose setAppState is a
    *  no-op. Without this, the denial counter never accumulates and the
    *  fallback-to-prompting threshold is never reached. Mutable — the

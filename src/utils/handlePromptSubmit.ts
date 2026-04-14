@@ -1,3 +1,10 @@
+// ============================================================================
+// handlePromptSubmit.ts
+// ============================================================================
+// 处理用户输入的函数，包括普通文本和工具调用
+
+
+
 import { randomUUID, type UUID } from 'crypto'
 import type { CanUseToolFn } from '../hooks/useCanUseTool.js'
 import type { QuerySource } from '../constants/querySource.js'
