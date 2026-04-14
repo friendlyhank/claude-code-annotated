@@ -469,13 +469,13 @@ async function* queryLoop(
     state = {
       messages: [...messagesForQuery, ...assistantMessages, ...toolResults], // 拼回下一轮消息
       toolUseContext: updatedToolUseContext, // 更新工具上下文
-      autoCompactTracking,
-      maxOutputTokensRecoveryCount: 0,
-      hasAttemptedReactiveCompact: false,
-      maxOutputTokensOverride: undefined,
-      pendingToolUseSummary: undefined,
-      stopHookActive,
-      turnCount: nextTurnCount,
+      autoCompactTracking,  // 保持自动压缩跟踪
+      maxOutputTokensRecoveryCount: 0, // 重置最大输出 tokens 恢复计数
+      hasAttemptedReactiveCompact: false, // 重置响应压缩尝试
+      maxOutputTokensOverride: undefined, // 重置最大输出 tokens 重写
+      pendingToolUseSummary: undefined, // 重置待处理工具调用摘要
+      stopHookActive, // 保持中断信号
+      turnCount: nextTurnCount, // 更新轮次
       transition: { reason: 'next_turn' },
     }
     continue

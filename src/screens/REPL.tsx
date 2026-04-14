@@ -181,17 +181,17 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? []) // 管理完整的历史消息
   const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
   const [lastTerminalReason, setLastTerminalReason] = useState<string>() // 最后一个终端状态的 reason
-  const [lastStreamEventType, setLastStreamEventType] = useState<string>()
-  const [streamMode, setStreamMode] = useState<SpinnerMode>('requesting')
-  const [streamingText, setStreamingText] = useState<string | null>(null)
+  const [lastStreamEventType, setLastStreamEventType] = useState<string>() // 最后一个流式事件的 type
+  const [streamMode, setStreamMode] = useState<SpinnerMode>('requesting') // 流式事件的模式
+  const [streamingText, setStreamingText] = useState<string | null>(null) // 流式事件的文本内容
   const [streamingThinking, setStreamingThinking] = useState<StreamingThinking | null>(
     null,
-  )
-  const [streamingToolUses, setStreamingToolUses] = useState<StreamingToolUse[]>([])
-  const [responseLength, setResponseLength] = useState(0)
-  const [lastTTFTMs, setLastTTFTMs] = useState<number>()
-  // 当前正在处理的那条用户输入文本
-  const [userInputOnProcessing, setUserInputOnProcessing] = useState<string>()
+  ) // 流式事件的思考状态
+  const [streamingToolUses, setStreamingToolUses] = useState<StreamingToolUse[]>([]) // 流式事件的工具使用记录
+  // 记录响应长度，流式事件中会累加
+  const [responseLength, setResponseLength] = useState(0) // 响应长度状态变量
+  const [lastTTFTMs, setLastTTFTMs] = useState<number>() // 最后一个流式事件的 ttftMs
+  const [userInputOnProcessing, setUserInputOnProcessing] = useState<string>() // 当前正在处理的那条用户输入文本
   const [abortController, setAbortController] = useState<AbortController | null>(
     null,
   )

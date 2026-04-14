@@ -133,6 +133,7 @@ async function executeUserInput(params: ExecuteUserInputParams): Promise<void> {
       return
     }
 
+    // 执行查询
     await params.onQuery(
       newMessages,
       abortController,

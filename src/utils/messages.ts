@@ -43,6 +43,8 @@ export function handleMessageFromStream(
   onApiMetrics?: (metrics: { ttftMs: number }) => void, // 处理流式 API 指标
   onStreamingText?: (f: (current: string | null) => string | null) => void, // 处理流式文本
 ): void {
+
+  // 处理非流式事件
   if (message.type !== 'stream_event' && message.type !== 'stream_request_start') {
     if (message.type === 'tombstone') {
       const tombstoned = (message as { message?: Message }).message
@@ -83,11 +85,13 @@ export function handleMessageFromStream(
     return
   }
 
+  // 处理流式事件
   if (message.type === 'stream_request_start') {
     onSetStreamMode('requesting')
     return
   }
 
+  // 处理流式事件
   const streamMsg = message as {
     type: string
     event: {
@@ -111,12 +115,13 @@ export function handleMessageFromStream(
   }
 
   if (streamMsg.event.type === 'message_stop') {
-    onSetStreamMode('tool-use')
+    onSetStreamMode('tool-use') 
     onStreamingToolUses(() => [])
     return
   }
 
   switch (streamMsg.event.type) {
+    // 处理流式事件块开始
     case 'content_block_start': {
       onStreamingText?.(() => null)
       // TODO: 上游这里有 CONNECTOR_TEXT + isConnectorTextBlock 分支；
@@ -143,31 +148,34 @@ export function handleMessageFromStream(
           ])
           return
         }
-        case 'server_tool_use':
-        case 'web_search_tool_result':
-        case 'code_execution_tool_result':
-        case 'mcp_tool_use':
-        case 'mcp_tool_result':
-        case 'container_upload':
-        case 'web_fetch_tool_result':
-        case 'bash_code_execution_tool_result':
-        case 'text_editor_code_execution_tool_result':
-        case 'tool_search_tool_result':
-        case 'compaction':
+        case 'server_tool_use': // 服务器工具调用
+        case 'web_search_tool_result': // 网络搜索工具结果
+        case 'code_execution_tool_result': // 代码执行工具结果
+        case 'mcp_tool_use': // MCP 工具调用
+        case 'mcp_tool_result': // MCP 工具结果
+        case 'container_upload': // 容器上传
+        case 'web_fetch_tool_result': // 网络获取工具结果
+        case 'bash_code_execution_tool_result': // Bash 代码执行工具结果
+        case 'text_editor_code_execution_tool_result': // 文本编辑器代码执行工具结果
+        case 'tool_search_tool_result': // 工具搜索工具结果
+        case 'compaction': // 压缩
           onSetStreamMode('tool-input')
           return
         default:
           return
       }
     }
+    // 处理流式事件块增量
     case 'content_block_delta': {
       switch (streamMsg.event.delta.type) {
+        // 处理流式事件块增量文本
         case 'text_delta': {
           const deltaText = streamMsg.event.delta.text
           onUpdateLength(deltaText)
           onStreamingText?.(text => (text ?? '') + deltaText)
           return
         }
+        // 处理流式事件块增量输入 JSON
         case 'input_json_delta': {
           const delta = streamMsg.event.delta.partial_json
           const index = streamMsg.event.index
@@ -187,18 +195,22 @@ export function handleMessageFromStream(
           })
           return
         }
+        // 处理流式事件块增量思考
         case 'thinking_delta': {
           onUpdateLength(streamMsg.event.delta.thinking)
           return
         }
+        // 处理流式事件块增量签名
         case 'signature_delta':
           return
         default:
           return
       }
     }
+    // 处理流式事件块结束
     case 'content_block_stop':
       return
+    // 处理流式事件增量
     case 'message_delta':
       onSetStreamMode('responding')
       return
