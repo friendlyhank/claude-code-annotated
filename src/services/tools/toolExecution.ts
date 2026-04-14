@@ -1,9 +1,16 @@
+
+// ============================================================================
+// toolExecution.ts
+// ============================================================================
+// 工具执行层，负责“单个工具调用”，不负责分批、调度、汇总等。
+
 import { randomUUID, type UUID } from 'crypto'
 import type { ToolResultBlockParam, ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { findToolByName, type ToolUseContext } from '../../Tool.js'
 import type { AssistantMessage, Message, UserMessage } from '../../types/message.js'
 
+// 上下文修改器
 export type ContextModifier = {
   toolUseID: string
   modifyContext: (context: ToolUseContext) => ToolUseContext

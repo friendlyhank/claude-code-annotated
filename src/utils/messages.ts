@@ -9,10 +9,11 @@ import type {
 } from '../types/message.js'
 import type { SpinnerMode } from '../components/Spinner/types.js'
 
+// 流式工具调用 - 用于表示模型在流式输出中调用的工具
 export type StreamingToolUse = {
-  index: number
-  contentBlock: BetaToolUseBlock
-  unparsedToolInput: string
+  index: number // 工具调用在流式输出中的索引
+  contentBlock: BetaToolUseBlock // 工具调用的块内容
+  unparsedToolInput: string // 未解析的工具输入参数
 }
 
 export type StreamingThinking = {
@@ -30,17 +31,17 @@ export function handleMessageFromStream(
     | RequestStartEvent
     | ToolUseSummaryMessage,
   onMessage: (message: Message) => void,
-  onUpdateLength: (newContent: string) => void,
-  onSetStreamMode: (mode: SpinnerMode) => void,
+  onUpdateLength: (newContent: string) => void, // 更新流式输出长度
+  onSetStreamMode: (mode: SpinnerMode) => void, // 设置流式输出模式
   onStreamingToolUses: (
-    f: (streamingToolUse: StreamingToolUse[]) => StreamingToolUse[],
+    f: (streamingToolUse: StreamingToolUse[]) => StreamingToolUse[], // 处理流式工具调用
   ) => void,
-  onTombstone?: (message: Message) => void,
+  onTombstone?: (message: Message) => void, // 处理流式消息中的 Tombstone 消息
   onStreamingThinking?: (
-    f: (current: StreamingThinking | null) => StreamingThinking | null,
+    f: (current: StreamingThinking | null) => StreamingThinking | null, // 处理流式思考
   ) => void,
-  onApiMetrics?: (metrics: { ttftMs: number }) => void,
-  onStreamingText?: (f: (current: string | null) => string | null) => void,
+  onApiMetrics?: (metrics: { ttftMs: number }) => void, // 处理流式 API 指标
+  onStreamingText?: (f: (current: string | null) => string | null) => void, // 处理流式文本
 ): void {
   if (message.type !== 'stream_event' && message.type !== 'stream_request_start') {
     if (message.type === 'tombstone') {

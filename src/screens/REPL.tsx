@@ -176,10 +176,11 @@ function createReplToolUseContext(
 
 export function REPL({ debug = false, initialMessages }: Props): ReactNode {
   const { exit } = useApp()
-  const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
+ 
+  const [input, setInput] = useState('') // 设置输入状态
+  const [messages, setMessages] = useState<Message[]>(initialMessages ?? []) // 管理完整的历史消息
   const [isProcessing, setIsProcessing] = useState(false) // 程序是否正在进行状态
-  const [lastTerminalReason, setLastTerminalReason] = useState<string>()
+  const [lastTerminalReason, setLastTerminalReason] = useState<string>() // 最后一个终端状态的 reason
   const [lastStreamEventType, setLastStreamEventType] = useState<string>()
   const [streamMode, setStreamMode] = useState<SpinnerMode>('requesting')
   const [streamingText, setStreamingText] = useState<string | null>(null)
@@ -212,7 +213,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     setMessages(next)
   }, [])
 
-  // 处理查询事件
+  // 统一的消息处理时间，即处理流式消息中也处理完整消息
   const onQueryEvent = useCallback(
     (event: Parameters<typeof handleMessageFromStream>[0]): void => {
       handleMessageFromStream(

@@ -1,3 +1,10 @@
+
+// ============================================================================
+// claude.ts
+// ============================================================================
+// Claude 模型 API 调用层，负责与 Anthropic 模型交互。
+
+
 import { randomUUID, type UUID } from 'crypto'
 import type {
   Message as AnthropicMessage,
@@ -9,8 +16,8 @@ import type { SystemPrompt } from '../../utils/systemPromptType.js'
 
 type Options = {
   model: string
-  isNonInteractiveSession: boolean
-  [key: string]: unknown
+  isNonInteractiveSession: boolean // 是否为非交互式会话
+   [key: string]: unknown
 }
 
 // 将消息角色归一化以符合 Anthropic API 要求
@@ -95,7 +102,7 @@ export async function* queryModelWithStreaming({
     {
       model: options.model,
       max_tokens: parseInt(process.env.ANTHROPIC_MAX_OUTPUT_TOKENS || '4096', 10),
-      messages: normalizeMessagesForApi(messages),
+      messages: normalizeMessagesForApi(messages), // 归一化消息
       ...(systemPrompt.length > 0
         ? {
             system: systemPrompt.join('\n\n'),

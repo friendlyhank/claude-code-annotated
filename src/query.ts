@@ -53,6 +53,10 @@ import type { Terminal, Continue } from './query/transitions.js'
 export type { QueryDeps } from './query/deps.js'
 export type { Terminal, Continue } from './query/transitions.js'
 
+// yieldMissingToolResultBlocks - 生成缺失的工具结果块
+// 设计原因：
+// 1. 当工具调用失败时，需要生成中断消息以通知用户
+// 2. 每个工具调用块都需要生成一个中断消息
 function* yieldMissingToolResultBlocks(
   assistantMessages: AssistantMessage[],
   errorMessage: string,
@@ -107,6 +111,10 @@ const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
  *
  * Mirrors reactiveCompact.isWithheldPromptTooLong.
  */
+// isWithheldMaxOutputTokens - 判断消息是否为 max_output_tokens 错误消息
+// 设计原因：
+// 1. 当 max_output_tokens 错误时，需要 withhold 消息， SDK 调用者无法直接访问
+// 2. 恢复循环需要根据错误消息判断是否可以继续
 function isWithheldMaxOutputTokens(
   msg: Message | StreamEvent | undefined,
 ): msg is AssistantMessage {
@@ -330,6 +338,7 @@ async function* queryLoop(
     try {
       // 对齐上游实现：构建 callModel 参数
       // 参考 claude-code/src/query.ts:690-770
+      // 调用queryModelWithStreaming 获取流式响应
       for await (const message of deps.callModel({
         messages: messagesForQuery,
         systemPrompt: fullSystemPrompt,
@@ -433,6 +442,7 @@ async function* queryLoop(
     // 当前闭环只覆盖 runTools 接入；单工具真实执行、summary、attachments 继续延后。
     let updatedToolUseContext = toolUseContext
 
+    // 工具编排和执行调用
     for await (const update of runTools(
       toolUseBlocks,
       assistantMessages,
@@ -446,6 +456,7 @@ async function* queryLoop(
       updatedToolUseContext = update.newContext
     }
 
+    // 检查工具调用是否被中断
     if (updatedToolUseContext.abortController.signal.aborted) {
       return { reason: 'aborted_tools' } as Terminal
     }
@@ -456,8 +467,8 @@ async function* queryLoop(
     }
 
     state = {
-      messages: [...messagesForQuery, ...assistantMessages, ...toolResults],
-      toolUseContext: updatedToolUseContext,
+      messages: [...messagesForQuery, ...assistantMessages, ...toolResults], // 拼回下一轮消息
+      toolUseContext: updatedToolUseContext, // 更新工具上下文
       autoCompactTracking,
       maxOutputTokensRecoveryCount: 0,
       hasAttemptedReactiveCompact: false,

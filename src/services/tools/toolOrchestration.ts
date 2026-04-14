@@ -1,3 +1,10 @@
+
+// ============================================================================
+// toolOrchestration.ts
+// ============================================================================
+// 工具编排层，负责“分批 + 调度 + 上下文汇总”，
+// 具体单个工具执行细节由 toolExecution.ts 处理，避免在此层混入执行逻辑。
+
 import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { findToolByName, type ToolUseContext } from '../../Tool.js'
@@ -25,8 +32,8 @@ export async function* runTools(
   toolUseContext: ToolUseContext,
 ): AsyncGenerator<MessageUpdate, void> {
   let currentContext = toolUseContext
-  // 对齐上游实现：先按“是否可并发”切分批次，批次顺序必须保持输入顺序，
-  // 这样后续上下文变更的可见性与源码一致。
+  
+  // 先按“是否可并发”切分批次，批次顺序必须保持输入顺序，
   for (const { isConcurrencySafe, blocks } of partitionToolCalls(
     toolUseMessages,
     currentContext,
@@ -215,6 +222,7 @@ async function* runToolsConcurrently(
   )
 }
 
+// markToolUseAsComplete - 标记工具调用完成
 function markToolUseAsComplete(
   toolUseContext: ToolUseContext,
   toolUseID: string,
