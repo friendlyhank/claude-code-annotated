@@ -1,4 +1,4 @@
-- 最新已处理提交：`df7c8279c3106b3ad6e6e127b1b0387499c678ac`
+- 最新已处理提交：`9b89f152edf67a70aab0c4afa609beac7b7b2205`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -50,6 +50,14 @@
  - `src/ink.ts` 封装 Ink root/render API
  - `src/interactiveHelpers.tsx` 负责渲染运行、退出和消息式错误收尾
  - `src/components/App.tsx` 提供未来全局 Provider 的挂载位
-- `REPL.tsx` 当前由 `handlePromptSubmit/executeUserInput`、`onQueryEvent`、`onQueryImpl` 分别驱动处理中提示、消息回写与 terminal reason 展示
-- ESC 退出前会优先触发共享 `AbortController`，让终端交互和查询中断保持同一退出语义
+ - `REPL.tsx` 当前由 `handlePromptSubmit/executeUserInput`、`onQueryEvent`、`onQueryImpl` 分别驱动处理中提示、消息回写与 terminal reason 展示
+ - REPL 流式状态管理：`streamMode`、`streamingText`、`streamingThinking`、`streamingToolUses`、`responseLength`、`lastTTFTMs` 提供细粒度反馈
+ - ESC 退出前会优先触发共享 `AbortController`，让终端交互和查询中断保持同一退出语义
  - 当前 TUI 已能支撑最小 REPL，会话指标、对话框与复杂 UI 基础设施仍待补齐
+
+8. 流式事件处理与消息转换
+ - 文档：`notes/reviews/03-query-engine-layer.md`（与查询引擎层合并描述）
+ - `src/utils/messages.ts` 是流式事件处理核心，`handleMessageFromStream()` 统一消费 `Message | StreamEvent | RequestStartEvent | TombstoneMessage | ToolUseSummaryMessage`
+ - 处理分支覆盖：`stream_request_start`、`content_block_start`（thinking/text/tool_use/server_tool_use 等）、`content_block_delta`（text_delta/input_json_delta/thinking_delta）、`message_delta`、`message_stop`
+ - 设计原因：对齐上游实现，保持分支结构与调用协议，避免在 REPL 层重写事件判定
+ - 流式状态桥接：`onMessage`、`onUpdateLength`、`onSetStreamMode`、`onStreamingToolUses`、`onStreamingThinking`、`onApiMetrics`、`onStreamingText` 回调把事件映射到 REPL 状态

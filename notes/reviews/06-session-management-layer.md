@@ -132,8 +132,9 @@ flowchart TD
 - `userInputOnProcessing`
 - `abortController`
 - `messagesRef`
+- `streamMode`、`streamingText`、`streamingThinking`、`streamingToolUses`、`responseLength`、`lastTTFTMs`、`lastStreamEventType`（流式状态组）
 
-其中三类状态分工不同：
+其中几类状态分工不同：
 
 - `userInputOnProcessing` 负责把当前提交中的原始输入显示到“Processing query loop...”提示里
 - `abortController` 负责把 ESC 中断与 `query()` 的同一轮请求绑定起来

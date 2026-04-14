@@ -111,6 +111,39 @@ sequenceDiagram
 
 界面本身不复杂，但已经足够承载最小对话闭环。当前这几个 UI 反馈分别由 REPL 提交编排层驱动：`handlePromptSubmit/executeUserInput` 写入处理中输入文本和共享中断控制器，`onQueryEvent` 回写消息，`onQueryImpl` 写入 `lastTerminalReason`，ESC 则先触发中断再退出 REPL。
 
+### 5. REPL 流式状态管理
+
+REPL 维护一组流式状态，通过 `handleMessageFromStream` 回调驱动更新：
+
+**流式状态列表**：
+
+| 状态 | 类型 | 用途 |
+|-----|------|------|
+| `streamMode` | `SpinnerMode` | spinner 模式（requesting/thinking/responding/tool-input） |
+| `streamingText` | `string \| null` | 累积的流式文本输出 |
+| `streamingThinking` | `StreamingThinking \| null` | 思考过程内容与结束时间 |
+| `streamingToolUses` | `StreamingToolUse[]` | 正在流式输出的工具调用列表 |
+| `responseLength` | `number` | 响应长度（用于调试） |
+| `lastTTFTMs` | `number \| undefined` | 首字节延迟 |
+| `lastStreamEventType` | `string \| undefined` | 最近事件类型（调试用） |
+
+**UI 反馈展示**：
+
+```tsx
+// 处理中提示区域
+Processing query loop... [content_block_start] [mode:tool-input] [len:156] [ttft:234ms] [tool_uses:1]
+
+// 流式文本输出
+<Box><Text dimColor>{streamingText}</Text></Box>
+
+// 流式思考输出
+<Box><Text dimColor>{streamingThinking.thinking}</Text></Box>
+```
+
+**状态重置时机**：每次提交前（`executeUserInput` 入口）重置所有流式状态，避免跨轮残留。
+
+**设计动机**：函数式更新协议（`f: (current) => next`）保证并发安全，避免 React 状态竞态。
+
 ## 伪代码
 
 ```text

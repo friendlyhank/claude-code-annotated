@@ -17,6 +17,7 @@
 - `src/query/deps.ts`
 - `src/query/transitions.ts`
 - `src/types/message.ts`
+- `src/utils/messages.ts`
 
 ## 设计原理
 
@@ -93,6 +94,41 @@ flowchart TD
 - 工具阶段被中断：返回 `aborted_tools`
 
 此外还保留了 `max_turns` 保护，防止代理循环无限继续。
+
+### 4. 流式事件处理与消息转换
+
+`src/utils/messages.ts` 是查询层与 TUI 层之间的桥梁，核心函数 `handleMessageFromStream()` 统一消费 `query()` 产出的流式事件。
+
+**设计动机**：
+- 对齐上游实现，保持分支结构与调用协议
+- 避免在 REPL 层重写事件判定逻辑
+- 解耦事件处理与 UI 状态更新
+
+**事件分类处理**：
+
+| 事件类型 | 处理动作 | 状态映射 |
+|---------|---------|---------|
+| `stream_request_start` | 设置 `requesting` 模式 | spinner 启动 |
+| `content_block_start` | 按 block 类型设置模式 | thinking/responding/tool-input |
+| `content_block_delta` | 累加文本/JSON | streamingText/streamingToolUses |
+| `message_stop` | 清空工具调用列表 | 准备下一阶段 |
+| `message_delta` | 设置 `responding` 模式 | 文本输出中 |
+
+**回调协议**：
+
+```text
+handleMessageFromStream(event, {
+  onMessage,           // 完整消息回写
+  onSetStreamMode,     // spinner 模式切换
+  onStreamingToolUses, // 流式工具调用（函数式更新）
+  onStreamingThinking, // 流式思考（函数式更新）
+  onStreamingText,     // 流式文本（函数式更新）
+  onApiMetrics,        // TTFT 等指标
+  onUpdateLength,      // 响应长度累加
+})
+```
+
+**函数式更新设计**：`onStreamingToolUses`、`onStreamingThinking`、`onStreamingText` 均采用 `f: (current) => next` 形式，让 React 状态更新保持幂等性，避免竞态。
 
 ## 伪代码
 
