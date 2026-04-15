@@ -12,6 +12,7 @@
  */
 
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
+import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
 import { hasEmbeddedSearchTools, isEnvTruthy } from './utils/envUtils.js'
 import type { ToolPermissionContext } from './types/permissions.js'
@@ -114,8 +115,8 @@ export function getAllBaseTools(): Tools {
     ...(hasEmbeddedSearchTools()
       ? []
       : [
-          // TODO: GlobTool - 替换为 tools/GlobTool/GlobTool.ts
-          createPlaceholderTool('Glob', 'Search for files by pattern'),
+          // 对齐上游实现：GlobTool 已从占位替换为真实实现
+          GlobTool,
           // TODO: GrepTool - 替换为 tools/GrepTool/GrepTool.ts
           createPlaceholderTool('Grep', 'Search file contents with regex'),
         ]),
