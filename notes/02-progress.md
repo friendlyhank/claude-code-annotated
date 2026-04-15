@@ -7,8 +7,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 2,790 |
-| 覆盖率 | **0.52%** |
+| 累计复刻目标文件代码数 | 3,275 |
+| 覆盖率 | **0.61%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -18,7 +18,7 @@
 |---|---|---:|
 | 阶段 1：最小闭环 | `done` | 100% |
 | 阶段 2：核心查询引擎 | `doing` | 11% |
-| 阶段 3：工具系统 | `backlog` | 0% |
+| 阶段 3：工具系统 | `planned` | 8% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
 | 阶段 6：扩展能力 | `backlog` | 0% |
@@ -29,15 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| 工具注册机制（tools.ts） | `planned` | high |
-| 权限检查逻辑 | `planned` | high |
+| 工具注册机制（tools.ts） | `doing` | high |
+| 权限检查逻辑 | `doing` | high |
 | 第一个具体工具实现 | `backlog` | medium |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| 工具注册机制 | 待开始 | 需先实现 tools.ts |
+| 工具注册机制 | 进行中 | tools.ts + 权限规则解析框架已就绪 |
 
 ### 已完成
 
@@ -55,6 +55,9 @@
 | 复刻规划文档初始化 | 2026-04-05 | 创建 notes 文档体系 |
 | API 调用层流式化改造 | 2026-04-14 | queryModelWithStreaming 改为流式 AsyncGenerator，真实 API 响应验证通过 ✅ |
 | 基础工具类（Tool.ts 核心框架） | 2026-04-15 | buildTool、ToolResult、ValidationResult、PermissionResult 类型完整 ✅ |
+| 工具注册机制（tools.ts） | 2026-04-15 | getAllBaseTools、getTools、filterToolsByDenyRules、assembleToolPool、getMergedTools ✅ |
+| 权限规则解析（permissionRuleParser） | 2026-04-15 | permissionRuleValueFromString/ToString、escapeRuleContent、normalizeLegacyToolName ✅ |
+| MCP 名称工具函数 | 2026-04-15 | mcpInfoFromString、buildMcpToolName、getToolNameForPermissionCheck ✅ |
 
 ## 阻塞与风险
 
@@ -79,6 +82,8 @@
 - [ ] 工具执行（已打通编排闭环，真实执行未完成）
 - [ ] 会话管理
 - [x] 工具类型系统（Tool 类型、buildTool、权限类型 ✅）
+- [x] 工具注册机制（tools.ts：getAllBaseTools、getTools、assembleToolPool ✅）
+- [x] 工具权限检查（getDenyRuleForTool、filterToolsByDenyRules、permissionRuleParser ✅）
 
 ### 待实现能力
 
@@ -95,8 +100,9 @@
 - [x] 核心类型定义
 - [x] API 调用层流式化
 - [x] 基础工具类（Tool.ts）✅
-- [ ] 工具注册机制 ← 下一步
-- [ ] 工具权限检查
+- [x] 工具注册机制 ✅
+- [x] 工具权限检查 ✅
+- [ ] 第一个具体工具实现 ← 下一步
 
 ## 知识点记录
 
@@ -145,6 +151,14 @@
 - 权限三态设计（PermissionResult: allow/deny/ask）
 - 权限类型抽取模式（独立文件打破循环依赖）
 - Zod schema 类型（AnyObject = z.ZodType<{ [key: string]: unknown }>）
+- 工具注册模式（getAllBaseTools 唯一真相源、条件引入、isEnabled 过滤）
+- 权限规则解析模式（permissionRuleValueFromString: "ToolName" 或 "ToolName(content)"）
+- MCP 工具名解析模式（mcp__serverName__toolName 格式，mcpInfoFromString 解析）
+- MCP 权限匹配模式（getToolNameForPermissionCheck 使用全限定名防止误匹配）
+- 工具池组装模式（assembleToolPool: 内置排序 + MCP 排序 + uniqBy 去重，内置优先）
+- prompt cache 稳定性模式（工具排序保持内置工具为连续前缀）
+- 旧工具名映射模式（normalizeLegacyToolName: Task→Agent, KillShell→TaskStop）
+- 规则内容转义模式（escapeRuleContent/unescapeRuleContent: 括号转义）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -168,7 +182,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
-| 2026-04-15 | 0.42% → 0.52% | 基础工具类（Tool.ts 核心框架）：buildTool、ToolResult、ValidationResult、PermissionResult 类型完整；新增 `src/types/permissions.ts` |
+| 2026-04-15 | 0.52% → 0.61% | 工具注册机制（tools.ts）+ 权限规则解析 + MCP 名称工具 + 环境变量工具；新增 6 个文件 |
 | 2026-04-14 | 0.39% → 0.42% | API 调用层流式化改造：`services/api/claude.ts` 从非流式改为 AsyncGenerator，使用 `anthropic.beta.messages.create({ stream: true })`，yield StreamEvent |
 | 2026-04-13 | 0.39% → 0.39% | 按源码事实复核并二次对齐：`handleMessageFromStream` 签名改为上游同形态，`onStreamingThinking` 回调协议改为函数式更新；tokei 复核 `messages.ts=209`、`REPL.tsx=400` |
 | 2026-04-13 | 0.35% → 0.39% | 按上游 `handleMessageFromStream` 重改：新增 `src/utils/messages.ts`（Code=209），`REPL.tsx` 调整为统一事件消费链（Code=400） |

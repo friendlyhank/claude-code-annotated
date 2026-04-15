@@ -104,7 +104,12 @@
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
 | `src/Tool.ts` | 456 | 350 | 77% |
-| `src/tools.ts` | 387 | 0 | 0% |
+| `src/tools.ts` | 387 | 152 | 39% |
+| `src/constants/tools.ts` | 111 | 89 | 80% |
+| `src/utils/envUtils.ts` | ~50 | 37 | 74% |
+| `src/utils/permissions/permissions.ts` | ~350 | 96 | 27% |
+| `src/utils/permissions/permissionRuleParser.ts` | 199 | 125 | 63% |
+| `src/services/mcp/mcpStringUtils.ts` | 107 | 81 | 76% |
 | `src/types/permissions.ts` | ~300 | 165 | 55% |
 | `src/tools/BashTool/` | - | 0 | 0% |
 | `src/tools/FileEditTool/` | - | 0 | 0% |
@@ -154,8 +159,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数（总计） | 537,782 |
-| 累计复刻目标文件代码数 | 2,790 |
-| **覆盖率** | **0.52%** |
+| 累计复刻目标文件代码数 | 3,275 |
+| **覆盖率** | **0.61%** |
 
 ---
 
