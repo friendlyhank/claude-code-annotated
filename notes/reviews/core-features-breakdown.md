@@ -1,4 +1,4 @@
-- 最新已处理提交：`5c348ef98b12b7c6b0043e12557ab5018c7e6ff9`
+- 最新已处理提交：`a34de8aa6f1b3986fae2d57ce6a91da106ccf08c`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -15,19 +15,23 @@
 - `src/screens/REPL.tsx` 负责输入采集、消息回写，并通过 `handlePromptSubmit -> executeUserInput -> onQuery -> onQueryImpl -> onQueryEvent` 的提交编排后再接入 `query()`
  - 交互层当前只覆盖最小闭环，print/setup/agent 等上游分支仍未落地
 
-3. 查询引擎与回合推进
+3. 查询引擎、回合推进与流式事件处理
  - 文档：`notes/reviews/03-query-engine-layer.md`
  - `query()` / `queryLoop()` 是系统核心生成器边界
  - `State` 负责跨轮次保存消息历史、工具上下文、终止条件和恢复标记
- - 每轮固定执行“准备请求 → 调模型 → 检测 `tool_use` → 执行工具 → 进入下一轮或终止”
- - 当前已落地主回合骨架，压缩、budget、stop hooks 等增强能力仍为 TODO
+ - 每轮固定执行"准备请求 → 调模型 → 检测 `tool_use` → 执行工具 → 进入下一轮或终止"
+ - `src/utils/messages.ts` 的 `handleMessageFromStream()` 统一消费流式事件，覆盖 `stream_request_start`、`content_block_start/delta`、`message_delta/stop` 全部分支
+ - 流式状态桥接：`onMessage`、`onUpdateLength`、`onSetStreamMode`、`onStreamingToolUses`、`onStreamingThinking`、`onApiMetrics`、`onStreamingText` 回调把事件映射到 REPL 状态
+ - 当前已落地主回合骨架与流式事件处理，压缩、budget、stop hooks 等增强能力仍为 TODO
 
-4. 工具编排与执行存根
+4. 工具编排与执行框架
  - 文档：`notes/reviews/04-tool-execution-layer.md`
- - `Tool` / `Tools` / `ToolUseContext` 提供统一工具边界
+ - `Tool` / `ToolDef` / `Tools` / `ToolUseContext` 提供统一工具边界与工厂模式
+ - `buildTool()` 工厂函数 + `TOOL_DEFAULTS` 统一工具创建流程，填充安全默认值（fail-closed 原则）
+ - `CanUseToolFn` / `ValidationResult` / `ToolResult<T>` 定义完整的调用→验证→权限→结果链路
  - `toolOrchestration.ts` 负责按并发安全性切批、限流执行和上下文回放
  - `toolExecution.ts` 负责单个 `tool_use` 的工具查找、schema 校验与 `tool_result` 生成
- - 当前真实工具调用仍未落地，工具层以“可调度但未执行”的存根结果闭环
+ - Tool 接口已落地完整定义（call/checkPermissions/validateInput/渲染方法等），真实工具实例仍待实现
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
@@ -56,9 +60,12 @@
  - ESC 退出前会优先触发共享 `AbortController`，让终端交互和查询中断保持同一退出语义
  - 当前 TUI 已能支撑最小 REPL，会话指标、对话框与复杂 UI 基础设施仍待补齐
 
-8. 流式事件处理与消息转换
- - 文档：`notes/reviews/03-query-engine-layer.md`（与查询引擎层合并描述）
- - `src/utils/messages.ts` 是流式事件处理核心，`handleMessageFromStream()` 统一消费 `Message | StreamEvent | RequestStartEvent | TombstoneMessage | ToolUseSummaryMessage`
- - 处理分支覆盖：`stream_request_start`、`content_block_start`（thinking/text/tool_use/server_tool_use 等）、`content_block_delta`（text_delta/input_json_delta/thinking_delta）、`message_delta`、`message_stop`
- - 设计原因：对齐上游实现，保持分支结构与调用协议，避免在 REPL 层重写事件判定
- - 流式状态桥接：`onMessage`、`onUpdateLength`、`onSetStreamMode`、`onStreamingToolUses`、`onStreamingThinking`、`onApiMetrics`、`onStreamingText` 回调把事件映射到 REPL 状态
+8. 权限类型与决策体系
+ - 文档：`notes/reviews/08-permission-system.md`
+ - `src/types/permissions.ts` 独立权限类型定义，与实现分离以避免循环依赖
+ - 权限模式：5 种外部模式（acceptEdits/bypassPermissions/default/dontAsk/plan）+ 2 种内部模式（auto/bubble）
+ - 权限决策三态 + passthrough：`PermissionDecision<Allow/Ask/Deny>` + `PermissionResult` 含 passthrough 透传
+ - `PermissionDecisionReason` 覆盖 rule/mode/hook/classifier/safetyCheck 等 10 种决策溯源
+ - `ToolPermissionContext` 承载权限检查所需完整上下文（模式、规则、目录、标志位）
+ - `PermissionUpdate` 支持规则增删替换、模式设置、目录增删 6 种操作
+ - 当前仅落地类型定义，权限运行时逻辑（src/utils/permissions/）仍待复刻
