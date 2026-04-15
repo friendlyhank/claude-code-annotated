@@ -1,14 +1,14 @@
 # 进度面板
 
-> 最后更新：2026-04-14
+> 最后更新：2026-04-15
 
 ## 总体进度
 
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 2,275 |
-| 覆盖率 | **0.42%** |
+| 累计复刻目标文件代码数 | 2,790 |
+| 覆盖率 | **0.52%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -29,17 +29,15 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| REPL 到代理循环主流程对齐（提交编排） | `doing` | high |
-| REPL 到代理循环 API 最小接线 | `done` ✅ | high |
-| 基础工具类（Tool.ts） | `planned` | high |
-| 消息预处理流程 | `planned` | medium |
+| 工具注册机制（tools.ts） | `planned` | high |
+| 权限检查逻辑 | `planned` | high |
+| 第一个具体工具实现 | `backlog` | medium |
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| REPL 到代理循环主流程对齐（提交编排） | 2026-04-12 | 已改为走 `utils/messages.ts` 的 `handleMessageFromStream` 分支结构；流式 API 已验证通过 |
-| toolExecution 真实执行 | 2026-04-09 | 编排闭环已打通，待补齐真实单工具执行、消息归一化与 hooks |
+| 工具注册机制 | 待开始 | 需先实现 tools.ts |
 
 ### 已完成
 
@@ -56,6 +54,7 @@
 | REPL 到代理循环最小接线 | 2026-04-10 | REPL 提交改为消费 query()，UI 不再停留在本地 setTimeout 占位响应 |
 | 复刻规划文档初始化 | 2026-04-05 | 创建 notes 文档体系 |
 | API 调用层流式化改造 | 2026-04-14 | queryModelWithStreaming 改为流式 AsyncGenerator，真实 API 响应验证通过 ✅ |
+| 基础工具类（Tool.ts 核心框架） | 2026-04-15 | buildTool、ToolResult、ValidationResult、PermissionResult 类型完整 ✅ |
 
 ## 阻塞与风险
 
@@ -79,6 +78,7 @@
 - [x] LLM 调用（流式 AsyncGenerator 已实现，真实 API 响应验证通过 ✅）
 - [ ] 工具执行（已打通编排闭环，真实执行未完成）
 - [ ] 会话管理
+- [x] 工具类型系统（Tool 类型、buildTool、权限类型 ✅）
 
 ### 待实现能力
 
@@ -94,8 +94,8 @@
 - [x] REPL.tsx 主界面
 - [x] 核心类型定义
 - [x] API 调用层流式化
-- [ ] **基础工具类（Tool.ts）** ← 下一步
-- [ ] 工具注册机制
+- [x] 基础工具类（Tool.ts）✅
+- [ ] 工具注册机制 ← 下一步
 - [ ] 工具权限检查
 
 ## 知识点记录
@@ -140,6 +140,11 @@
 - Usage 增量累加模式（MutableUsage 支持渐进更新）
 - contentBlocks 状态累积模式（流式过程中逐步构建完整消息）
 - TTFT 追踪模式（首 token 延迟计算）
+- Tool 类型完整架构（30+ 方法签名）
+- buildTool 工厂模式（统一默认行为，fail-closed 原则）
+- 权限三态设计（PermissionResult: allow/deny/ask）
+- 权限类型抽取模式（独立文件打破循环依赖）
+- Zod schema 类型（AnyObject = z.ZodType<{ [key: string]: unknown }>）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -163,6 +168,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-15 | 0.42% → 0.52% | 基础工具类（Tool.ts 核心框架）：buildTool、ToolResult、ValidationResult、PermissionResult 类型完整；新增 `src/types/permissions.ts` |
 | 2026-04-14 | 0.39% → 0.42% | API 调用层流式化改造：`services/api/claude.ts` 从非流式改为 AsyncGenerator，使用 `anthropic.beta.messages.create({ stream: true })`，yield StreamEvent |
 | 2026-04-13 | 0.39% → 0.39% | 按源码事实复核并二次对齐：`handleMessageFromStream` 签名改为上游同形态，`onStreamingThinking` 回调协议改为函数式更新；tokei 复核 `messages.ts=209`、`REPL.tsx=400` |
 | 2026-04-13 | 0.35% → 0.39% | 按上游 `handleMessageFromStream` 重改：新增 `src/utils/messages.ts`（Code=209），`REPL.tsx` 调整为统一事件消费链（Code=400） |

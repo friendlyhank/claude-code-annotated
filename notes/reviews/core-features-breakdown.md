@@ -1,4 +1,4 @@
-- 最新已处理提交：`5c596b80d0cb13d8f9e3d137b06bdf1d6d03b2c0`
+- 最新已处理提交：`5c348ef98b12b7c6b0043e12557ab5018c7e6ff9`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -32,9 +32,10 @@
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
  - `src/query/deps.ts` 用 `QueryDeps` 把查询层与外部 I/O 解耦
- - `src/services/api/claude.ts` 负责消息归一化、Anthropic 调用和 assistant 消息回填
+ - `src/services/api/claude.ts` 负责消息归一化、流式事件处理和 assistant 消息回填
  - `src/services/api/client.ts` 负责 API key 读取、客户端缓存和超时配置
- - 当前只覆盖最小 `messages.create()` 路径，streaming / retry / 多 provider 尚未复刻
+ - 流式事件处理（message_start、content_block_*、message_delta）已落地，支持双产出机制（StreamEvent + AssistantMessage）
+ - 当前 retry / 多 provider 尚未复刻
 
 6. 会话状态与消息类型
  - 文档：`notes/reviews/06-session-management-layer.md`

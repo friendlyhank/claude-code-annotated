@@ -49,7 +49,7 @@
 | 主命令模块框架 | `done` | high |
 | 基础 REPL 循环 | `done` | high |
 | 核心类型定义 | `done` | high |
-| 基础工具类 | `planned` | high |
+| 基础工具类 | `done` | high |
 
 
 ### 阶段 2：核心查询引擎
