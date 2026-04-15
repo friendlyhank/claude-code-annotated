@@ -8,819 +8,959 @@
       "file_type": "code",
       "source_file": "build.ts",
       "source_location": "L1",
-      "id": "build_ts",
-      "community": 13,
-      "norm_label": "build.ts"
+      "community": 14,
+      "norm_label": "build.ts",
+      "id": "build_ts"
     },
     {
       "label": "main.tsx",
       "file_type": "code",
       "source_file": "src/main.tsx",
       "source_location": "L1",
-      "id": "src_main_tsx",
-      "community": 3,
-      "norm_label": "main.tsx"
+      "community": 2,
+      "norm_label": "main.tsx",
+      "id": "src_main_tsx"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "src/main.tsx",
       "source_location": "L55",
-      "id": "main_main",
-      "community": 3,
-      "norm_label": "main()"
+      "community": 2,
+      "norm_label": "main()",
+      "id": "main_main"
     },
     {
       "label": "run()",
       "file_type": "code",
       "source_file": "src/main.tsx",
       "source_location": "L116",
-      "id": "main_run",
-      "community": 3,
-      "norm_label": "run()"
+      "community": 2,
+      "norm_label": "run()",
+      "id": "main_run"
     },
     {
       "label": "Tool.ts",
       "file_type": "code",
       "source_file": "src/Tool.ts",
       "source_location": "L1",
-      "id": "src_tool_ts",
-      "community": 1,
-      "norm_label": "tool.ts"
+      "community": 0,
+      "norm_label": "tool.ts",
+      "id": "src_tool_ts"
     },
     {
       "label": "toolMatchesName()",
       "file_type": "code",
       "source_file": "src/Tool.ts",
-      "source_location": "L237",
-      "id": "tool_toolmatchesname",
-      "community": 1,
-      "norm_label": "toolmatchesname()"
+      "source_location": "L199",
+      "community": 0,
+      "norm_label": "toolmatchesname()",
+      "id": "tool_toolmatchesname"
     },
     {
       "label": "findToolByName()",
       "file_type": "code",
       "source_file": "src/Tool.ts",
-      "source_location": "L244",
-      "id": "tool_findtoolbyname",
-      "community": 1,
-      "norm_label": "findtoolbyname()"
+      "source_location": "L211",
+      "community": 0,
+      "norm_label": "findtoolbyname()",
+      "id": "tool_findtoolbyname"
     },
     {
       "label": "replLauncher.tsx",
       "file_type": "code",
       "source_file": "src/replLauncher.tsx",
       "source_location": "L1",
-      "id": "src_repllauncher_tsx",
-      "community": 3,
-      "norm_label": "repllauncher.tsx"
+      "community": 2,
+      "norm_label": "repllauncher.tsx",
+      "id": "src_repllauncher_tsx"
     },
     {
       "label": "launchRepl()",
       "file_type": "code",
       "source_file": "src/replLauncher.tsx",
       "source_location": "L37",
-      "id": "repllauncher_launchrepl",
-      "community": 3,
-      "norm_label": "launchrepl()"
+      "community": 2,
+      "norm_label": "launchrepl()",
+      "id": "repllauncher_launchrepl"
     },
     {
       "label": "query.ts",
       "file_type": "code",
       "source_file": "src/query.ts",
       "source_location": "L1",
-      "id": "src_query_ts",
-      "community": 1,
-      "norm_label": "query.ts"
+      "community": 0,
+      "norm_label": "query.ts",
+      "id": "src_query_ts"
     },
     {
       "label": "isWithheldMaxOutputTokens()",
       "file_type": "code",
       "source_file": "src/query.ts",
       "source_location": "L118",
-      "id": "query_iswithheldmaxoutputtokens",
-      "community": 1,
-      "norm_label": "iswithheldmaxoutputtokens()"
+      "community": 0,
+      "norm_label": "iswithheldmaxoutputtokens()",
+      "id": "query_iswithheldmaxoutputtokens"
     },
     {
       "label": "interactiveHelpers.tsx",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L1",
-      "id": "src_interactivehelpers_tsx",
-      "community": 2,
-      "norm_label": "interactivehelpers.tsx"
+      "community": 3,
+      "norm_label": "interactivehelpers.tsx",
+      "id": "src_interactivehelpers_tsx"
     },
     {
       "label": "renderAndRun()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L28",
-      "id": "interactivehelpers_renderandrun",
-      "community": 2,
-      "norm_label": "renderandrun()"
+      "community": 3,
+      "norm_label": "renderandrun()",
+      "id": "interactivehelpers_renderandrun"
     },
     {
       "label": "gracefulShutdown()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L46",
-      "id": "interactivehelpers_gracefulshutdown",
-      "community": 2,
-      "norm_label": "gracefulshutdown()"
+      "community": 3,
+      "norm_label": "gracefulshutdown()",
+      "id": "interactivehelpers_gracefulshutdown"
     },
     {
       "label": "gracefulShutdownSync()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L57",
-      "id": "interactivehelpers_gracefulshutdownsync",
-      "community": 2,
-      "norm_label": "gracefulshutdownsync()"
+      "community": 3,
+      "norm_label": "gracefulshutdownsync()",
+      "id": "interactivehelpers_gracefulshutdownsync"
     },
     {
       "label": "exitWithError()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L72",
-      "id": "interactivehelpers_exitwitherror",
-      "community": 2,
-      "norm_label": "exitwitherror()"
+      "community": 3,
+      "norm_label": "exitwitherror()",
+      "id": "interactivehelpers_exitwitherror"
     },
     {
       "label": "exitWithMessage()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L83",
-      "id": "interactivehelpers_exitwithmessage",
-      "community": 2,
-      "norm_label": "exitwithmessage()"
+      "community": 3,
+      "norm_label": "exitwithmessage()",
+      "id": "interactivehelpers_exitwithmessage"
     },
     {
       "label": "showDialog()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L117",
-      "id": "interactivehelpers_showdialog",
-      "community": 2,
-      "norm_label": "showdialog()"
+      "community": 3,
+      "norm_label": "showdialog()",
+      "id": "interactivehelpers_showdialog"
     },
     {
       "label": "getRenderContext()",
       "file_type": "code",
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L141",
-      "id": "interactivehelpers_getrendercontext",
-      "community": 2,
-      "norm_label": "getrendercontext()"
+      "community": 3,
+      "norm_label": "getrendercontext()",
+      "id": "interactivehelpers_getrendercontext"
     },
     {
       "label": "ink.ts",
       "file_type": "code",
       "source_file": "src/ink.ts",
       "source_location": "L1",
-      "id": "src_ink_ts",
-      "community": 3,
-      "norm_label": "ink.ts"
+      "community": 2,
+      "norm_label": "ink.ts",
+      "id": "src_ink_ts"
     },
     {
       "label": "createRoot()",
       "file_type": "code",
       "source_file": "src/ink.ts",
       "source_location": "L41",
-      "id": "ink_createroot",
-      "community": 3,
-      "norm_label": "createroot()"
+      "community": 2,
+      "norm_label": "createroot()",
+      "id": "ink_createroot"
     },
     {
       "label": "render()",
       "file_type": "code",
       "source_file": "src/ink.ts",
       "source_location": "L72",
-      "id": "ink_render",
-      "community": 3,
-      "norm_label": "render()"
+      "community": 2,
+      "norm_label": "render()",
+      "id": "ink_render"
     },
     {
       "label": "ids.ts",
       "file_type": "code",
       "source_file": "src/types/ids.ts",
       "source_location": "L1",
-      "id": "src_types_ids_ts",
-      "community": 8,
-      "norm_label": "ids.ts"
+      "community": 9,
+      "norm_label": "ids.ts",
+      "id": "src_types_ids_ts"
     },
     {
       "label": "asSessionId()",
       "file_type": "code",
       "source_file": "src/types/ids.ts",
       "source_location": "L28",
-      "id": "ids_assessionid",
-      "community": 8,
-      "norm_label": "assessionid()"
+      "community": 9,
+      "norm_label": "assessionid()",
+      "id": "ids_assessionid"
     },
     {
       "label": "asAgentId()",
       "file_type": "code",
       "source_file": "src/types/ids.ts",
       "source_location": "L36",
-      "id": "ids_asagentid",
-      "community": 8,
-      "norm_label": "asagentid()"
+      "community": 9,
+      "norm_label": "asagentid()",
+      "id": "ids_asagentid"
     },
     {
       "label": "toAgentId()",
       "file_type": "code",
       "source_file": "src/types/ids.ts",
       "source_location": "L52",
-      "id": "ids_toagentid",
-      "community": 8,
-      "norm_label": "toagentid()"
+      "community": 9,
+      "norm_label": "toagentid()",
+      "id": "ids_toagentid"
     },
     {
       "label": "utils.ts",
       "file_type": "code",
       "source_file": "src/types/utils.ts",
       "source_location": "L1",
-      "id": "src_types_utils_ts",
-      "community": 14,
-      "norm_label": "utils.ts"
+      "community": 15,
+      "norm_label": "utils.ts",
+      "id": "src_types_utils_ts"
     },
     {
       "label": "message.ts",
       "file_type": "code",
       "source_file": "src/types/message.ts",
       "source_location": "L1",
-      "id": "src_types_message_ts",
-      "community": 1,
-      "norm_label": "message.ts"
+      "community": 0,
+      "norm_label": "message.ts",
+      "id": "src_types_message_ts"
     },
     {
       "label": "tools.ts",
       "file_type": "code",
       "source_file": "src/types/tools.ts",
       "source_location": "L1",
-      "id": "src_types_tools_ts",
-      "community": 1,
-      "norm_label": "tools.ts"
+      "community": 0,
+      "norm_label": "tools.ts",
+      "id": "src_types_tools_ts"
     },
     {
       "label": "global.d.ts",
       "file_type": "code",
       "source_file": "src/types/global.d.ts",
       "source_location": "L1",
-      "id": "src_types_global_d_ts",
-      "community": 15,
-      "norm_label": "global.d.ts"
+      "community": 16,
+      "norm_label": "global.d.ts",
+      "id": "src_types_global_d_ts"
     },
     {
       "label": "index.ts",
       "file_type": "code",
       "source_file": "src/types/index.ts",
       "source_location": "L1",
-      "id": "src_types_index_ts",
-      "community": 16,
-      "norm_label": "index.ts"
+      "community": 17,
+      "norm_label": "index.ts",
+      "id": "src_types_index_ts"
     },
     {
       "label": "state.ts",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L1",
-      "id": "src_bootstrap_state_ts",
-      "community": 0,
-      "norm_label": "state.ts"
+      "community": 1,
+      "norm_label": "state.ts",
+      "id": "src_bootstrap_state_ts"
     },
     {
       "label": "getInitialState()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L29",
-      "id": "state_getinitialstate",
-      "community": 0,
-      "norm_label": "getinitialstate()"
+      "community": 1,
+      "norm_label": "getinitialstate()",
+      "id": "state_getinitialstate"
     },
     {
       "label": "getIsNonInteractiveSession()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L55",
-      "id": "state_getisnoninteractivesession",
-      "community": 0,
-      "norm_label": "getisnoninteractivesession()"
+      "community": 1,
+      "norm_label": "getisnoninteractivesession()",
+      "id": "state_getisnoninteractivesession"
     },
     {
       "label": "getIsInteractive()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L59",
-      "id": "state_getisinteractive",
-      "community": 0,
-      "norm_label": "getisinteractive()"
+      "community": 1,
+      "norm_label": "getisinteractive()",
+      "id": "state_getisinteractive"
     },
     {
       "label": "setIsInteractive()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L63",
-      "id": "state_setisinteractive",
-      "community": 0,
-      "norm_label": "setisinteractive()"
+      "community": 1,
+      "norm_label": "setisinteractive()",
+      "id": "state_setisinteractive"
     },
     {
       "label": "getClientType()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L71",
-      "id": "state_getclienttype",
-      "community": 0,
-      "norm_label": "getclienttype()"
+      "community": 1,
+      "norm_label": "getclienttype()",
+      "id": "state_getclienttype"
     },
     {
       "label": "setClientType()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L75",
-      "id": "state_setclienttype",
-      "community": 0,
-      "norm_label": "setclienttype()"
+      "community": 1,
+      "norm_label": "setclienttype()",
+      "id": "state_setclienttype"
     },
     {
       "label": "getOriginalCwd()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L83",
-      "id": "state_getoriginalcwd",
-      "community": 0,
-      "norm_label": "getoriginalcwd()"
+      "community": 1,
+      "norm_label": "getoriginalcwd()",
+      "id": "state_getoriginalcwd"
     },
     {
       "label": "setOriginalCwd()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L87",
-      "id": "state_setoriginalcwd",
-      "community": 0,
-      "norm_label": "setoriginalcwd()"
+      "community": 1,
+      "norm_label": "setoriginalcwd()",
+      "id": "state_setoriginalcwd"
     },
     {
       "label": "getCwdState()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L91",
-      "id": "state_getcwdstate",
-      "community": 0,
-      "norm_label": "getcwdstate()"
+      "community": 1,
+      "norm_label": "getcwdstate()",
+      "id": "state_getcwdstate"
     },
     {
       "label": "setCwdState()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L95",
-      "id": "state_setcwdstate",
-      "community": 0,
-      "norm_label": "setcwdstate()"
+      "community": 1,
+      "norm_label": "setcwdstate()",
+      "id": "state_setcwdstate"
     },
     {
       "label": "getSessionSource()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L103",
-      "id": "state_getsessionsource",
-      "community": 0,
-      "norm_label": "getsessionsource()"
+      "community": 1,
+      "norm_label": "getsessionsource()",
+      "id": "state_getsessionsource"
     },
     {
       "label": "setSessionSource()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L107",
-      "id": "state_setsessionsource",
-      "community": 0,
-      "norm_label": "setsessionsource()"
+      "community": 1,
+      "norm_label": "setsessionsource()",
+      "id": "state_setsessionsource"
     },
     {
       "label": "getTotalDuration()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L115",
-      "id": "state_gettotalduration",
-      "community": 0,
-      "norm_label": "gettotalduration()"
+      "community": 1,
+      "norm_label": "gettotalduration()",
+      "id": "state_gettotalduration"
     },
     {
       "label": "resetStateForTests_ONLY()",
       "file_type": "code",
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L126",
-      "id": "state_resetstatefortests_only",
-      "community": 0,
-      "norm_label": "resetstatefortests_only()"
+      "community": 1,
+      "norm_label": "resetstatefortests_only()",
+      "id": "state_resetstatefortests_only"
     },
     {
       "label": "querySource.ts",
       "file_type": "code",
       "source_file": "src/constants/querySource.ts",
       "source_location": "L1",
-      "id": "src_constants_querysource_ts",
-      "community": 1,
-      "norm_label": "querysource.ts"
+      "community": 0,
+      "norm_label": "querysource.ts",
+      "id": "src_constants_querysource_ts"
     },
     {
       "label": "handlePromptSubmit.ts",
       "file_type": "code",
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L1",
-      "id": "src_utils_handlepromptsubmit_ts",
-      "community": 9,
-      "norm_label": "handlepromptsubmit.ts"
+      "community": 10,
+      "norm_label": "handlepromptsubmit.ts",
+      "id": "src_utils_handlepromptsubmit_ts"
     },
     {
       "label": "createUserTextMessage()",
       "file_type": "code",
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L70",
-      "id": "handlepromptsubmit_createusertextmessage",
-      "community": 9,
-      "norm_label": "createusertextmessage()"
+      "community": 10,
+      "norm_label": "createusertextmessage()",
+      "id": "handlepromptsubmit_createusertextmessage"
     },
     {
       "label": "handlePromptSubmit()",
       "file_type": "code",
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L86",
-      "id": "handlepromptsubmit_handlepromptsubmit",
-      "community": 9,
-      "norm_label": "handlepromptsubmit()"
+      "community": 10,
+      "norm_label": "handlepromptsubmit()",
+      "id": "handlepromptsubmit_handlepromptsubmit"
     },
     {
       "label": "executeUserInput()",
       "file_type": "code",
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L107",
-      "id": "handlepromptsubmit_executeuserinput",
-      "community": 9,
-      "norm_label": "executeuserinput()"
+      "community": 10,
+      "norm_label": "executeuserinput()",
+      "id": "handlepromptsubmit_executeuserinput"
     },
     {
       "label": "messages.ts",
       "file_type": "code",
       "source_file": "src/utils/messages.ts",
       "source_location": "L1",
-      "id": "src_utils_messages_ts",
-      "community": 10,
-      "norm_label": "messages.ts"
+      "community": 11,
+      "norm_label": "messages.ts",
+      "id": "src_utils_messages_ts"
     },
     {
       "label": "handleMessageFromStream()",
       "file_type": "code",
       "source_file": "src/utils/messages.ts",
       "source_location": "L26",
-      "id": "messages_handlemessagefromstream",
-      "community": 10,
-      "norm_label": "handlemessagefromstream()"
+      "community": 11,
+      "norm_label": "handlemessagefromstream()",
+      "id": "messages_handlemessagefromstream"
     },
     {
       "label": "generators.ts",
       "file_type": "code",
       "source_file": "src/utils/generators.ts",
       "source_location": "L1",
-      "id": "src_utils_generators_ts",
-      "community": 7,
-      "norm_label": "generators.ts"
+      "community": 8,
+      "norm_label": "generators.ts",
+      "id": "src_utils_generators_ts"
     },
     {
       "label": "lastX()",
       "file_type": "code",
       "source_file": "src/utils/generators.ts",
       "source_location": "L5",
-      "id": "generators_lastx",
-      "community": 7,
-      "norm_label": "lastx()"
+      "community": 8,
+      "norm_label": "lastx()",
+      "id": "generators_lastx"
     },
     {
       "label": "returnValue()",
       "file_type": "code",
       "source_file": "src/utils/generators.ts",
       "source_location": "L16",
-      "id": "generators_returnvalue",
-      "community": 7,
-      "norm_label": "returnvalue()"
+      "community": 8,
+      "norm_label": "returnvalue()",
+      "id": "generators_returnvalue"
     },
     {
       "label": "next()",
       "file_type": "code",
       "source_file": "src/utils/generators.ts",
       "source_location": "L43",
-      "id": "generators_next",
-      "community": 7,
-      "norm_label": "next()"
+      "community": 8,
+      "norm_label": "next()",
+      "id": "generators_next"
     },
     {
       "label": "toArray()",
       "file_type": "code",
       "source_file": "src/utils/generators.ts",
       "source_location": "L82",
-      "id": "generators_toarray",
-      "community": 7,
-      "norm_label": "toarray()"
+      "community": 8,
+      "norm_label": "toarray()",
+      "id": "generators_toarray"
     },
     {
       "label": "systemPromptType.ts",
       "file_type": "code",
       "source_file": "src/utils/systemPromptType.ts",
       "source_location": "L1",
-      "id": "src_utils_systemprompttype_ts",
-      "community": 1,
-      "norm_label": "systemprompttype.ts"
+      "community": 0,
+      "norm_label": "systemprompttype.ts",
+      "id": "src_utils_systemprompttype_ts"
     },
     {
       "label": "asSystemPrompt()",
       "file_type": "code",
       "source_file": "src/utils/systemPromptType.ts",
       "source_location": "L12",
-      "id": "systemprompttype_assystemprompt",
-      "community": 1,
-      "norm_label": "assystemprompt()"
+      "community": 0,
+      "norm_label": "assystemprompt()",
+      "id": "systemprompttype_assystemprompt"
     },
     {
       "label": "REPL.tsx",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L1",
-      "id": "src_screens_repl_tsx",
       "community": 4,
-      "norm_label": "repl.tsx"
+      "norm_label": "repl.tsx",
+      "id": "src_screens_repl_tsx"
     },
     {
       "label": "createMessageUUID()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L49",
-      "id": "repl_createmessageuuid",
       "community": 4,
-      "norm_label": "createmessageuuid()"
+      "norm_label": "createmessageuuid()",
+      "id": "repl_createmessageuuid"
     },
     {
       "label": "isStreamEvent()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L53",
-      "id": "repl_isstreamevent",
       "community": 4,
-      "norm_label": "isstreamevent()"
+      "norm_label": "isstreamevent()",
+      "id": "repl_isstreamevent"
     },
     {
       "label": "isTerminalWithReason()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L64",
-      "id": "repl_isterminalwithreason",
       "community": 4,
-      "norm_label": "isterminalwithreason()"
+      "norm_label": "isterminalwithreason()",
+      "id": "repl_isterminalwithreason"
     },
     {
       "label": "formatMessageContent()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L75",
-      "id": "repl_formatmessagecontent",
       "community": 4,
-      "norm_label": "formatmessagecontent()"
+      "norm_label": "formatmessagecontent()",
+      "id": "repl_formatmessagecontent"
     },
     {
       "label": "getMessageLabel()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L120",
-      "id": "repl_getmessagelabel",
       "community": 4,
-      "norm_label": "getmessagelabel()"
+      "norm_label": "getmessagelabel()",
+      "id": "repl_getmessagelabel"
     },
     {
       "label": "getMessageColor()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L133",
-      "id": "repl_getmessagecolor",
       "community": 4,
-      "norm_label": "getmessagecolor()"
+      "norm_label": "getmessagecolor()",
+      "id": "repl_getmessagecolor"
     },
     {
       "label": "createReplToolUseContext()",
       "file_type": "code",
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L146",
-      "id": "repl_createrepltoolusecontext",
       "community": 4,
-      "norm_label": "createrepltoolusecontext()"
+      "norm_label": "createrepltoolusecontext()",
+      "id": "repl_createrepltoolusecontext"
     },
     {
       "label": "App.tsx",
       "file_type": "code",
       "source_file": "src/components/App.tsx",
       "source_location": "L1",
-      "id": "src_components_app_tsx",
-      "community": 11,
-      "norm_label": "app.tsx"
+      "community": 12,
+      "norm_label": "app.tsx",
+      "id": "src_components_app_tsx"
     },
     {
       "label": "App()",
       "file_type": "code",
       "source_file": "src/components/App.tsx",
       "source_location": "L39",
-      "id": "app_app",
-      "community": 11,
-      "norm_label": "app()"
+      "community": 12,
+      "norm_label": "app()",
+      "id": "app_app"
     },
     {
       "label": "types.ts",
       "file_type": "code",
       "source_file": "src/components/Spinner/types.ts",
       "source_location": "L1",
-      "id": "src_components_spinner_types_ts",
-      "community": 17,
-      "norm_label": "types.ts"
+      "community": 18,
+      "norm_label": "types.ts",
+      "id": "src_components_spinner_types_ts"
     },
     {
       "label": "useCanUseTool.ts",
       "file_type": "code",
       "source_file": "src/hooks/useCanUseTool.ts",
       "source_location": "L1",
-      "id": "src_hooks_usecanusetool_ts",
-      "community": 1,
-      "norm_label": "usecanusetool.ts"
+      "community": 0,
+      "norm_label": "usecanusetool.ts",
+      "id": "src_hooks_usecanusetool_ts"
     },
     {
       "label": "cli.tsx",
       "file_type": "code",
       "source_file": "src/entrypoints/cli.tsx",
       "source_location": "L1",
-      "id": "src_entrypoints_cli_tsx",
-      "community": 12,
-      "norm_label": "cli.tsx"
+      "community": 13,
+      "norm_label": "cli.tsx",
+      "id": "src_entrypoints_cli_tsx"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "src/entrypoints/cli.tsx",
       "source_location": "L30",
-      "id": "cli_main",
-      "community": 12,
-      "norm_label": "main()"
+      "community": 13,
+      "norm_label": "main()",
+      "id": "cli_main"
     },
     {
       "label": "transitions.ts",
       "file_type": "code",
       "source_file": "src/query/transitions.ts",
       "source_location": "L1",
-      "id": "src_query_transitions_ts",
-      "community": 1,
-      "norm_label": "transitions.ts"
+      "community": 0,
+      "norm_label": "transitions.ts",
+      "id": "src_query_transitions_ts"
     },
     {
       "label": "deps.ts",
       "file_type": "code",
       "source_file": "src/query/deps.ts",
       "source_location": "L1",
-      "id": "src_query_deps_ts",
-      "community": 1,
-      "norm_label": "deps.ts"
+      "community": 0,
+      "norm_label": "deps.ts",
+      "id": "src_query_deps_ts"
     },
     {
       "label": "productionDeps()",
       "file_type": "code",
       "source_file": "src/query/deps.ts",
       "source_location": "L48",
-      "id": "deps_productiondeps",
-      "community": 1,
-      "norm_label": "productiondeps()"
+      "community": 0,
+      "norm_label": "productiondeps()",
+      "id": "deps_productiondeps"
     },
     {
       "label": "toolOrchestration.ts",
       "file_type": "code",
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L1",
-      "id": "src_services_tools_toolorchestration_ts",
-      "community": 6,
-      "norm_label": "toolorchestration.ts"
+      "community": 7,
+      "norm_label": "toolorchestration.ts",
+      "id": "src_services_tools_toolorchestration_ts"
     },
     {
       "label": "getMaxToolUseConcurrency()",
       "file_type": "code",
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L17",
-      "id": "toolorchestration_getmaxtooluseconcurrency",
-      "community": 6,
-      "norm_label": "getmaxtooluseconcurrency()"
+      "community": 7,
+      "norm_label": "getmaxtooluseconcurrency()",
+      "id": "toolorchestration_getmaxtooluseconcurrency"
     },
     {
       "label": "partitionToolCalls()",
       "file_type": "code",
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L110",
-      "id": "toolorchestration_partitiontoolcalls",
-      "community": 6,
-      "norm_label": "partitiontoolcalls()"
+      "community": 7,
+      "norm_label": "partitiontoolcalls()",
+      "id": "toolorchestration_partitiontoolcalls"
     },
     {
       "label": "markToolUseAsComplete()",
       "file_type": "code",
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L226",
-      "id": "toolorchestration_marktooluseascomplete",
-      "community": 6,
-      "norm_label": "marktooluseascomplete()"
+      "community": 7,
+      "norm_label": "marktooluseascomplete()",
+      "id": "toolorchestration_marktooluseascomplete"
     },
     {
       "label": "toolExecution.ts",
       "file_type": "code",
       "source_file": "src/services/tools/toolExecution.ts",
       "source_location": "L1",
-      "id": "src_services_tools_toolexecution_ts",
-      "community": 6,
-      "norm_label": "toolexecution.ts"
+      "community": 7,
+      "norm_label": "toolexecution.ts",
+      "id": "src_services_tools_toolexecution_ts"
     },
     {
       "label": "createToolResultMessage()",
       "file_type": "code",
       "source_file": "src/services/tools/toolExecution.ts",
       "source_location": "L26",
-      "id": "toolexecution_createtoolresultmessage",
-      "community": 6,
-      "norm_label": "createtoolresultmessage()"
+      "community": 7,
+      "norm_label": "createtoolresultmessage()",
+      "id": "toolexecution_createtoolresultmessage"
     },
     {
       "label": "client.ts",
       "file_type": "code",
       "source_file": "src/services/api/client.ts",
       "source_location": "L1",
-      "id": "src_services_api_client_ts",
       "community": 5,
-      "norm_label": "client.ts"
+      "norm_label": "client.ts",
+      "id": "src_services_api_client_ts"
     },
     {
       "label": "getAnthropicClient()",
       "file_type": "code",
       "source_file": "src/services/api/client.ts",
       "source_location": "L13",
-      "id": "client_getanthropicclient",
       "community": 5,
-      "norm_label": "getanthropicclient()"
+      "norm_label": "getanthropicclient()",
+      "id": "client_getanthropicclient"
     },
     {
       "label": "claude.ts",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L1",
-      "id": "src_services_api_claude_ts",
       "community": 5,
-      "norm_label": "claude.ts"
+      "norm_label": "claude.ts",
+      "id": "src_services_api_claude_ts"
     },
     {
       "label": "normalizeMessageRole()",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L60",
-      "id": "claude_normalizemessagerole",
       "community": 5,
-      "norm_label": "normalizemessagerole()"
+      "norm_label": "normalizemessagerole()",
+      "id": "claude_normalizemessagerole"
     },
     {
       "label": "normalizeMessagesForApi()",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L77",
-      "id": "claude_normalizemessagesforapi",
       "community": 5,
-      "norm_label": "normalizemessagesforapi()"
+      "norm_label": "normalizemessagesforapi()",
+      "id": "claude_normalizemessagesforapi"
     },
     {
       "label": "updateUsage()",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L118",
-      "id": "claude_updateusage",
       "community": 5,
-      "norm_label": "updateusage()"
+      "norm_label": "updateusage()",
+      "id": "claude_updateusage"
     },
     {
       "label": "normalizeContentFromAPI()",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L140",
-      "id": "claude_normalizecontentfromapi",
       "community": 5,
-      "norm_label": "normalizecontentfromapi()"
+      "norm_label": "normalizecontentfromapi()",
+      "id": "claude_normalizecontentfromapi"
     },
     {
       "label": "toAssistantMessage()",
       "file_type": "code",
       "source_file": "src/services/api/claude.ts",
       "source_location": "L151",
-      "id": "claude_toassistantmessage",
       "community": 5,
-      "norm_label": "toassistantmessage()"
+      "norm_label": "toassistantmessage()",
+      "id": "claude_toassistantmessage"
+    },
+    {
+      "label": "filterToolProgressMessages()",
+      "file_type": "code",
+      "source_file": "src/Tool.ts",
+      "source_location": "L151",
+      "id": "tool_filtertoolprogressmessages",
+      "community": 0,
+      "norm_label": "filtertoolprogressmessages()"
+    },
+    {
+      "label": "getEmptyToolPermissionContext()",
+      "file_type": "code",
+      "source_file": "src/Tool.ts",
+      "source_location": "L225",
+      "id": "tool_getemptytoolpermissioncontext",
+      "community": 0,
+      "norm_label": "getemptytoolpermissioncontext()"
+    },
+    {
+      "label": "buildTool()",
+      "file_type": "code",
+      "source_file": "src/Tool.ts",
+      "source_location": "L825",
+      "id": "tool_buildtool",
+      "community": 0,
+      "norm_label": "buildtool()"
+    },
+    {
+      "label": "permissions.ts",
+      "file_type": "code",
+      "source_file": "src/types/permissions.ts",
+      "source_location": "L1",
+      "id": "src_types_permissions_ts",
+      "community": 0,
+      "norm_label": "permissions.ts"
+    },
+    {
+      "label": "AGENTS.md Configuration File",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "AGENTS_md",
+      "community": 6,
+      "norm_label": "agents.md configuration file"
+    },
+    {
+      "label": "Graphify Knowledge Graph System",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "graphify",
+      "community": 6,
+      "norm_label": "graphify knowledge graph system"
+    },
+    {
+      "label": "Knowledge Graph",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "knowledge_graph",
+      "community": 6,
+      "norm_label": "knowledge graph"
+    },
+    {
+      "label": "Graph Report (God Nodes & Community Structure)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "GRAPH_REPORT_md",
+      "community": 6,
+      "norm_label": "graph report (god nodes & community structure)"
+    },
+    {
+      "label": "Wiki Navigation Index",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "wiki_index_md",
+      "community": 6,
+      "norm_label": "wiki navigation index"
+    },
+    {
+      "label": "Code Rebuild Function (graphify.watch)",
+      "file_type": "code",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "_rebuild_code",
+      "community": 6,
+      "norm_label": "code rebuild function (graphify.watch)"
+    },
+    {
+      "label": "God Nodes Concept",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "god_nodes",
+      "community": 6,
+      "norm_label": "god nodes concept"
+    },
+    {
+      "label": "Community Structure Concept",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "community_structure",
+      "community": 6,
+      "norm_label": "community structure concept"
     }
   ],
   "links": [
@@ -832,9 +972,9 @@
       "weight": 1.0,
       "_src": "src_main_tsx",
       "_tgt": "src_bootstrap_state_ts",
+      "confidence_score": 1.0,
       "source": "src_main_tsx",
-      "target": "src_bootstrap_state_ts",
-      "confidence_score": 1.0
+      "target": "src_bootstrap_state_ts"
     },
     {
       "relation": "imports_from",
@@ -844,9 +984,9 @@
       "weight": 1.0,
       "_src": "src_main_tsx",
       "_tgt": "src_ink_ts",
+      "confidence_score": 1.0,
       "source": "src_main_tsx",
-      "target": "src_ink_ts",
-      "confidence_score": 1.0
+      "target": "src_ink_ts"
     },
     {
       "relation": "contains",
@@ -856,9 +996,9 @@
       "weight": 1.0,
       "_src": "src_main_tsx",
       "_tgt": "main_main",
+      "confidence_score": 1.0,
       "source": "src_main_tsx",
-      "target": "main_main",
-      "confidence_score": 1.0
+      "target": "main_main"
     },
     {
       "relation": "contains",
@@ -868,9 +1008,9 @@
       "weight": 1.0,
       "_src": "src_main_tsx",
       "_tgt": "main_run",
+      "confidence_score": 1.0,
       "source": "src_main_tsx",
-      "target": "main_run",
-      "confidence_score": 1.0
+      "target": "main_run"
     },
     {
       "relation": "calls",
@@ -880,21 +1020,21 @@
       "weight": 1.0,
       "_src": "main_main",
       "_tgt": "main_run",
+      "confidence_score": 1.0,
       "source": "main_main",
-      "target": "main_run",
-      "confidence_score": 1.0
+      "target": "main_run"
     },
     {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "src/Tool.ts",
-      "source_location": "L11",
+      "source_location": "L25",
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "src_types_message_ts",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "src_types_message_ts",
-      "confidence_score": 1.0
+      "target": "src_types_message_ts"
     },
     {
       "relation": "imports_from",
@@ -904,9 +1044,9 @@
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "src_types_ids_ts",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "src_types_ids_ts",
-      "confidence_score": 1.0
+      "target": "src_types_ids_ts"
     },
     {
       "relation": "imports_from",
@@ -916,9 +1056,9 @@
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "src_types_tools_ts",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "src_types_tools_ts",
-      "confidence_score": 1.0
+      "target": "src_types_tools_ts"
     },
     {
       "relation": "imports_from",
@@ -928,33 +1068,33 @@
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "src_utils_systemprompttype_ts",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "src_utils_systemprompttype_ts",
-      "confidence_score": 1.0
+      "target": "src_utils_systemprompttype_ts"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/Tool.ts",
-      "source_location": "L237",
+      "source_location": "L199",
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "tool_toolmatchesname",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "tool_toolmatchesname",
-      "confidence_score": 1.0
+      "target": "tool_toolmatchesname"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/Tool.ts",
-      "source_location": "L244",
+      "source_location": "L211",
       "weight": 1.0,
       "_src": "src_tool_ts",
       "_tgt": "tool_findtoolbyname",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "tool_findtoolbyname",
-      "confidence_score": 1.0
+      "target": "tool_findtoolbyname"
     },
     {
       "relation": "imports_from",
@@ -964,8 +1104,56 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_tool_ts",
+      "confidence_score": 1.0,
       "source": "src_tool_ts",
-      "target": "src_query_ts",
+      "target": "src_query_ts"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/Tool.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "src_tool_ts",
+      "_tgt": "src_types_permissions_ts",
+      "source": "src_tool_ts",
+      "target": "src_types_permissions_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/Tool.ts",
+      "source_location": "L151",
+      "weight": 1.0,
+      "_src": "src_tool_ts",
+      "_tgt": "tool_filtertoolprogressmessages",
+      "source": "src_tool_ts",
+      "target": "tool_filtertoolprogressmessages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/Tool.ts",
+      "source_location": "L225",
+      "weight": 1.0,
+      "_src": "src_tool_ts",
+      "_tgt": "tool_getemptytoolpermissioncontext",
+      "source": "src_tool_ts",
+      "target": "tool_getemptytoolpermissioncontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/Tool.ts",
+      "source_location": "L825",
+      "weight": 1.0,
+      "_src": "src_tool_ts",
+      "_tgt": "tool_buildtool",
+      "source": "src_tool_ts",
+      "target": "tool_buildtool",
       "confidence_score": 1.0
     },
     {
@@ -976,9 +1164,9 @@
       "weight": 1.0,
       "_src": "src_repllauncher_tsx",
       "_tgt": "src_ink_ts",
+      "confidence_score": 1.0,
       "source": "src_repllauncher_tsx",
-      "target": "src_ink_ts",
-      "confidence_score": 1.0
+      "target": "src_ink_ts"
     },
     {
       "relation": "contains",
@@ -988,9 +1176,9 @@
       "weight": 1.0,
       "_src": "src_repllauncher_tsx",
       "_tgt": "repllauncher_launchrepl",
+      "confidence_score": 1.0,
       "source": "src_repllauncher_tsx",
-      "target": "repllauncher_launchrepl",
-      "confidence_score": 1.0
+      "target": "repllauncher_launchrepl"
     },
     {
       "relation": "imports_from",
@@ -1000,9 +1188,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_hooks_usecanusetool_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_hooks_usecanusetool_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usecanusetool_ts"
     },
     {
       "relation": "imports_from",
@@ -1012,9 +1200,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_utils_systemprompttype_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_utils_systemprompttype_ts",
-      "confidence_score": 1.0
+      "target": "src_utils_systemprompttype_ts"
     },
     {
       "relation": "imports_from",
@@ -1024,9 +1212,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_types_message_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_types_message_ts",
-      "confidence_score": 1.0
+      "target": "src_types_message_ts"
     },
     {
       "relation": "imports_from",
@@ -1036,9 +1224,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_constants_querysource_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_constants_querysource_ts",
-      "confidence_score": 1.0
+      "target": "src_constants_querysource_ts"
     },
     {
       "relation": "imports_from",
@@ -1048,9 +1236,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_services_tools_toolorchestration_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_services_tools_toolorchestration_ts",
-      "confidence_score": 1.0
+      "target": "src_services_tools_toolorchestration_ts"
     },
     {
       "relation": "imports_from",
@@ -1060,9 +1248,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_query_deps_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_query_deps_ts",
-      "confidence_score": 1.0
+      "target": "src_query_deps_ts"
     },
     {
       "relation": "imports_from",
@@ -1072,9 +1260,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "src_query_transitions_ts",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "src_query_transitions_ts",
-      "confidence_score": 1.0
+      "target": "src_query_transitions_ts"
     },
     {
       "relation": "contains",
@@ -1084,9 +1272,9 @@
       "weight": 1.0,
       "_src": "src_query_ts",
       "_tgt": "query_iswithheldmaxoutputtokens",
+      "confidence_score": 1.0,
       "source": "src_query_ts",
-      "target": "query_iswithheldmaxoutputtokens",
-      "confidence_score": 1.0
+      "target": "query_iswithheldmaxoutputtokens"
     },
     {
       "relation": "imports_from",
@@ -1096,9 +1284,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "src_ink_ts",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "src_ink_ts",
-      "confidence_score": 1.0
+      "target": "src_ink_ts"
     },
     {
       "relation": "contains",
@@ -1108,9 +1296,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_renderandrun",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_renderandrun",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_renderandrun"
     },
     {
       "relation": "contains",
@@ -1120,9 +1308,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_gracefulshutdown",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_gracefulshutdown",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_gracefulshutdown"
     },
     {
       "relation": "contains",
@@ -1132,9 +1320,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_gracefulshutdownsync",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_gracefulshutdownsync",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_gracefulshutdownsync"
     },
     {
       "relation": "contains",
@@ -1144,9 +1332,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_exitwitherror",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_exitwitherror",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_exitwitherror"
     },
     {
       "relation": "contains",
@@ -1156,9 +1344,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_exitwithmessage",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_exitwithmessage",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_exitwithmessage"
     },
     {
       "relation": "contains",
@@ -1168,9 +1356,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_showdialog",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_showdialog",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_showdialog"
     },
     {
       "relation": "contains",
@@ -1180,9 +1368,9 @@
       "weight": 1.0,
       "_src": "src_interactivehelpers_tsx",
       "_tgt": "interactivehelpers_getrendercontext",
+      "confidence_score": 1.0,
       "source": "src_interactivehelpers_tsx",
-      "target": "interactivehelpers_getrendercontext",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_getrendercontext"
     },
     {
       "relation": "calls",
@@ -1192,9 +1380,9 @@
       "weight": 1.0,
       "_src": "interactivehelpers_renderandrun",
       "_tgt": "interactivehelpers_gracefulshutdown",
+      "confidence_score": 1.0,
       "source": "interactivehelpers_renderandrun",
-      "target": "interactivehelpers_gracefulshutdown",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_gracefulshutdown"
     },
     {
       "relation": "calls",
@@ -1204,9 +1392,9 @@
       "weight": 1.0,
       "_src": "interactivehelpers_exitwitherror",
       "_tgt": "interactivehelpers_exitwithmessage",
+      "confidence_score": 1.0,
       "source": "interactivehelpers_exitwitherror",
-      "target": "interactivehelpers_exitwithmessage",
-      "confidence_score": 1.0
+      "target": "interactivehelpers_exitwithmessage"
     },
     {
       "relation": "contains",
@@ -1216,9 +1404,9 @@
       "weight": 1.0,
       "_src": "src_ink_ts",
       "_tgt": "ink_createroot",
+      "confidence_score": 1.0,
       "source": "src_ink_ts",
-      "target": "ink_createroot",
-      "confidence_score": 1.0
+      "target": "ink_createroot"
     },
     {
       "relation": "contains",
@@ -1228,9 +1416,9 @@
       "weight": 1.0,
       "_src": "src_ink_ts",
       "_tgt": "ink_render",
+      "confidence_score": 1.0,
       "source": "src_ink_ts",
-      "target": "ink_render",
-      "confidence_score": 1.0
+      "target": "ink_render"
     },
     {
       "relation": "contains",
@@ -1240,9 +1428,9 @@
       "weight": 1.0,
       "_src": "src_types_ids_ts",
       "_tgt": "ids_assessionid",
+      "confidence_score": 1.0,
       "source": "src_types_ids_ts",
-      "target": "ids_assessionid",
-      "confidence_score": 1.0
+      "target": "ids_assessionid"
     },
     {
       "relation": "contains",
@@ -1252,9 +1440,9 @@
       "weight": 1.0,
       "_src": "src_types_ids_ts",
       "_tgt": "ids_asagentid",
+      "confidence_score": 1.0,
       "source": "src_types_ids_ts",
-      "target": "ids_asagentid",
-      "confidence_score": 1.0
+      "target": "ids_asagentid"
     },
     {
       "relation": "contains",
@@ -1264,9 +1452,9 @@
       "weight": 1.0,
       "_src": "src_types_ids_ts",
       "_tgt": "ids_toagentid",
+      "confidence_score": 1.0,
       "source": "src_types_ids_ts",
-      "target": "ids_toagentid",
-      "confidence_score": 1.0
+      "target": "ids_toagentid"
     },
     {
       "relation": "contains",
@@ -1276,9 +1464,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getinitialstate",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getinitialstate",
-      "confidence_score": 1.0
+      "target": "state_getinitialstate"
     },
     {
       "relation": "contains",
@@ -1288,9 +1476,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getisnoninteractivesession",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getisnoninteractivesession",
-      "confidence_score": 1.0
+      "target": "state_getisnoninteractivesession"
     },
     {
       "relation": "contains",
@@ -1300,9 +1488,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getisinteractive",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getisinteractive",
-      "confidence_score": 1.0
+      "target": "state_getisinteractive"
     },
     {
       "relation": "contains",
@@ -1312,9 +1500,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_setisinteractive",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_setisinteractive",
-      "confidence_score": 1.0
+      "target": "state_setisinteractive"
     },
     {
       "relation": "contains",
@@ -1324,9 +1512,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getclienttype",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getclienttype",
-      "confidence_score": 1.0
+      "target": "state_getclienttype"
     },
     {
       "relation": "contains",
@@ -1336,9 +1524,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_setclienttype",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_setclienttype",
-      "confidence_score": 1.0
+      "target": "state_setclienttype"
     },
     {
       "relation": "contains",
@@ -1348,9 +1536,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getoriginalcwd",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getoriginalcwd",
-      "confidence_score": 1.0
+      "target": "state_getoriginalcwd"
     },
     {
       "relation": "contains",
@@ -1360,9 +1548,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_setoriginalcwd",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_setoriginalcwd",
-      "confidence_score": 1.0
+      "target": "state_setoriginalcwd"
     },
     {
       "relation": "contains",
@@ -1372,9 +1560,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getcwdstate",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getcwdstate",
-      "confidence_score": 1.0
+      "target": "state_getcwdstate"
     },
     {
       "relation": "contains",
@@ -1384,9 +1572,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_setcwdstate",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_setcwdstate",
-      "confidence_score": 1.0
+      "target": "state_setcwdstate"
     },
     {
       "relation": "contains",
@@ -1396,9 +1584,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_getsessionsource",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_getsessionsource",
-      "confidence_score": 1.0
+      "target": "state_getsessionsource"
     },
     {
       "relation": "contains",
@@ -1408,9 +1596,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_setsessionsource",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_setsessionsource",
-      "confidence_score": 1.0
+      "target": "state_setsessionsource"
     },
     {
       "relation": "contains",
@@ -1420,9 +1608,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_gettotalduration",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_gettotalduration",
-      "confidence_score": 1.0
+      "target": "state_gettotalduration"
     },
     {
       "relation": "contains",
@@ -1432,9 +1620,9 @@
       "weight": 1.0,
       "_src": "src_bootstrap_state_ts",
       "_tgt": "state_resetstatefortests_only",
+      "confidence_score": 1.0,
       "source": "src_bootstrap_state_ts",
-      "target": "state_resetstatefortests_only",
-      "confidence_score": 1.0
+      "target": "state_resetstatefortests_only"
     },
     {
       "relation": "calls",
@@ -1444,9 +1632,9 @@
       "weight": 1.0,
       "_src": "state_resetstatefortests_only",
       "_tgt": "state_getinitialstate",
+      "confidence_score": 1.0,
       "source": "state_getinitialstate",
-      "target": "state_resetstatefortests_only",
-      "confidence_score": 1.0
+      "target": "state_resetstatefortests_only"
     },
     {
       "relation": "contains",
@@ -1456,9 +1644,9 @@
       "weight": 1.0,
       "_src": "src_utils_handlepromptsubmit_ts",
       "_tgt": "handlepromptsubmit_createusertextmessage",
+      "confidence_score": 1.0,
       "source": "src_utils_handlepromptsubmit_ts",
-      "target": "handlepromptsubmit_createusertextmessage",
-      "confidence_score": 1.0
+      "target": "handlepromptsubmit_createusertextmessage"
     },
     {
       "relation": "contains",
@@ -1468,9 +1656,9 @@
       "weight": 1.0,
       "_src": "src_utils_handlepromptsubmit_ts",
       "_tgt": "handlepromptsubmit_handlepromptsubmit",
+      "confidence_score": 1.0,
       "source": "src_utils_handlepromptsubmit_ts",
-      "target": "handlepromptsubmit_handlepromptsubmit",
-      "confidence_score": 1.0
+      "target": "handlepromptsubmit_handlepromptsubmit"
     },
     {
       "relation": "contains",
@@ -1480,9 +1668,9 @@
       "weight": 1.0,
       "_src": "src_utils_handlepromptsubmit_ts",
       "_tgt": "handlepromptsubmit_executeuserinput",
+      "confidence_score": 1.0,
       "source": "src_utils_handlepromptsubmit_ts",
-      "target": "handlepromptsubmit_executeuserinput",
-      "confidence_score": 1.0
+      "target": "handlepromptsubmit_executeuserinput"
     },
     {
       "relation": "calls",
@@ -1492,9 +1680,9 @@
       "weight": 1.0,
       "_src": "handlepromptsubmit_executeuserinput",
       "_tgt": "handlepromptsubmit_createusertextmessage",
+      "confidence_score": 1.0,
       "source": "handlepromptsubmit_createusertextmessage",
-      "target": "handlepromptsubmit_executeuserinput",
-      "confidence_score": 1.0
+      "target": "handlepromptsubmit_executeuserinput"
     },
     {
       "relation": "calls",
@@ -1504,9 +1692,9 @@
       "weight": 1.0,
       "_src": "handlepromptsubmit_handlepromptsubmit",
       "_tgt": "handlepromptsubmit_executeuserinput",
+      "confidence_score": 1.0,
       "source": "handlepromptsubmit_handlepromptsubmit",
-      "target": "handlepromptsubmit_executeuserinput",
-      "confidence_score": 1.0
+      "target": "handlepromptsubmit_executeuserinput"
     },
     {
       "relation": "contains",
@@ -1516,9 +1704,9 @@
       "weight": 1.0,
       "_src": "src_utils_messages_ts",
       "_tgt": "messages_handlemessagefromstream",
+      "confidence_score": 1.0,
       "source": "src_utils_messages_ts",
-      "target": "messages_handlemessagefromstream",
-      "confidence_score": 1.0
+      "target": "messages_handlemessagefromstream"
     },
     {
       "relation": "contains",
@@ -1528,9 +1716,9 @@
       "weight": 1.0,
       "_src": "src_utils_generators_ts",
       "_tgt": "generators_lastx",
+      "confidence_score": 1.0,
       "source": "src_utils_generators_ts",
-      "target": "generators_lastx",
-      "confidence_score": 1.0
+      "target": "generators_lastx"
     },
     {
       "relation": "contains",
@@ -1540,9 +1728,9 @@
       "weight": 1.0,
       "_src": "src_utils_generators_ts",
       "_tgt": "generators_returnvalue",
+      "confidence_score": 1.0,
       "source": "src_utils_generators_ts",
-      "target": "generators_returnvalue",
-      "confidence_score": 1.0
+      "target": "generators_returnvalue"
     },
     {
       "relation": "contains",
@@ -1552,9 +1740,9 @@
       "weight": 1.0,
       "_src": "src_utils_generators_ts",
       "_tgt": "generators_next",
+      "confidence_score": 1.0,
       "source": "src_utils_generators_ts",
-      "target": "generators_next",
-      "confidence_score": 1.0
+      "target": "generators_next"
     },
     {
       "relation": "contains",
@@ -1564,9 +1752,9 @@
       "weight": 1.0,
       "_src": "src_utils_generators_ts",
       "_tgt": "generators_toarray",
+      "confidence_score": 1.0,
       "source": "src_utils_generators_ts",
-      "target": "generators_toarray",
-      "confidence_score": 1.0
+      "target": "generators_toarray"
     },
     {
       "relation": "calls",
@@ -1576,9 +1764,9 @@
       "weight": 1.0,
       "_src": "generators_returnvalue",
       "_tgt": "generators_next",
+      "confidence_score": 1.0,
       "source": "generators_returnvalue",
-      "target": "generators_next",
-      "confidence_score": 1.0
+      "target": "generators_next"
     },
     {
       "relation": "contains",
@@ -1588,9 +1776,9 @@
       "weight": 1.0,
       "_src": "src_utils_systemprompttype_ts",
       "_tgt": "systemprompttype_assystemprompt",
+      "confidence_score": 1.0,
       "source": "src_utils_systemprompttype_ts",
-      "target": "systemprompttype_assystemprompt",
-      "confidence_score": 1.0
+      "target": "systemprompttype_assystemprompt"
     },
     {
       "relation": "contains",
@@ -1600,9 +1788,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_createmessageuuid",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_createmessageuuid",
-      "confidence_score": 1.0
+      "target": "repl_createmessageuuid"
     },
     {
       "relation": "contains",
@@ -1612,9 +1800,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_isstreamevent",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_isstreamevent",
-      "confidence_score": 1.0
+      "target": "repl_isstreamevent"
     },
     {
       "relation": "contains",
@@ -1624,9 +1812,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_isterminalwithreason",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_isterminalwithreason",
-      "confidence_score": 1.0
+      "target": "repl_isterminalwithreason"
     },
     {
       "relation": "contains",
@@ -1636,9 +1824,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_formatmessagecontent",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_formatmessagecontent",
-      "confidence_score": 1.0
+      "target": "repl_formatmessagecontent"
     },
     {
       "relation": "contains",
@@ -1648,9 +1836,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_getmessagelabel",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_getmessagelabel",
-      "confidence_score": 1.0
+      "target": "repl_getmessagelabel"
     },
     {
       "relation": "contains",
@@ -1660,9 +1848,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_getmessagecolor",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_getmessagecolor",
-      "confidence_score": 1.0
+      "target": "repl_getmessagecolor"
     },
     {
       "relation": "contains",
@@ -1672,9 +1860,9 @@
       "weight": 1.0,
       "_src": "src_screens_repl_tsx",
       "_tgt": "repl_createrepltoolusecontext",
+      "confidence_score": 1.0,
       "source": "src_screens_repl_tsx",
-      "target": "repl_createrepltoolusecontext",
-      "confidence_score": 1.0
+      "target": "repl_createrepltoolusecontext"
     },
     {
       "relation": "contains",
@@ -1684,9 +1872,9 @@
       "weight": 1.0,
       "_src": "src_components_app_tsx",
       "_tgt": "app_app",
+      "confidence_score": 1.0,
       "source": "src_components_app_tsx",
-      "target": "app_app",
-      "confidence_score": 1.0
+      "target": "app_app"
     },
     {
       "relation": "contains",
@@ -1696,9 +1884,9 @@
       "weight": 1.0,
       "_src": "src_entrypoints_cli_tsx",
       "_tgt": "cli_main",
+      "confidence_score": 1.0,
       "source": "src_entrypoints_cli_tsx",
-      "target": "cli_main",
-      "confidence_score": 1.0
+      "target": "cli_main"
     },
     {
       "relation": "contains",
@@ -1708,9 +1896,9 @@
       "weight": 1.0,
       "_src": "src_query_deps_ts",
       "_tgt": "deps_productiondeps",
+      "confidence_score": 1.0,
       "source": "src_query_deps_ts",
-      "target": "deps_productiondeps",
-      "confidence_score": 1.0
+      "target": "deps_productiondeps"
     },
     {
       "relation": "imports_from",
@@ -1720,9 +1908,9 @@
       "weight": 1.0,
       "_src": "src_services_tools_toolorchestration_ts",
       "_tgt": "src_services_tools_toolexecution_ts",
+      "confidence_score": 1.0,
       "source": "src_services_tools_toolorchestration_ts",
-      "target": "src_services_tools_toolexecution_ts",
-      "confidence_score": 1.0
+      "target": "src_services_tools_toolexecution_ts"
     },
     {
       "relation": "contains",
@@ -1732,9 +1920,9 @@
       "weight": 1.0,
       "_src": "src_services_tools_toolorchestration_ts",
       "_tgt": "toolorchestration_getmaxtooluseconcurrency",
+      "confidence_score": 1.0,
       "source": "src_services_tools_toolorchestration_ts",
-      "target": "toolorchestration_getmaxtooluseconcurrency",
-      "confidence_score": 1.0
+      "target": "toolorchestration_getmaxtooluseconcurrency"
     },
     {
       "relation": "contains",
@@ -1744,9 +1932,9 @@
       "weight": 1.0,
       "_src": "src_services_tools_toolorchestration_ts",
       "_tgt": "toolorchestration_partitiontoolcalls",
+      "confidence_score": 1.0,
       "source": "src_services_tools_toolorchestration_ts",
-      "target": "toolorchestration_partitiontoolcalls",
-      "confidence_score": 1.0
+      "target": "toolorchestration_partitiontoolcalls"
     },
     {
       "relation": "contains",
@@ -1756,9 +1944,9 @@
       "weight": 1.0,
       "_src": "src_services_tools_toolorchestration_ts",
       "_tgt": "toolorchestration_marktooluseascomplete",
+      "confidence_score": 1.0,
       "source": "src_services_tools_toolorchestration_ts",
-      "target": "toolorchestration_marktooluseascomplete",
-      "confidence_score": 1.0
+      "target": "toolorchestration_marktooluseascomplete"
     },
     {
       "relation": "contains",
@@ -1768,9 +1956,9 @@
       "weight": 1.0,
       "_src": "src_services_tools_toolexecution_ts",
       "_tgt": "toolexecution_createtoolresultmessage",
+      "confidence_score": 1.0,
       "source": "src_services_tools_toolexecution_ts",
-      "target": "toolexecution_createtoolresultmessage",
-      "confidence_score": 1.0
+      "target": "toolexecution_createtoolresultmessage"
     },
     {
       "relation": "contains",
@@ -1780,9 +1968,9 @@
       "weight": 1.0,
       "_src": "src_services_api_client_ts",
       "_tgt": "client_getanthropicclient",
+      "confidence_score": 1.0,
       "source": "src_services_api_client_ts",
-      "target": "client_getanthropicclient",
-      "confidence_score": 1.0
+      "target": "client_getanthropicclient"
     },
     {
       "relation": "imports_from",
@@ -1792,9 +1980,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "src_services_api_client_ts",
+      "confidence_score": 1.0,
       "source": "src_services_api_client_ts",
-      "target": "src_services_api_claude_ts",
-      "confidence_score": 1.0
+      "target": "src_services_api_claude_ts"
     },
     {
       "relation": "contains",
@@ -1804,9 +1992,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "claude_normalizemessagerole",
+      "confidence_score": 1.0,
       "source": "src_services_api_claude_ts",
-      "target": "claude_normalizemessagerole",
-      "confidence_score": 1.0
+      "target": "claude_normalizemessagerole"
     },
     {
       "relation": "contains",
@@ -1816,9 +2004,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "claude_normalizemessagesforapi",
+      "confidence_score": 1.0,
       "source": "src_services_api_claude_ts",
-      "target": "claude_normalizemessagesforapi",
-      "confidence_score": 1.0
+      "target": "claude_normalizemessagesforapi"
     },
     {
       "relation": "contains",
@@ -1828,9 +2016,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "claude_updateusage",
+      "confidence_score": 1.0,
       "source": "src_services_api_claude_ts",
-      "target": "claude_updateusage",
-      "confidence_score": 1.0
+      "target": "claude_updateusage"
     },
     {
       "relation": "contains",
@@ -1840,9 +2028,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "claude_normalizecontentfromapi",
+      "confidence_score": 1.0,
       "source": "src_services_api_claude_ts",
-      "target": "claude_normalizecontentfromapi",
-      "confidence_score": 1.0
+      "target": "claude_normalizecontentfromapi"
     },
     {
       "relation": "contains",
@@ -1852,9 +2040,9 @@
       "weight": 1.0,
       "_src": "src_services_api_claude_ts",
       "_tgt": "claude_toassistantmessage",
+      "confidence_score": 1.0,
       "source": "src_services_api_claude_ts",
-      "target": "claude_toassistantmessage",
-      "confidence_score": 1.0
+      "target": "claude_toassistantmessage"
     },
     {
       "relation": "calls",
@@ -1864,9 +2052,117 @@
       "weight": 1.0,
       "_src": "claude_toassistantmessage",
       "_tgt": "claude_normalizecontentfromapi",
+      "confidence_score": 1.0,
       "source": "claude_normalizecontentfromapi",
-      "target": "claude_toassistantmessage",
-      "confidence_score": 1.0
+      "target": "claude_toassistantmessage"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 1,
+      "weight": 1.0,
+      "_src": "AGENTS_md",
+      "_tgt": "graphify",
+      "source": "AGENTS_md",
+      "target": "graphify"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 2,
+      "weight": 1.0,
+      "_src": "AGENTS_md",
+      "_tgt": "knowledge_graph",
+      "source": "AGENTS_md",
+      "target": "knowledge_graph"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 6,
+      "weight": 1.0,
+      "_src": "AGENTS_md",
+      "_tgt": "GRAPH_REPORT_md",
+      "source": "AGENTS_md",
+      "target": "GRAPH_REPORT_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 8,
+      "weight": 1.0,
+      "_src": "AGENTS_md",
+      "_tgt": "wiki_index_md",
+      "source": "AGENTS_md",
+      "target": "wiki_index_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 10,
+      "weight": 1.0,
+      "_src": "AGENTS_md",
+      "_tgt": "_rebuild_code",
+      "source": "AGENTS_md",
+      "target": "_rebuild_code"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": 2,
+      "weight": 1.0,
+      "_src": "graphify",
+      "_tgt": "knowledge_graph",
+      "source": "graphify",
+      "target": "knowledge_graph"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "AGENTS.md",
+      "source_location": 10,
+      "weight": 1.0,
+      "_src": "_rebuild_code",
+      "_tgt": "knowledge_graph",
+      "source": "knowledge_graph",
+      "target": "_rebuild_code"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": 6,
+      "weight": 1.0,
+      "_src": "GRAPH_REPORT_md",
+      "_tgt": "god_nodes",
+      "source": "GRAPH_REPORT_md",
+      "target": "god_nodes"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": 6,
+      "weight": 1.0,
+      "_src": "GRAPH_REPORT_md",
+      "_tgt": "community_structure",
+      "source": "GRAPH_REPORT_md",
+      "target": "community_structure"
     }
   ],
   "hyperedges": []
