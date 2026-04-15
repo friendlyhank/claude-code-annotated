@@ -1,224 +1,143 @@
-# Graph Report - .  (2026-04-13)
+# Graph Report - .  (2026-04-15)
 
 ## Corpus Check
-- Corpus is ~11,171 words - fits in a single context window. You may not need a graph.
+- 30 files · ~12,383 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 92 nodes · 77 edges · 30 communities detected
+- 91 nodes · 87 edges · 18 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_state  getInitialState|state / getInitialState]]
-- [[_COMMUNITY_REPLx  REPLx|REPLx / REPLx]]
-- [[_COMMUNITY_interactiveHelpersx  exitWithError|interactiveHelpersx / exitWithError]]
-- [[_COMMUNITY_executeUserInput  handlePromptSubmit|executeUserInput / handlePromptSubmit]]
-- [[_COMMUNITY_generators  next|generators / next]]
-- [[_COMMUNITY_ids  asAgentId|ids / asAgentId]]
-- [[_COMMUNITY_toolOrchestration  getMaxToolUseConcurr|toolOrchestration / getMaxToolUseConcurr]]
-- [[_COMMUNITY_claude  normalizeMessageRole|claude / normalizeMessageRole]]
-- [[_COMMUNITY_mainx  main|mainx / main]]
-- [[_COMMUNITY_Tool  findToolByName|Tool / findToolByName]]
-- [[_COMMUNITY_ink  createRoot|ink / createRoot]]
-- [[_COMMUNITY_replLauncherx  launchRepl|replLauncherx / launchRepl]]
-- [[_COMMUNITY_query  isWithheldMaxOutputTokens|query / isWithheldMaxOutputTokens]]
-- [[_COMMUNITY_systemPromptType  asSystemPrompt|systemPromptType / asSystemPrompt]]
-- [[_COMMUNITY_Appx  App|Appx / App]]
-- [[_COMMUNITY_clix  main|clix / main]]
-- [[_COMMUNITY_deps  productionDeps|deps / productionDeps]]
-- [[_COMMUNITY_toolExecution  createToolResultMessage|toolExecution / createToolResultMessage]]
-- [[_COMMUNITY_client  getAnthropicClient|client / getAnthropicClient]]
-- [[_COMMUNITY_handleMessageFromStream  messages|handleMessageFromStream / messages]]
-- [[_COMMUNITY_build|build]]
-- [[_COMMUNITY_utils|utils]]
-- [[_COMMUNITY_message|message]]
-- [[_COMMUNITY_tools|tools]]
-- [[_COMMUNITY_global.d|global.d]]
-- [[_COMMUNITY_index|index]]
-- [[_COMMUNITY_querySource|querySource]]
-- [[_COMMUNITY_useCanUseTool|useCanUseTool]]
-- [[_COMMUNITY_transitions|transitions]]
-- [[_COMMUNITY_types|types]]
+- [[_COMMUNITY_Community 0|Community 0]]
+- [[_COMMUNITY_Community 1|Community 1]]
+- [[_COMMUNITY_Community 2|Community 2]]
+- [[_COMMUNITY_Community 3|Community 3]]
+- [[_COMMUNITY_Community 4|Community 4]]
+- [[_COMMUNITY_Community 5|Community 5]]
+- [[_COMMUNITY_Community 6|Community 6]]
+- [[_COMMUNITY_Community 7|Community 7]]
+- [[_COMMUNITY_Community 8|Community 8]]
+- [[_COMMUNITY_Community 9|Community 9]]
+- [[_COMMUNITY_Community 10|Community 10]]
+- [[_COMMUNITY_Community 11|Community 11]]
+- [[_COMMUNITY_Community 12|Community 12]]
+- [[_COMMUNITY_Community 13|Community 13]]
+- [[_COMMUNITY_Community 14|Community 14]]
+- [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
+- [[_COMMUNITY_Community 17|Community 17]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `executeUserInput()` - 4 edges
-2. `createUserTextMessage()` - 3 edges
-3. `handlePromptSubmit()` - 3 edges
-4. `main()` - 2 edges
-5. `run()` - 2 edges
-6. `renderAndRun()` - 2 edges
-7. `gracefulShutdown()` - 2 edges
-8. `exitWithError()` - 2 edges
-9. `exitWithMessage()` - 2 edges
-10. `getInitialState()` - 2 edges
+1. `executeUserInput()` - 3 edges
+2. `main()` - 2 edges
+3. `run()` - 2 edges
+4. `renderAndRun()` - 2 edges
+5. `gracefulShutdown()` - 2 edges
+6. `exitWithError()` - 2 edges
+7. `exitWithMessage()` - 2 edges
+8. `getInitialState()` - 2 edges
+9. `resetStateForTests_ONLY()` - 2 edges
+10. `createUserTextMessage()` - 2 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
 
 ## Communities
 
-### Community 0 - "state / getInitialState"
+### Community 0 - "Community 0"
 Cohesion: 0.14
 Nodes (2): getInitialState(), resetStateForTests_ONLY()
 
-### Community 1 - "REPLx / REPLx"
-Cohesion: 0.31
-Nodes (6): createMessageUUID(), createReplToolUseContext(), formatMessageContent(), getMessageColor(), getMessageLabel(), isTerminalWithReason()
+### Community 1 - "Community 1"
+Cohesion: 0.16
+Nodes (0): 
 
-### Community 2 - "interactiveHelpersx / exitWithError"
+### Community 2 - "Community 2"
 Cohesion: 0.32
 Nodes (4): exitWithError(), exitWithMessage(), gracefulShutdown(), renderAndRun()
 
-### Community 3 - "executeUserInput / handlePromptSubmit"
-Cohesion: 0.8
-Nodes (3): createUserTextMessage(), executeUserInput(), handlePromptSubmit()
+### Community 3 - "Community 3"
+Cohesion: 0.29
+Nodes (2): main(), run()
 
-### Community 4 - "generators / next"
+### Community 4 - "Community 4"
+Cohesion: 0.25
+Nodes (0): 
+
+### Community 5 - "Community 5"
+Cohesion: 0.29
+Nodes (2): normalizeContentFromAPI(), toAssistantMessage()
+
+### Community 6 - "Community 6"
+Cohesion: 0.33
+Nodes (0): 
+
+### Community 7 - "Community 7"
 Cohesion: 0.5
 Nodes (2): next(), returnValue()
 
-### Community 5 - "ids / asAgentId"
+### Community 8 - "Community 8"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 6 - "toolOrchestration / getMaxToolUseConcurr"
-Cohesion: 0.5
-Nodes (0): 
+### Community 9 - "Community 9"
+Cohesion: 0.83
+Nodes (3): createUserTextMessage(), executeUserInput(), handlePromptSubmit()
 
-### Community 7 - "claude / normalizeMessageRole"
-Cohesion: 0.5
-Nodes (0): 
-
-### Community 8 - "mainx / main"
-Cohesion: 1.0
-Nodes (2): main(), run()
-
-### Community 9 - "Tool / findToolByName"
-Cohesion: 0.67
-Nodes (0): 
-
-### Community 10 - "ink / createRoot"
+### Community 10 - "Community 10"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 11 - "replLauncherx / launchRepl"
+### Community 11 - "Community 11"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 12 - "query / isWithheldMaxOutputTokens"
+### Community 12 - "Community 12"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 13 - "systemPromptType / asSystemPrompt"
+### Community 13 - "Community 13"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 14 - "Appx / App"
+### Community 14 - "Community 14"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 15 - "clix / main"
+### Community 15 - "Community 15"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 16 - "deps / productionDeps"
+### Community 16 - "Community 16"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 17 - "toolExecution / createToolResultMessage"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 18 - "client / getAnthropicClient"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 19 - "handleMessageFromStream / messages"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 20 - "build"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 21 - "utils"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 22 - "message"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 23 - "tools"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 24 - "global.d"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 25 - "index"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 26 - "querySource"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 27 - "useCanUseTool"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 28 - "transitions"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 29 - "types"
+### Community 17 - "Community 17"
 Cohesion: 1.0
 Nodes (0): 
 
 ## Knowledge Gaps
-- **Thin community `replLauncherx / launchRepl`** (2 nodes): `replLauncher.tsx`, `launchRepl()`
+- **Thin community `Community 10`** (2 nodes): `handleMessageFromStream()`, `messages.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `query / isWithheldMaxOutputTokens`** (2 nodes): `query.ts`, `isWithheldMaxOutputTokens()`
+- **Thin community `Community 11`** (2 nodes): `App()`, `App.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `systemPromptType / asSystemPrompt`** (2 nodes): `systemPromptType.ts`, `asSystemPrompt()`
+- **Thin community `Community 12`** (2 nodes): `main()`, `cli.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Appx / App`** (2 nodes): `App.tsx`, `App()`
+- **Thin community `Community 13`** (1 nodes): `build.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `clix / main`** (2 nodes): `cli.tsx`, `main()`
+- **Thin community `Community 14`** (1 nodes): `utils.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `deps / productionDeps`** (2 nodes): `deps.ts`, `productionDeps()`
+- **Thin community `Community 15`** (1 nodes): `global.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `toolExecution / createToolResultMessage`** (2 nodes): `toolExecution.ts`, `createToolResultMessage()`
+- **Thin community `Community 16`** (1 nodes): `index.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `client / getAnthropicClient`** (2 nodes): `client.ts`, `getAnthropicClient()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `handleMessageFromStream / messages`** (2 nodes): `handleMessageFromStream()`, `messages.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `build`** (1 nodes): `build.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `utils`** (1 nodes): `utils.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `message`** (1 nodes): `message.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `tools`** (1 nodes): `tools.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `global.d`** (1 nodes): `global.d.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `index`** (1 nodes): `index.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `querySource`** (1 nodes): `querySource.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `useCanUseTool`** (1 nodes): `useCanUseTool.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `transitions`** (1 nodes): `transitions.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `types`** (1 nodes): `types.ts`
+- **Thin community `Community 17`** (1 nodes): `types.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Should `state / getInitialState` be split into smaller, more focused modules?**
+- **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.14 - nodes in this community are weakly interconnected._
