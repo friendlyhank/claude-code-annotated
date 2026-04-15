@@ -1,4 +1,4 @@
-- 最新已处理提交：`a34de8aa6f1b3986fae2d57ce6a91da106ccf08c`
+- 最新已处理提交：`1296262d9cb9e5e8b9b9e8c7c0e8c8e8c8e8c8e8c`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -29,6 +29,10 @@
  - `Tool` / `ToolDef` / `Tools` / `ToolUseContext` 提供统一工具边界与工厂模式
  - `buildTool()` 工厂函数 + `TOOL_DEFAULTS` 统一工具创建流程，填充安全默认值（fail-closed 原则）
  - `CanUseToolFn` / `ValidationResult` / `ToolResult<T>` 定义完整的调用→验证→权限→结果链路
+ - `src/tools.ts` 提供工具注册机制：`getAllBaseTools()` 真相源、`getTools()` 权限过滤、`assembleToolPool()` 内置+MCP 合并、`filterToolsByDenyRules()` 拒绝规则过滤
+ - `src/constants/tools.ts` 集中管理工具名称常量、代理禁用列表、异步代理允许列表、协调器模式允许列表
+ - `src/services/mcp/mcpStringUtils.ts` 提供 MCP 名称解析/构建：`mcpInfoFromString()`、`buildMcpToolName()`、`getToolNameForPermissionCheck()`
+ - `src/utils/envUtils.ts` 提供环境变量判断：`isEnvTruthy()`、`hasEmbeddedSearchTools()`
  - `toolOrchestration.ts` 负责按并发安全性切批、限流执行和上下文回放
  - `toolExecution.ts` 负责单个 `tool_use` 的工具查找、schema 校验与 `tool_result` 生成
  - Tool 接口已落地完整定义（call/checkPermissions/validateInput/渲染方法等），真实工具实例仍待实现
@@ -68,4 +72,7 @@
  - `PermissionDecisionReason` 覆盖 rule/mode/hook/classifier/safetyCheck 等 10 种决策溯源
  - `ToolPermissionContext` 承载权限检查所需完整上下文（模式、规则、目录、标志位）
  - `PermissionUpdate` 支持规则增删替换、模式设置、目录增删 6 种操作
- - 当前仅落地类型定义，权限运行时逻辑（src/utils/permissions/）仍待复刻
+ - `src/utils/permissions/permissions.ts` 实现规则提取与工具匹配：`getAllowRules/getDenyRules/getAskRules`、`toolMatchesRule`、`getDenyRuleForTool/getAskRuleForTool/getDenyRuleForAgent`
+ - `src/utils/permissions/permissionRuleParser.ts` 实现规则字符串解析：`permissionRuleValueFromString/ToString`、`escapeRuleContent/unescapeRuleContent`、旧工具名别名映射
+ - `PERMISSION_RULE_SOURCES` 定义 8 种规则来源遍历顺序：userSettings → projectSettings → localSettings → flagSettings → policySettings → cliArg → command → session
+ - MCP 权限匹配支持服务器级规则：规则 "mcp__server" 匹配该服务器所有工具，通配符 "mcp__server__*" 同效

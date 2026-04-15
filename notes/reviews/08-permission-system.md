@@ -2,13 +2,15 @@
 
 ## 概述
 
-这一层定义了工具执行前的权限检查所需的全部类型。它独立于权限运行时实现（`src/utils/permissions/`），仅包含类型定义和常量，目的是打破循环依赖。
+这一层定义了工具执行前的权限检查所需的全部类型和运行时逻辑。类型定义独立于实现（`src/types/permissions.ts`），避免循环依赖；运行时逻辑在 `src/utils/permissions/` 实现，包括规则提取、工具匹配和规则字符串解析。
 
-当前仅落地类型定义，权限运行时逻辑仍待复刻。
+当前已落地类型定义和规则匹配运行时，分类器评估、用户提示等高级能力仍待复刻。
 
 ## 关键源码
 
 - `src/types/permissions.ts` — 权限类型定义（纯类型文件，无运行时依赖）
+- `src/utils/permissions/permissions.ts` — 规则提取与工具匹配运行时
+- `src/utils/permissions/permissionRuleParser.ts` — 规则字符串解析器（转义/反转义/别名映射）
 
 ## 设计原理
 
@@ -139,6 +141,51 @@ PermissionRule = {
 
 `ToolPermissionRulesBySource` 为每种来源维护规则列表，用于快速查找。
 
+### 规则来源遍历顺序
+
+`PERMISSION_RULE_SOURCES` 定义 8 种来源的遍历顺序：
+
+```text
+userSettings → projectSettings → localSettings → flagSettings → policySettings → cliArg → command → session
+```
+
+顺序影响规则优先级：先匹配的规则优先级更高。
+
+### 规则匹配逻辑
+
+`toolMatchesRule(tool, rule)` 实现整个工具级别的匹配：
+
+1. 规则不能有 `ruleContent`（即只匹配 "Bash" 不匹配 "Bash(prefix:*)"）
+2. 使用 `getToolNameForPermissionCheck()` 获取工具的权限匹配名（MCP 工具使用 `mcp__server__tool` 全限定名）
+3. 直接工具名匹配：`rule.toolName === toolNameForMatch`
+4. MCP 服务器级匹配：规则 "mcp__server" 匹配 "mcp__server__tool"，通配符 "mcp__server__*" 同效
+
+### 规则字符串解析
+
+`permissionRuleValueFromString(ruleString)` 解析规则字符串：
+
+| 格式 | 解析结果 |
+| --- | --- |
+| `"Bash"` | `{ toolName: 'Bash' }` |
+| `"Bash(npm install)"` | `{ toolName: 'Bash', ruleContent: 'npm install' }` |
+| `"Bash()"` | `{ toolName: 'Bash' }`（空内容视为工具级规则） |
+| `"Bash(*)"` | `{ toolName: 'Bash' }`（通配符同空内容） |
+
+**转义规则**：
+- 括号需转义：`\(` 和 `\)`
+- 转义顺序：先转义反斜杠，再转义括号
+- 反转义顺序相反
+
+**旧工具名别名**：
+```text
+Task → Agent
+KillShell → TaskStop
+AgentOutputTool → TaskOutput
+BashOutputTool → TaskOutput
+```
+
+别名映射确保用户持久化的旧规则名仍能匹配到当前规范名。
+
 ## 权限更新操作
 
 `PermissionUpdate` 支持 6 种操作：
@@ -185,6 +232,24 @@ PermissionRule = {
 | `PermissionDecisionReason` | `permissions.ts` | 决策溯源（10 种） |
 | `ToolPermissionContext` | `permissions.ts` | 权限检查上下文 |
 | `AdditionalWorkingDirectory` | `permissions.ts` | 额外工作目录定义 |
+| `PermissionRuleValue` | `permissions.ts` | 规则值（toolName + 可选 ruleContent） |
+
+## 关键运行时函数
+
+| 函数 | 位置 | 作用 |
+| --- | --- | --- |
+| `getAllowRules(context)` | `permissions.ts` | 从上下文提取所有允许规则 |
+| `getDenyRules(context)` | `permissions.ts` | 从上下文提取所有拒绝规则 |
+| `getAskRules(context)` | `permissions.ts` | 从上下文提取所有询问规则 |
+| `toolMatchesRule(tool, rule)` | `permissions.ts` | 检查工具是否匹配规则 |
+| `getDenyRuleForTool(context, tool)` | `permissions.ts` | 获取工具的拒绝规则（供 filterToolsByDenyRules 使用） |
+| `getAskRuleForTool(context, tool)` | `permissions.ts` | 获取工具的询问规则 |
+| `getDenyRuleForAgent(context, name, type)` | `permissions.ts` | 获取代理类型的拒绝规则 |
+| `permissionRuleValueFromString(str)` | `permissionRuleParser.ts` | 解析规则字符串为 PermissionRuleValue |
+| `permissionRuleValueToString(value)` | `permissionRuleParser.ts` | 将 PermissionRuleValue 转回字符串 |
+| `escapeRuleContent(content)` | `permissionRuleParser.ts` | 转义规则内容中的括号 |
+| `unescapeRuleContent(content)` | `permissionRuleParser.ts` | 反转义规则内容 |
+| `normalizeLegacyToolName(name)` | `permissionRuleParser.ts` | 旧工具名规范化 |
 
 ## 设计取舍
 
@@ -194,16 +259,19 @@ PermissionRule = {
 - 三态 + passthrough 覆盖真实权限决策场景
 - 决策溯源保证审计可追溯
 - `ToolPermissionContext` 使用 `ReadonlyMap` 保证不可变性
+- 规则来源遍历顺序明确，优先级可预测
+- 旧工具名别名映射确保向后兼容
+- MCP 服务器级权限简化批量配置
 
 ### 局限
 
-- 仅落地类型定义，运行时逻辑（规则匹配、分类器评估、用户提示）未实现
+- 分类器评估、用户提示、hook 执行等高级运行时逻辑未实现
 - `auto` 模式受 feature flag 控制暂不可用
 - `contentBlocks` 依赖 SDK 类型，当前以 `unknown[]` 占位
 
 ## 小结
 
-权限类型体系已完整定义了从模式、规则、决策到更新的全链路类型。它为工具执行的 `checkPermissions()` 提供了类型基础，后续只需实现 `src/utils/permissions/` 中的运行时逻辑，即可在现有类型框架上自然运转。
+权限体系已完整定义了从模式、规则、决策到更新的全链路类型，并落地了规则提取、字符串解析和工具匹配运行时。`getDenyRuleForTool()` 已被 `filterToolsByDenyRules()` 使用，实现了工具池组装时的拒绝规则过滤。后续只需补足分类器评估和用户提示逻辑，即可在现有框架上自然运转。
 
 ## 组合使用
 

@@ -9,6 +9,10 @@
 ## 关键源码
 
 - `src/Tool.ts` — 工具类型体系 + buildTool 工厂 + 辅助函数
+- `src/tools.ts` — 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules
+- `src/constants/tools.ts` — 工具名称常量 + 代理禁用列表 + 异步代理允许列表 + 协调器模式允许列表
+- `src/services/mcp/mcpStringUtils.ts` — MCP 名称解析/构建：mcpInfoFromString/buildMcpToolName/getToolNameForPermissionCheck
+- `src/utils/envUtils.ts` — 环境变量判断：isEnvTruthy/hasEmbeddedSearchTools
 - `src/types/permissions.ts` — 权限类型定义（独立文件，避免循环依赖）
 - `src/services/tools/toolOrchestration.ts` — 批次编排
 - `src/services/tools/toolExecution.ts` — 单工具执行
@@ -51,9 +55,40 @@
 
 这让后续真实工具执行可以直接往 `runToolUse()` 深挖，而不需要重写批次调度逻辑。
 
-### 4. 并发安全优先于吞吐
+### 4. 工具注册机制：单一真相源 + 按需过滤
+
+`src/tools.ts` 提供工具注册的完整链路：
+
+| 函数 | 作用 |
+| --- | --- |
+| `getAllBaseTools()` | 所有内置工具的唯一真相源，尊重环境变量标志 |
+| `getTools(permissionContext)` | 根据权限上下文过滤可用工具 |
+| `assembleToolPool(permissionContext, mcpTools)` | 合并内置工具和 MCP 工具，排序去重 |
+| `filterToolsByDenyRules(tools, permissionContext)` | 按拒绝规则过滤工具 |
+
+**关键设计**：
+- 条件引入：`hasEmbeddedSearchTools()` 为真时，不需要独立 Glob/Grep 工具
+- Simple 模式：`CLAUDE_CODE_SIMPLE=1` 时仅返回 Bash/Read/Edit
+- 排序稳定性：内置工具按名称排序为连续前缀，确保 prompt cache 稳定
+- 去重策略：内置工具优先，同名 MCP 工具被忽略
+
+### 5. 并发安全优先于吞吐
 
 是否并发执行，不由调用方拍脑袋决定，而由工具自己的 `isConcurrencySafe()` 决定。若工具缺失、schema 校验失败或判断抛错，统一保守降级为串行。
+
+### 6. 工具常量集中管理
+
+`src/constants/tools.ts` 集中管理工具名称常量和代理权限规则：
+
+| 常量 | 用途 |
+| --- | --- | --- |
+| `AGENT_TOOL_NAME` / `BASH_TOOL_NAME` 等 | 工具名称常量，避免硬编码 |
+| `ALL_AGENT_DISALLOWED_TOOLS` | 所有代理类型禁止使用的工具（TaskOutput/ExitPlanMode/Agent/AskUserQuestion/TaskStop/Workflow） |
+| `ASYNC_AGENT_ALLOWED_TOOLS` | 异步代理允许使用的工具 |
+| `COORDINATOR_MODE_ALLOWED_TOOLS` | 协调器模式允许的工具 |
+| `SHELL_TOOL_NAMES` | Shell 工具名称列表（Bash/PowerShell） |
+
+设计原因：工具重命名后，旧名称仍需支持（通过 `permissionRuleParser.ts` 的别名映射）。
 
 ## 主流程
 
@@ -189,6 +224,10 @@ Tool 接口的方法按职责可分为以下区域：
 | `ToolUseContext` | `src/Tool.ts` | 承载工具列表、中断控制器、消息和会话 setter |
 | `MessageUpdate` | `toolOrchestration.ts` | 编排层向查询层返回消息与新上下文 |
 | `ContextModifier` | `toolExecution.ts` | 延迟提交的上下文修改描述 |
+| `TOOL_PRESETS` | `src/tools.ts` | 预定义工具预设（当前仅 'default'） |
+| `ALL_AGENT_DISALLOWED_TOOLS` | `constants/tools.ts` | 所有代理类型禁用工具集合 |
+| `ASYNC_AGENT_ALLOWED_TOOLS` | `constants/tools.ts` | 异步代理允许工具集合 |
+| `COORDINATOR_MODE_ALLOWED_TOOLS` | `constants/tools.ts` | 协调器模式允许工具集合 |
 
 ## 辅助函数
 
@@ -199,6 +238,26 @@ Tool 接口的方法按职责可分为以下区域：
 | `findToolByName(tools, name)` | `src/Tool.ts` | 按名称查找工具 |
 | `filterToolProgressMessages(msgs)` | `src/Tool.ts` | 过滤 hook_progress 类型进度消息 |
 | `getEmptyToolPermissionContext()` | `src/Tool.ts` | 生成默认空权限上下文 |
+
+## 工具注册函数
+
+| 函数 | 位置 | 作用 |
+| --- | --- | --- |
+| `getAllBaseTools()` | `src/tools.ts` | 返回所有内置工具列表（真相源） |
+| `getTools(context)` | `src/tools.ts` | 根据权限上下文过滤可用工具 |
+| `assembleToolPool(context, mcpTools)` | `src/tools.ts` | 合并内置工具和 MCP 工具 |
+| `filterToolsByDenyRules(tools, context)` | `src/tools.ts` | 按拒绝规则过滤工具 |
+| `getToolsForDefaultPreset()` | `src/tools.ts` | 获取默认预设的工具名称列表 |
+
+## MCP 名称处理函数
+
+| 函数 | 位置 | 作用 |
+| --- | --- | --- |
+| `mcpInfoFromString(str)` | `mcpStringUtils.ts` | 从工具名提取 MCP 服务器信息 |
+| `buildMcpToolName(server, tool)` | `mcpStringUtils.ts` | 构建完整 MCP 工具名 |
+| `getToolNameForPermissionCheck(tool)` | `mcpStringUtils.ts` | 获取权限规则匹配用的名称 |
+| `normalizeNameForMCP(name)` | `mcpStringUtils.ts` | 规范化 MCP 名称（兼容 API 模式） |
+| `getMcpPrefix(serverName)` | `mcpStringUtils.ts` | 生成 MCP 工具名前缀 |
 
 ## 设计取舍
 

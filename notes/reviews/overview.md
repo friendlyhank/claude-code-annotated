@@ -23,7 +23,8 @@
 │   ├── components/
 │   │   └── App.tsx
 │   ├── constants/
-│   │   └── querySource.ts
+│   │   ├── querySource.ts
+│   │   └── tools.ts
 │   ├── entrypoints/
 │   │   └── cli.tsx
 │   ├── hooks/
@@ -37,6 +38,8 @@
 │   │   ├── api/
 │   │   │   ├── claude.ts
 │   │   │   └── client.ts
+│   │   ├── mcp/
+│   │   │   └── mcpStringUtils.ts
 │   │   └── tools/
 │   │       ├── toolExecution.ts
 │   │       └── toolOrchestration.ts
@@ -45,18 +48,25 @@
 │   │   ├── ids.ts
 │   │   ├── index.ts
 │   │   ├── message.ts
+│   │   ├── permissions.ts
 │   │   ├── tools.ts
 │   │   └── utils.ts
 │   ├── utils/
+│   │   ├── envUtils.ts
 │   │   ├── generators.ts
 │   │   ├── handlePromptSubmit.ts
+│   │   ├── messages.ts
+│   │   ├── permissions/
+│   │   │   ├── permissionRuleParser.ts
+│   │   │   └── permissions.ts
 │   │   └── systemPromptType.ts
 │   ├── Tool.ts
 │   ├── ink.ts
 │   ├── interactiveHelpers.tsx
 │   ├── main.tsx
 │   ├── query.ts
-│   └── replLauncher.tsx
+│   ├── replLauncher.tsx
+│   └── tools.ts
 ├── build.ts
 ├── bun.lock
 ├── package.json
@@ -72,8 +82,12 @@
 | `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层入口与 `query()` 接线 | `src/utils/handlePromptSubmit.ts`、`src/query.ts` |
 | `src/utils/handlePromptSubmit.ts` | 把用户输入转换成待提交消息，收口输入清空、处理中提示与共享中断控制器创建 | `src/screens/REPL.tsx`、`src/query.ts` |
 | `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
+| `src/tools.ts` | 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules | `src/Tool.ts`、`src/utils/permissions/` |
+| `src/constants/tools.ts` | 工具名称常量、代理禁用列表、异步代理允许列表 | `src/tools.ts` |
 | `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
 | `src/services/tools/` | `tool_use` 分批、串并行调度与结果回传 | `src/services/tools/toolOrchestration.ts` |
+| `src/services/mcp/mcpStringUtils.ts` | MCP 名称解析/构建：mcpInfoFromString/buildMcpToolName/getToolNameForPermissionCheck | `src/utils/permissions/permissions.ts` |
+| `src/utils/permissions/` | 权限规则提取、匹配与字符串解析 | `src/types/permissions.ts` |
 | `src/bootstrap/state.ts` | 进程级状态，如交互模式、cwd、session source | `src/types/message.ts` |
 | `src/ink.ts` / `src/interactiveHelpers.tsx` | TUI root/render 抽象、退出与消息式收尾 | `src/components/App.tsx` |
 
@@ -157,7 +171,8 @@ mindmap
 
 - 已实现的是最小主链路，不是完整 Claude Code 全量能力
 - `query.ts` 保留了大量 TODO，占位于压缩、token budget、stop hooks、fallback 等增强能力
-- 工具系统已具备类型边界、批次调度和结果回传框架，但单工具真实执行仍未落地
+- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，但单工具真实执行仍未落地
+- 权限系统已具备类型定义、规则提取、字符串解析和工具匹配，但分类器评估、用户提示仍未实现
 - `App.tsx`、`query/transitions.ts`、`constants/querySource.ts`、`types/tools.ts` 仍以占位实现为主
 - 文档结论只以当前仓库源码为准，不把目标仓库里尚未复刻的能力写进现状
 
