@@ -1,4 +1,4 @@
-- 最新已处理提交：`9b89f152edf67a70aab0c4afa609beac7b7b2205`
+- 最新已处理提交：`5c596b80d0cb13d8f9e3d137b06bdf1d6d03b2c0`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
