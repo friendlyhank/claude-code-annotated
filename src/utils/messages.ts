@@ -1,5 +1,7 @@
+import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ThinkingBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlock } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
 import type {
   Message,
   RequestStartEvent,
@@ -8,6 +10,14 @@ import type {
   ToolUseSummaryMessage,
 } from '../types/message.js'
 import type { SpinnerMode } from '../components/Spinner/types.js'
+import type { Tools } from '../Tool.js'
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:16
+import isObject from 'lodash-es/isObject.js'
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:148
+import { normalizeToolInput } from './api.js'
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:155
+import { safeParseJSON } from './json.js'
+import { findToolByName } from '../Tool.js'
 
 // 流式工具调用 - 用于表示模型在流式输出中调用的工具
 export type StreamingToolUse = {
@@ -219,3 +229,85 @@ export function handleMessageFromStream(
       return
   }
 }
+
+// ============================================================================
+// normalizeContentFromAPI
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:2675-2800 原样复刻
+// 设计原因：流式处理中 tool_use.input 是字符串，需要解析为对象
+
+export function normalizeContentFromAPI(
+  contentBlocks: BetaContentBlock[], // 流式事件块数组
+  tools: Tools, // 工具配置
+): ContentBlock[] {
+  if (!contentBlocks) {
+    return []
+  }
+
+  return contentBlocks.map(contentBlock => {
+    switch (contentBlock.type) {
+      case 'tool_use': {
+        // 对齐上游实现：验证 input 类型
+        if (
+          typeof contentBlock.input !== 'string' &&
+          !isObject(contentBlock.input)
+        ) {
+          // we stream tool use inputs as strings, but when we fall back, they're objects
+          throw new Error('Tool use input must be a string or object')
+        }
+
+        // 对齐上游实现：流式处理时 input 是 JSON 字符串，需要解析
+        // With fine-grained streaming on, we are getting a stringied JSON back from the API.
+        // The API has strange behaviour, where it returns nested stringified JSONs, and so
+        // we need to recursively parse these.
+        let normalizedInput: unknown
+        if (typeof contentBlock.input === 'string') {
+          const parsed = safeParseJSON(contentBlock.input)
+          normalizedInput = parsed ?? {}
+        } else {
+          normalizedInput = contentBlock.input
+        }
+
+        // 对齐上游实现：应用工具特定的输入规范化
+        if (typeof normalizedInput === 'object' && normalizedInput !== null) {
+          const tool = findToolByName(tools, contentBlock.name)
+          if (tool) {
+            try {
+              normalizedInput = normalizeToolInput(
+                tool,
+                normalizedInput as { [key: string]: unknown },
+              )
+            } catch {
+              // Keep the original input if normalization fails
+            }
+          }
+        }
+
+        return {
+          ...contentBlock,
+          input: normalizedInput,
+        } as ContentBlock
+      }
+      case 'text':
+        // Return the block as-is to preserve exact content for prompt caching.
+        return contentBlock as unknown as ContentBlock
+      case 'mcp_tool_use':
+      case 'mcp_tool_result':
+      case 'container_upload':
+        // Beta-specific content blocks - pass through as-is
+        return contentBlock as unknown as ContentBlock
+      case 'server_tool_use':
+        if (typeof contentBlock.input === 'string') {
+          return {
+            ...contentBlock,
+            input: (safeParseJSON(contentBlock.input) ?? {}) as {
+              [key: string]: unknown
+            },
+          } as ContentBlock
+        }
+        return contentBlock as unknown as ContentBlock
+      default:
+        return contentBlock as unknown as ContentBlock
+    }
+  })
+}
+

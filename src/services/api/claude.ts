@@ -11,17 +11,14 @@
 
 import { randomUUID, type UUID } from 'crypto'
 import type {
-  BetaContentBlock, // 内容块
-  BetaMessage, // 消息
-  BetaMessageDeltaUsage, // 消息 delta 时的 usage
-  BetaRawMessageStreamEvent, // 原始消息流事件
-  BetaToolUnion,
-  BetaUsage, // 消息使用统计
+  BetaContentBlock, // 流式事件中的内容块
+  BetaMessage, // 流式事件中的消息
+  BetaMessageDeltaUsage,// 流式事件中的使用统计
+  BetaRawMessageStreamEvent, // 流式事件中的原始消息
+  BetaToolUnion, // 流式事件中的工具调用
+  BetaUsage,  // 流式事件中的使用统计
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type {
-  ContentBlock,
-  MessageParam,
-} from '@anthropic-ai/sdk/resources/messages/messages.mjs'
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
 import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
 import Anthropic from '@anthropic-ai/sdk'
 import { getAnthropicClient } from './client.js'
@@ -33,6 +30,8 @@ import type {
   SystemAPIErrorMessage,
 } from '../../types/message.js'
 import type { SystemPrompt } from '../../utils/systemPromptType.js'
+// 对齐上游实现：按 claude-code/src/services/api/claude.ts:80 从 messages.ts 导入
+import { normalizeContentFromAPI } from '../../utils/messages.js'
 
 // ============================================================================
 // 类型定义
@@ -182,67 +181,14 @@ function updateUsage(
 }
 
 // ============================================================================
-// 辅助函数：安全解析 JSON
-// 对齐上游实现：按 claude-code/src/utils/messages.ts safeParseJSON 原样复刻
-
-function safeParseJSON(str: string): unknown {
-  try {
-    return JSON.parse(str)
-  } catch {
-    return null
-  }
-}
-
-// ============================================================================
-// 辅助函数：内容块归一化
-// 对齐上游实现：将 SDK 返回的内容块归一化为标准格式
-// 设计原因：流式处理中 tool_use.input 是字符串，需要解析为对象
-
-function normalizeContentFromAPI(
-  blocks: BetaContentBlock[],
-): ContentBlock[] {
-  return blocks.map(contentBlock => {
-    // 对齐上游实现：tool_use 的 input 需要从字符串解析为对象
-    // 参考 claude-code/src/utils/messages.ts:2675-2730
-    if (contentBlock.type === 'tool_use') {
-      const block = contentBlock as { type: 'tool_use'; input: unknown; name: string; id: string }
-      
-      // 边界处理：input 必须是字符串或对象
-      if (typeof block.input !== 'string' && typeof block.input !== 'object') {
-        throw new Error('Tool use input must be a string or object')
-      }
-
-      // 对齐上游实现：流式处理时 input 是 JSON 字符串，需要解析
-      let normalizedInput: unknown
-      if (typeof block.input === 'string') {
-        const parsed = safeParseJSON(block.input)
-        // 边界处理：解析失败时使用空对象
-        normalizedInput = parsed ?? {}
-      } else {
-        normalizedInput = block.input
-      }
-
-      return {
-        ...contentBlock,
-        input: normalizedInput,
-      } as ContentBlock
-    }
-
-    return contentBlock as unknown as ContentBlock
-  })
-}
-
-// ============================================================================
 // 辅助函数：构建 AssistantMessage
-// 对齐上游实现：按源码原样复刻
-
-// 将 Anthropic 模型响应转换为 Claude 格式的消息
 function toAssistantMessage(
   partialMessage: BetaMessage,
   contentBlocks: BetaContentBlock[],
   requestId: string | undefined,
   usage: MutableUsage,
   stopReason: string | null | undefined,
+  tools: Tools,
 ): AssistantMessage {
   return {
     type: 'assistant',
@@ -250,13 +196,10 @@ function toAssistantMessage(
     timestamp: new Date().toISOString(),
     requestId,
     message: {
-      id: partialMessage.id,
-      role: partialMessage.role,
-      content: normalizeContentFromAPI(contentBlocks),
+      ...partialMessage,
+      content: normalizeContentFromAPI(contentBlocks, tools),
       usage: usage as BetaUsage,
-      model: partialMessage.model,
       stop_reason: stopReason ?? undefined,
-      stop_sequence: partialMessage.stop_sequence,
     },
   } as AssistantMessage
 }
@@ -481,6 +424,7 @@ export async function* queryModelWithStreaming({
           requestId ?? undefined,
           usage,
           stopReason,
+          tools ?? [],
         )
 
         yield m
