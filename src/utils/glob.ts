@@ -6,7 +6,7 @@
  * TODO: 完整 glob.ts 待后续阶段补齐（extractGlobBaseDirectory 等）
  */
 
-import { isAbsolute, join } from 'path'
+import { isAbsolute, join, relative } from 'path'
 import type { ToolPermissionContext } from '../types/permissions.js'
 // TODO: ripGrep 待实现
 // import { ripGrep } from './ripgrep.js'
@@ -34,14 +34,14 @@ export async function glob(
 ): Promise<{ files: string[]; truncated: boolean }> {
   // 简化实现：使用 Node.js fs 模块递归搜索
   // 对齐上游行为：返回绝对路径列表，支持截断
-  const { readdir, stat: fsStat } = await import('fs/promises')
-  const { basename } = await import('path')
+  const { readdir } = await import('fs/promises')
 
   // 将 glob 模式转换为正则
+  // 边界处理：路径分隔符统一使用 /，确保跨平台匹配
   const regex = globToRegex(filePattern)
   const allFiles: string[] = []
 
-  async function walk(dir: string): Promise<void> {
+  async function walk(dir: string, baseDir: string): Promise<void> {
     if (allFiles.length > offset + limit + 100) return // 提前停止
     let entries
     try {
@@ -53,20 +53,21 @@ export async function glob(
       const fullPath = join(dir, entry.name)
       if (entry.isDirectory()) {
         // 对齐上游实现：默认不忽略 .gitignore 中的文件（--no-ignore）
-        if (entry.name === '.git') continue
-        await walk(fullPath)
+        // 边界处理：跳过 .git 目录以提升性能
+        if (entry.name === '.git' || entry.name === 'node_modules') continue
+        await walk(fullPath, baseDir)
       } else if (entry.isFile()) {
-        // 将绝对路径的文件名部分与 glob 模式匹配
-        // 对齐上游实现：ripgrep 使用相对路径匹配
-        const relPath = isAbsolute(filePattern) ? fullPath : entry.name
-        if (regex.test(relPath) || regex.test(basename(fullPath))) {
+        // 计算相对于 baseDir 的相对路径
+        // 对齐上游实现：ripgrep 使用相对路径匹配 glob 模式
+        const relPath = relative(baseDir, fullPath).replace(/\\/g, '/')
+        if (regex.test(relPath)) {
           allFiles.push(fullPath)
         }
       }
     }
   }
 
-  await walk(cwd)
+  await walk(cwd, cwd)
 
   const truncated = allFiles.length > offset + limit
   const files = allFiles.slice(offset, offset + limit)
@@ -78,6 +79,11 @@ export async function glob(
  * 简易 glob 模式转正则
  * 对齐上游实现：上游使用 ripgrep 的 --glob 参数，此为替代实现
  * TODO: 待 ripgrep 集成后移除
+ *
+ * 设计原因：
+ * - ** 匹配任意路径（包括路径分隔符）
+ * - * 匹配非路径分隔符
+ * - ? 匹配单个非路径分隔符
  */
 function globToRegex(pattern: string): RegExp {
   let regexStr = pattern

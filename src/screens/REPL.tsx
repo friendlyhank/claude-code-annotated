@@ -16,7 +16,9 @@ import type { QuerySource } from '../constants/querySource.js'
 import { Box, Text, useApp, useInput } from '../ink.js'
 import { query } from '../query.js'
 import type { ToolUseContext, Tools } from '../Tool.js'
+import { getTools } from '../tools.js'
 import type { Message, StreamEvent } from '../types/message.js'
+import type { ToolPermissionContext } from '../types/permissions.js'
 import type { SpinnerMode } from '../components/Spinner/types.js'
 import {
   handleMessageFromStream,
@@ -141,14 +143,31 @@ function getMessageColor(message: Message): 'cyan' | 'green' | 'yellow' {
   }
 }
 
+// 对齐上游实现：创建默认权限上下文
+// 参考 claude-code/src/screens/REPL.tsx 中 store.getState().toolPermissionContext
+function createDefaultPermissionContext(): ToolPermissionContext {
+  return {
+    mode: 'default',
+    additionalWorkingDirectories: new Map(),
+    alwaysAllowRules: {},
+    alwaysDenyRules: {},
+    alwaysAskRules: {},
+    isBypassPermissionsModeAvailable: false,
+  }
+}
+
 // 对齐上游职责：REPL 负责在交互层准备 toolUseContext，再把它交给 query() 消费。
-// 当前只补最小闭环所需字段，权限、文件缓存、hooks 等复杂能力继续延后复刻。
+// 对齐上游实现：使用 getTools() 获取工具列表
+// 参考 claude-code/src/screens/REPL.tsx:3154-3250 getToolUseContext 函数
 function createReplToolUseContext(
   messages: Message[],
   debug: boolean,
   abortController: AbortController,
 ): ToolUseContext {
-  const tools: Tools = []
+  // 对齐上游实现：从权限上下文获取工具列表
+  // 参考 claude-code/src/screens/REPL.tsx:3170-3180 computeTools()
+  const permissionContext = createDefaultPermissionContext()
+  const tools: Tools = getTools(permissionContext)
 
   return {
     options: {
@@ -160,7 +179,7 @@ function createReplToolUseContext(
       isNonInteractiveSession: false,
     },
     abortController,
-    getAppState: () => ({}),
+    getAppState: () => ({ toolPermissionContext: permissionContext }),
     setAppState: _updater => {},
     setInProgressToolUseIDs: _updater => {},
     setResponseLength: _updater => {},
@@ -250,7 +269,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
 
   // 处理查询实现
   const onQueryImpl = useCallback(
-    // 定义一个异步函数，入参是“本轮要发送的完整消息历史”（包含新用户消息）
+    // 定义一个异步函数，入参是"本轮要发送的完整消息历史"（包含新用户消息）
     async (
       messagesIncludingNewMessages: Message[],
       queryAbortController: AbortController,
@@ -260,7 +279,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         userContext: {},
         systemContext: {},
-        canUseTool: async () => true,
+        canUseTool: async () => ({ result: true } as const),
         toolUseContext: createReplToolUseContext(
           messagesRef.current,
           debug,
@@ -357,7 +376,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
         setUserInputOnProcessing,
         setAbortController,
         onQuery,
-        canUseTool: async () => true,
+        canUseTool: async () => ({ result: true } as const),
       })
     } catch (error) {
       appendMessage({

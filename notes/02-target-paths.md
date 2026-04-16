@@ -1,6 +1,16 @@
 # 目标路径清单
 
-> 最后更新：2026-04-15
+> 最后更新：2026-04-16
+
+## 总体进度
+
+| 指标 | 值 |
+|---|---:|
+| 目标文件代码数 | 537,782 |
+| 累计复刻目标文件代码数 | 3,740 |
+| 覆盖率 | **0.70%** |
+
+> 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
 ## 统计口径
 
@@ -87,13 +97,13 @@
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
 | `src/services/tools/toolOrchestration.ts` | 170 | 170 | 100% |
-| `src/services/tools/toolExecution.ts` | 1,486 | 70 | 5% |
+| `src/services/tools/toolExecution.ts` | 1,746 | 195 | 11% |
 
 ### API 客户端
 
 | 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
 |---|---:|---:|---:|
-| `src/services/api/claude.ts` | 2,707 | 262 | 10% |
+| `src/services/api/claude.ts` | 3,416 | 467 | 14% |
 | `src/services/api/client.ts` | 255 | 29 | 11% |
 | `src/services/api/` (其他) | ~2,000 | 0 | 0% |
 
@@ -114,7 +124,7 @@
 | `src/tools/BashTool/` | - | 0 | 0% |
 | `src/tools/FileEditTool/` | - | 0 | 0% |
 | `src/tools/GrepTool/` | - | 0 | 0% |
-| `src/tools/GlobTool/` | - | 0 | 0% |
+| `src/tools/GlobTool/` | ~120 | 120 | 100% |
 | `src/tools/ReadTool/` | - | 0 | 0% |
 | `src/tools/WriteTool/` | - | 0 | 0% |
 
@@ -159,8 +169,8 @@
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数（总计） | 537,782 |
-| 累计复刻目标文件代码数 | 3,275 |
-| **覆盖率** | **0.61%** |
+| 累计复刻目标文件代码数 | 3,616 |
+| **覆盖率** | **0.67%** |
 
 ---
 

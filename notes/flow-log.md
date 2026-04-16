@@ -1,115 +1,8 @@
-# 进度面板
+# 复刻流水日志
 
 > 最后更新：2026-04-16
 
-## 总体进度
-
-| 指标 | 值 |
-|---|---:|
-| 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 3,275 |
-| 覆盖率 | **0.61%** |
-
-> 注：代码数使用 tokei 的 Code 列（排除注释和空行）
-
-## 阶段进度
-
-| 阶段 | 状态 | 完成度 |
-|---|---|---:|
-| 阶段 1：最小闭环 | `done` | 100% |
-| 阶段 2：核心查询引擎 | `doing` | 15% |
-
-**阶段 2 详细进度**：
-| 模块 | 状态 | 完成度 |
-|---|---|---:|
-| query() 生成器函数 | `done` | 100% |
-| queryLoop 核心流程 | `done` | 100% |
-| API 调用流式化 | `done` | 100% |
-| 工具执行编排 | `done` | 100% |
-| 工具类型系统 | `done` | 100% |
-| 工具注册机制 | `done` | 100% |
-| 权限规则解析 | `done` | 100% |
-| QueryEngine 类 | `planned` | 0% |
-| 消息预处理（compact） | `backlog` | 0% |
-| 错误恢复机制 | `backlog` | 0% |
-| 阶段 3：工具系统 | `ready` | 12% |
-
-**阶段 3 详细进度**：
-| 工具 | 状态 | 完成度 |
-|---|---|---:|
-| Tool 基础类 | `done` | 100% |
-| 工具注册机制 | `done` | 100% |
-| 权限规则解析 | `done` | 100% |
-| 权限类型系统 | `done` | 100% |
-| FileReadTool | `ready` | 0% |
-| BashTool | `planned` | 0% |
-| FileEditTool | `backlog` | 0% |
-| FileWriteTool | `backlog` | 0% |
-| GrepTool | `backlog` | 0% |
-| GlobTool | `backlog` | 0% |
-| WebFetchTool | `backlog` | 0% |
-| WebSearchTool | `backlog` | 0% |
-| 阶段 4：会话与状态管理 | `backlog` | 0% |
-| 阶段 5：TUI 完善 | `backlog` | 0% |
-| 阶段 6：扩展能力 | `backlog` | 0% |
-
-## 当前任务
-
-### 今日候选
-
-| 任务 | 状态 | 优先级 |
-|---|---|---|
-| 第一个具体工具实现（FileReadTool） | `ready` | high |
-| BashTool 核心实现 | `planned` | high |
-| GrepTool/GlobTool 实现 | `backlog` | medium |
-
-### 下一步详细任务分解
-
-#### 任务 1：FileReadTool 实现（优先级：high）
-
-**源码依据**：`claude-code/src/tools/FileReadTool/FileReadTool.ts` (1,184 行)
-
-**子任务**：
-| 子任务 | 状态 | 源码位置 |
-|---|---|---|
-| 输入 schema 定义 | `planned` | FileReadTool.ts:145-165 |
-| 输出 schema 定义 | `planned` | FileReadTool.ts:167-220 |
-| call() 核心逻辑 | `planned` | FileReadTool.ts:400-600 |
-| checkPermissions() | `planned` | FileReadTool.ts:350-400 |
-| mapToolResultToToolResultBlockParam() | `planned` | FileReadTool.ts:600-700 |
-| 文件读取工具函数 | `backlog` | utils/file.ts |
-| 图片处理工具函数 | `backlog` | utils/imageResizer.ts |
-
-**关键依赖**：
-- `src/Tool.ts` (已完成)
-- `src/tools.ts` (已完成)
-- `src/utils/permissions/filesystem.ts` (需要实现)
-- `src/utils/file.ts` (部分实现)
-
-#### 任务 2：BashTool 实现（优先级：high）
-
-**源码依据**：`claude-code/src/tools/BashTool/BashTool.tsx`
-
-**子任务**：
-| 子任务 | 状态 | 源码位置 |
-|---|---|---|
-| 输入 schema 定义 | `backlog` | BashTool.tsx |
-| 输出 schema 定义 | `backlog` | BashTool.tsx |
-| call() 核心逻辑 | `backlog` | BashTool.tsx |
-| 沙箱安全机制 | `backlog` | bashSecurity.ts |
-| 命令权限检查 | `backlog` | bashPermissions.ts |
-
-#### 任务 3：GrepTool/GlobTool 实现（优先级：medium）
-
-**源码依据**：`claude-code/src/tools/GrepTool/`, `claude-code/src/tools/GlobTool/`
-
-### 进行中
-
-| 任务 | 开始时间 | 备注 |
-|---|---|---|
-| FileReadTool 基础框架 | 进行中 | 输入/输出 schema 设计中 |
-
-### 已完成
+## 已完成清单
 
 | 任务 | 完成时间 | 备注 |
 |---|---|---|
@@ -122,59 +15,15 @@
 | queryLoop 核心流程 | 2026-04-08 | callModel 调用, 流式处理, tool_use 检测, 循环判断 |
 | 工具执行编排最小闭环 | 2026-04-09 | runTools 接入 queryLoop，tool_use 不再停在 tools_pending |
 | REPL 到代理循环最小接线 | 2026-04-10 | REPL 提交改为消费 query()，UI 不再停留在本地 setTimeout 占位响应 |
-| 复刻规划文档初始化 | 2026-04-05 | 创建 notes 文档体系 |
-| API 调用层流式化改造 | 2026-04-14 | queryModelWithStreaming 改为流式 AsyncGenerator，真实 API 响应验证通过 ✅ |
-| 基础工具类（Tool.ts 核心框架） | 2026-04-15 | buildTool、ToolResult、ValidationResult、PermissionResult 类型完整 ✅ |
-| 工具注册机制（tools.ts） | 2026-04-15 | getAllBaseTools、getTools、filterToolsByDenyRules、assembleToolPool、getMergedTools ✅ |
-| 权限规则解析（permissionRuleParser） | 2026-04-15 | permissionRuleValueFromString/ToString、escapeRuleContent、normalizeLegacyToolName ✅ |
-| MCP 名称工具函数 | 2026-04-15 | mcpInfoFromString、buildMcpToolName、getToolNameForPermissionCheck ✅ |
-| 权限类型系统（types/permissions.ts） | 2026-04-15 | PermissionResult、PermissionDecision、PermissionPolicy 类型完整 ✅ |
-| 阶段 2 核心流程闭环 | 2026-04-16 | query() → queryLoop() → callModel() → tool_use → runTools() 全链路打通 ✅ |
-
-## 阻塞与风险
-
-| 类型 | 描述 | 状态 |
-|---|---|---|
-| ~~验证条件~~ | ~~当前环境缺少 `ANTHROPIC_API_KEY`，真实 assistant 成功响应尚未留证~~ | ~~doing~~ → **已解除** |
-
-> 2026-04-14：`ANTHROPIC_API_KEY` 已就绪，流式 API 真实响应验证通过
-
-## 能力清单
-
-### 已实现能力
-
-- [x] CLI 启动
-- [x] --version 快速路径（零模块加载）
-- [x] 参数解析（@commander-js/extra-typings）
-- [x] 核心选项定义
-- [x] preAction hook 框架
-- [x] 交互模式/非交互模式路由
-- [x] REPL 交互基础框架
-- [x] LLM 调用（流式 AsyncGenerator 已实现，真实 API 响应验证通过 ✅）
-- [ ] 工具执行（已打通编排闭环，真实执行未完成）
-- [ ] 会话管理
-- [x] 工具类型系统（Tool 类型、buildTool、权限类型 ✅）
-- [x] 工具注册机制（tools.ts：getAllBaseTools、getTools、assembleToolPool ✅）
-- [x] 工具权限检查（getDenyRuleForTool、filterToolsByDenyRules、permissionRuleParser ✅）
-
-### 待实现能力
-
-- [x] 复刻规划文档
-- [x] 项目骨架
-- [x] 入口文件 cli.tsx
-- [x] 主命令模块 main.tsx
-- [x] bootstrap/state.ts 全局状态
-- [x] ink.ts 渲染封装
-- [x] interactiveHelpers.tsx 交互辅助
-- [x] replLauncher.tsx REPL 启动
-- [x] App.tsx 顶层组件
-- [x] REPL.tsx 主界面
-- [x] 核心类型定义
-- [x] API 调用层流式化
-- [x] 基础工具类（Tool.ts）✅
-- [x] 工具注册机制 ✅
-- [x] 工具权限检查 ✅
-- [ ] 第一个具体工具实现 ← 下一步
+| API 调用层流式化改造 | 2026-04-14 | queryModelWithStreaming 改为流式 AsyncGenerator，真实 API 响应验证通过 |
+| 基础工具类（Tool.ts 核心框架） | 2026-04-15 | buildTool、ToolResult、ValidationResult、PermissionResult 类型完整 |
+| 工具注册机制（tools.ts） | 2026-04-15 | getAllBaseTools、getTools、filterToolsByDenyRules、assembleToolPool、getMergedTools |
+| 权限规则解析（permissionRuleParser） | 2026-04-15 | permissionRuleValueFromString/ToString、escapeRuleContent、normalizeLegacyToolName |
+| MCP 名称工具函数 | 2026-04-15 | mcpInfoFromString、buildMcpToolName、getToolNameForPermissionCheck |
+| 权限类型系统（types/permissions.ts） | 2026-04-15 | PermissionResult、PermissionDecision、PermissionPolicy 类型完整 |
+| 阶段 2 核心流程闭环 | 2026-04-16 | query() → queryLoop() → callModel() → tool_use → runTools() 全链路打通 |
+| GlobTool 实现 | 2026-04-16 | GlobTool.ts + prompt.ts + glob.ts；工具注册、模式匹配、结果映射完整 |
+| toolExecution 核心链路 | 2026-04-16 | runToolUse 实现真正的工具调用：查找→校验→权限→call→映射 |
 
 ## 知识点记录
 
@@ -231,6 +80,9 @@
 - prompt cache 稳定性模式（工具排序保持内置工具为连续前缀）
 - 旧工具名映射模式（normalizeLegacyToolName: Task→Agent, KillShell→TaskStop）
 - 规则内容转义模式（escapeRuleContent/unescapeRuleContent: 括号转义）
+- glob 模式匹配（`**` 匹配任意路径，`*` 匹配非路径分隔符）
+- 相对路径匹配模式（ripgrep 使用相对路径匹配 glob 模式）
+- 工具执行链路（findToolByName → safeParse → validateInput → canUseTool → call → mapResult）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -250,10 +102,39 @@
 - [x] ~~真实 API 成功响应验证证据~~ → **2026-04-14 已验证**
 - [ ] Compact 机制的完整实现
 
+## 能力清单
+
+### 已实现能力
+
+- [x] CLI 启动
+- [x] --version 快速路径（零模块加载）
+- [x] 参数解析（@commander-js/extra-typings）
+- [x] 核心选项定义
+- [x] preAction hook 框架
+- [x] 交互模式/非交互模式路由
+- [x] REPL 交互基础框架
+- [x] LLM 调用（流式 AsyncGenerator 已实现，真实 API 响应验证通过）
+- [x] 工具类型系统（Tool 类型、buildTool、权限类型）
+- [x] 工具注册机制（tools.ts：getAllBaseTools、getTools、assembleToolPool）
+- [x] 工具权限检查（getDenyRuleForTool、filterToolsByDenyRules、permissionRuleParser）
+- [x] GlobTool 工具执行
+
+### 待实现能力
+
+- [ ] 工具执行（更多具体工具）
+- [ ] 会话管理
+- [ ] FileReadTool
+- [ ] BashTool
+- [ ] FileEditTool
+- [ ] FileWriteTool
+- [ ] GrepTool
+
 ## 历史记录
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-16 | 0.69% → 0.70% | API tools 参数传递修复：claude.ts toolsToApiFormat、query.ts tools 传递、REPL.tsx getTools()；完整 REPL → API → 工具执行链路验证通过 ✅ |
+| 2026-04-16 | 0.61% → 0.67% | GlobTool 完成：GlobTool.ts + prompt.ts + glob.ts；修复 glob 模式匹配逻辑 |
 | 2026-04-16 | 0.61% → 0.62% | 阶段 2 核心流程闭环完成；FileReadTool 任务规划完成；启动流程分析完成 |
 | 2026-04-15 | 0.52% → 0.61% | 工具注册机制（tools.ts）+ 权限规则解析 + MCP 名称工具 + 环境变量工具；新增 6 个文件 |
 | 2026-04-14 | 0.39% → 0.42% | API 调用层流式化改造：`services/api/claude.ts` 从非流式改为 AsyncGenerator，使用 `anthropic.beta.messages.create({ stream: true })`，yield StreamEvent |

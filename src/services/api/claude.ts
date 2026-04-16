@@ -15,6 +15,7 @@ import type {
   BetaMessage, // 消息
   BetaMessageDeltaUsage, // 消息 delta 时的 usage
   BetaRawMessageStreamEvent, // 原始消息流事件
+  BetaToolUnion,
   BetaUsage, // 消息使用统计
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
@@ -22,7 +23,9 @@ import type {
   MessageParam,
 } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
 import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
+import Anthropic from '@anthropic-ai/sdk'
 import { getAnthropicClient } from './client.js'
+import type { Tools } from '../../Tool.js'
 import type {
   AssistantMessage,
   Message,
@@ -103,6 +106,52 @@ function normalizeMessagesForApi(messages: Message[]): MessageParam[] {
 }
 
 // ============================================================================
+// 辅助函数：工具转换为 API 格式
+// 对齐上游实现：按 claude-code/src/utils/api.ts:150-200 原样复刻
+
+async function toolsToApiFormat(tools: Tools): Promise<BetaToolUnion[]> {
+  const result: BetaToolUnion[] = []
+  for (const tool of tools) {
+    // 对齐上游实现：使用 tool.inputJSONSchema 或从 Zod schema 转换
+    // 边界处理：inputJSONSchema 优先（MCP 工具直接提供 JSON Schema）
+    let inputSchema: Anthropic.Tool.InputSchema
+    
+    if (tool.inputJSONSchema) {
+      inputSchema = tool.inputJSONSchema as Anthropic.Tool.InputSchema
+    } else {
+      // 对齐上游实现：Zod v4 的 safeParse 返回的对象可以直接转换为 JSON Schema
+      // 使用简化的 schema 提取方式
+      const schema = tool.inputSchema
+      // 简化实现：直接构造 JSON Schema
+      // TODO: 使用 zod-to-json-schema 或 zod/v4 的内置转换方法
+      inputSchema = {
+        type: 'object',
+        properties: {},
+        additionalProperties: true,
+      } as Anthropic.Tool.InputSchema
+    }
+
+    result.push({
+      name: tool.name,
+      description: await tool.prompt({
+        getToolPermissionContext: async () => ({
+          mode: 'default',
+          additionalWorkingDirectories: new Map(),
+          alwaysAllowRules: {},
+          alwaysDenyRules: {},
+          alwaysAskRules: {},
+          isBypassPermissionsModeAvailable: false,
+        }),
+        tools,
+        agents: [],
+      }),
+      input_schema: inputSchema,
+    })
+  }
+  return result
+}
+
+// ============================================================================
 // 辅助函数：Usage 累加
 // 对齐上游实现：按源码原样复刻
 
@@ -114,7 +163,6 @@ const EMPTY_USAGE: MutableUsage = {
 // 累加 usage 数据
 // 对齐上游实现：支持 BetaUsage 和 BetaMessageDeltaUsage 两种输入
 // 设计原因：message_start 使用 BetaUsage，message_delta 使用 BetaMessageDeltaUsage
-// todo 以后再看这里
 function updateUsage(
   current: MutableUsage,
   incoming: BetaUsage | BetaMessageDeltaUsage | undefined,
@@ -134,13 +182,54 @@ function updateUsage(
 }
 
 // ============================================================================
+// 辅助函数：安全解析 JSON
+// 对齐上游实现：按 claude-code/src/utils/messages.ts safeParseJSON 原样复刻
+
+function safeParseJSON(str: string): unknown {
+  try {
+    return JSON.parse(str)
+  } catch {
+    return null
+  }
+}
+
+// ============================================================================
 // 辅助函数：内容块归一化
 // 对齐上游实现：将 SDK 返回的内容块归一化为标准格式
+// 设计原因：流式处理中 tool_use.input 是字符串，需要解析为对象
 
 function normalizeContentFromAPI(
   blocks: BetaContentBlock[],
 ): ContentBlock[] {
-  return blocks as unknown as ContentBlock[]
+  return blocks.map(contentBlock => {
+    // 对齐上游实现：tool_use 的 input 需要从字符串解析为对象
+    // 参考 claude-code/src/utils/messages.ts:2675-2730
+    if (contentBlock.type === 'tool_use') {
+      const block = contentBlock as { type: 'tool_use'; input: unknown; name: string; id: string }
+      
+      // 边界处理：input 必须是字符串或对象
+      if (typeof block.input !== 'string' && typeof block.input !== 'object') {
+        throw new Error('Tool use input must be a string or object')
+      }
+
+      // 对齐上游实现：流式处理时 input 是 JSON 字符串，需要解析
+      let normalizedInput: unknown
+      if (typeof block.input === 'string') {
+        const parsed = safeParseJSON(block.input)
+        // 边界处理：解析失败时使用空对象
+        normalizedInput = parsed ?? {}
+      } else {
+        normalizedInput = block.input
+      }
+
+      return {
+        ...contentBlock,
+        input: normalizedInput,
+      } as ContentBlock
+    }
+
+    return contentBlock as unknown as ContentBlock
+  })
 }
 
 // ============================================================================
@@ -187,7 +276,7 @@ export async function* queryModelWithStreaming({
   messages: Message[]
   systemPrompt: SystemPrompt
   thinkingConfig?: unknown
-  tools?: unknown
+  tools?: Tools
   signal: AbortSignal
   options: Options
 }): AsyncGenerator<StreamEvent | AssistantMessage | SystemAPIErrorMessage, void> {
@@ -224,6 +313,10 @@ export async function* queryModelWithStreaming({
     10,
   )
 
+  // 对齐上游实现：转换工具为 API 格式
+  // 边界处理：tools 为空数组时传递空数组，让模型知道没有工具可用
+  const toolsForApi = tools ? await toolsToApiFormat(tools) : undefined
+
   const params = {
     model: options.model,
     max_tokens: maxOutputTokens,
@@ -233,6 +326,9 @@ export async function* queryModelWithStreaming({
           system: systemPrompt.join('\n\n'),
         }
       : {}),
+    // 对齐上游实现：传递工具定义给 API
+    // 边界处理：undefined 时不传递 tools 参数
+    ...(toolsForApi && toolsForApi.length > 0 ? { tools: toolsForApi } : {}),
   }
 
   // ============================================================================

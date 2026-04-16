@@ -345,7 +345,7 @@ async function* queryLoop(
         signal: toolUseContext.abortController.signal,
         // TODO: 已阅读源码，但不在今日最小闭环内
         // thinkingConfig: toolUseContext.options.thinkingConfig,
-        // tools: toolUseContext.options.tools,
+        tools: toolUseContext.options.tools, // 传递工具列表
         options: {
           model: currentModel,
           isNonInteractiveSession: toolUseContext.options.isNonInteractiveSession,
