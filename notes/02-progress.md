@@ -1,6 +1,6 @@
 # 进度面板
 
-> 最后更新：2026-04-15
+> 最后更新：2026-04-16
 
 ## 总体进度
 
@@ -17,8 +17,38 @@
 | 阶段 | 状态 | 完成度 |
 |---|---|---:|
 | 阶段 1：最小闭环 | `done` | 100% |
-| 阶段 2：核心查询引擎 | `doing` | 11% |
-| 阶段 3：工具系统 | `planned` | 8% |
+| 阶段 2：核心查询引擎 | `doing` | 15% |
+
+**阶段 2 详细进度**：
+| 模块 | 状态 | 完成度 |
+|---|---|---:|
+| query() 生成器函数 | `done` | 100% |
+| queryLoop 核心流程 | `done` | 100% |
+| API 调用流式化 | `done` | 100% |
+| 工具执行编排 | `done` | 100% |
+| 工具类型系统 | `done` | 100% |
+| 工具注册机制 | `done` | 100% |
+| 权限规则解析 | `done` | 100% |
+| QueryEngine 类 | `planned` | 0% |
+| 消息预处理（compact） | `backlog` | 0% |
+| 错误恢复机制 | `backlog` | 0% |
+| 阶段 3：工具系统 | `ready` | 12% |
+
+**阶段 3 详细进度**：
+| 工具 | 状态 | 完成度 |
+|---|---|---:|
+| Tool 基础类 | `done` | 100% |
+| 工具注册机制 | `done` | 100% |
+| 权限规则解析 | `done` | 100% |
+| 权限类型系统 | `done` | 100% |
+| FileReadTool | `ready` | 0% |
+| BashTool | `planned` | 0% |
+| FileEditTool | `backlog` | 0% |
+| FileWriteTool | `backlog` | 0% |
+| GrepTool | `backlog` | 0% |
+| GlobTool | `backlog` | 0% |
+| WebFetchTool | `backlog` | 0% |
+| WebSearchTool | `backlog` | 0% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
 | 阶段 6：扩展能力 | `backlog` | 0% |
@@ -29,15 +59,55 @@
 
 | 任务 | 状态 | 优先级 |
 |---|---|---|
-| 工具注册机制（tools.ts） | `doing` | high |
-| 权限检查逻辑 | `doing` | high |
-| 第一个具体工具实现 | `backlog` | medium |
+| 第一个具体工具实现（FileReadTool） | `ready` | high |
+| BashTool 核心实现 | `planned` | high |
+| GrepTool/GlobTool 实现 | `backlog` | medium |
+
+### 下一步详细任务分解
+
+#### 任务 1：FileReadTool 实现（优先级：high）
+
+**源码依据**：`claude-code/src/tools/FileReadTool/FileReadTool.ts` (1,184 行)
+
+**子任务**：
+| 子任务 | 状态 | 源码位置 |
+|---|---|---|
+| 输入 schema 定义 | `planned` | FileReadTool.ts:145-165 |
+| 输出 schema 定义 | `planned` | FileReadTool.ts:167-220 |
+| call() 核心逻辑 | `planned` | FileReadTool.ts:400-600 |
+| checkPermissions() | `planned` | FileReadTool.ts:350-400 |
+| mapToolResultToToolResultBlockParam() | `planned` | FileReadTool.ts:600-700 |
+| 文件读取工具函数 | `backlog` | utils/file.ts |
+| 图片处理工具函数 | `backlog` | utils/imageResizer.ts |
+
+**关键依赖**：
+- `src/Tool.ts` (已完成)
+- `src/tools.ts` (已完成)
+- `src/utils/permissions/filesystem.ts` (需要实现)
+- `src/utils/file.ts` (部分实现)
+
+#### 任务 2：BashTool 实现（优先级：high）
+
+**源码依据**：`claude-code/src/tools/BashTool/BashTool.tsx`
+
+**子任务**：
+| 子任务 | 状态 | 源码位置 |
+|---|---|---|
+| 输入 schema 定义 | `backlog` | BashTool.tsx |
+| 输出 schema 定义 | `backlog` | BashTool.tsx |
+| call() 核心逻辑 | `backlog` | BashTool.tsx |
+| 沙箱安全机制 | `backlog` | bashSecurity.ts |
+| 命令权限检查 | `backlog` | bashPermissions.ts |
+
+#### 任务 3：GrepTool/GlobTool 实现（优先级：medium）
+
+**源码依据**：`claude-code/src/tools/GrepTool/`, `claude-code/src/tools/GlobTool/`
 
 ### 进行中
 
 | 任务 | 开始时间 | 备注 |
 |---|---|---|
-| 工具注册机制 | 进行中 | tools.ts + 权限规则解析框架已就绪 |
+| FileReadTool 基础框架 | 进行中 | 输入/输出 schema 设计中 |
 
 ### 已完成
 
@@ -58,6 +128,8 @@
 | 工具注册机制（tools.ts） | 2026-04-15 | getAllBaseTools、getTools、filterToolsByDenyRules、assembleToolPool、getMergedTools ✅ |
 | 权限规则解析（permissionRuleParser） | 2026-04-15 | permissionRuleValueFromString/ToString、escapeRuleContent、normalizeLegacyToolName ✅ |
 | MCP 名称工具函数 | 2026-04-15 | mcpInfoFromString、buildMcpToolName、getToolNameForPermissionCheck ✅ |
+| 权限类型系统（types/permissions.ts） | 2026-04-15 | PermissionResult、PermissionDecision、PermissionPolicy 类型完整 ✅ |
+| 阶段 2 核心流程闭环 | 2026-04-16 | query() → queryLoop() → callModel() → tool_use → runTools() 全链路打通 ✅ |
 
 ## 阻塞与风险
 
@@ -182,6 +254,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-16 | 0.61% → 0.62% | 阶段 2 核心流程闭环完成；FileReadTool 任务规划完成；启动流程分析完成 |
 | 2026-04-15 | 0.52% → 0.61% | 工具注册机制（tools.ts）+ 权限规则解析 + MCP 名称工具 + 环境变量工具；新增 6 个文件 |
 | 2026-04-14 | 0.39% → 0.42% | API 调用层流式化改造：`services/api/claude.ts` 从非流式改为 AsyncGenerator，使用 `anthropic.beta.messages.create({ stream: true })`，yield StreamEvent |
 | 2026-04-13 | 0.39% → 0.39% | 按源码事实复核并二次对齐：`handleMessageFromStream` 签名改为上游同形态，`onStreamingThinking` 回调协议改为函数式更新；tokei 复核 `messages.ts=209`、`REPL.tsx=400` |
