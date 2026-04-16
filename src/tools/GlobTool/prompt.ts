@@ -1,7 +1,6 @@
 /**
  * GlobTool 名称与描述常量
- *
- * 对齐上游实现：按 claude-code/src/tools/GlobTool/prompt.ts 原样复刻
+ * 重要的提示此文件
  */
 
 export const GLOB_TOOL_NAME = 'Glob'

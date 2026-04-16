@@ -25,10 +25,11 @@ import type { ToolPermissionContext } from '../types/permissions.js'
  * 4. 截断和偏移处理
  */
 export async function glob(
-  filePattern: string,
-  cwd: string,
-  { limit, offset }: { limit: number; offset: number },
-  _abortSignal: AbortSignal,
+  filePattern: string, // 搜索模式
+  cwd: string, // 当前工作目录
+  { limit, offset }: { limit: number; offset: number }, // 搜索参数
+  _abortSignal: AbortSignal, // 取消信号
+  // 权限上下文，包含当前工作目录等信息
   _toolPermissionContext: ToolPermissionContext,
 ): Promise<{ files: string[]; truncated: boolean }> {
   // 简化实现：使用 Node.js fs 模块递归搜索

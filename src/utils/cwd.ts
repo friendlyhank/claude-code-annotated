@@ -10,11 +10,11 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { getCwdState, getOriginalCwd } from '../bootstrap/state.js'
 
+// 当前工作目录覆盖存储，解决每个异步调用链有自己独立的存储空间。(todo hank 分析)
 const cwdOverrideStorage = new AsyncLocalStorage<string>()
 
 /**
  * 在覆盖的工作目录下运行函数
- * 对齐上游实现：按源码 runWithCwdOverride 原样复刻
  * 所有内部 getCwd() 调用将返回覆盖值而非全局值
  */
 export function runWithCwdOverride<T>(cwd: string, fn: () => T): T {

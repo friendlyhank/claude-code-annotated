@@ -1,7 +1,6 @@
 /**
  * 文件工具函数
  *
- * 对齐上游实现：按 claude-code/src/utils/file.ts 原样复刻
  * 当前仅实现 GlobTool 所需的常量和函数
  * TODO: 完整 file.ts 待后续阶段补齐（getDisplayPath 等）
  */
@@ -14,7 +13,6 @@ export const FILE_NOT_FOUND_CWD_NOTE = 'Current working directory:'
 
 /**
  * 根据路径在当前工作目录下查找建议路径
- * 对齐上游实现：按源码 suggestPathUnderCwd 原样复刻
  * 设计原因：当路径不存在时，提供可能的正确路径建议
  *
  * TODO: 当前返回 null，待完整实现后替换

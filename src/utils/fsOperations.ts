@@ -10,7 +10,6 @@ import { stat } from 'fs/promises'
 
 /**
  * 文件系统实现接口
- * 对齐上游实现：按源码 FsImplementation 原样复刻
  * 当前仅包含 GlobTool 所需的 stat 方法
  */
 interface FsImplementation {
@@ -20,12 +19,11 @@ interface FsImplementation {
 
 /**
  * 获取文件系统实现
- * 对齐上游实现：按源码 getFsImplementation 原样复刻
  * 设计原因：抽象文件系统操作，便于测试和平台适配
  */
 export function getFsImplementation(): FsImplementation {
   return {
-    stat,
-    cwd: () => process.cwd(),
+    stat, // 获取文件信息
+    cwd: () => process.cwd(), // 获取当前工作目录
   }
 }

@@ -1,7 +1,6 @@
 /**
  * 路径工具函数
  *
- * 对齐上游实现：按 claude-code/src/utils/path.ts 原样复刻
  * 当前仅实现 GlobTool 所需的 expandPath 和 toRelativePath
  * TODO: 完整 path.ts 待后续阶段补齐
  */
@@ -13,8 +12,6 @@ import { getFsImplementation } from './fsOperations.js'
 
 /**
  * 展开路径（~ → 家目录，相对 → 绝对）
- *
- * 对齐上游实现：按 claude-code/src/utils/path.ts expandPath 原样复刻
  * 设计原因：
  * - ~ 展开为家目录
  * - 相对路径基于 baseDir 解析
@@ -24,6 +21,7 @@ import { getFsImplementation } from './fsOperations.js'
  * TODO: null byte 安全检查待补齐
  */
 export function expandPath(path: string, baseDir?: string): string {
+  // 判断空，然后设置对应的值
   const actualBaseDir = baseDir ?? getCwd() ?? getFsImplementation().cwd()
 
   const trimmedPath = path.trim()
@@ -33,19 +31,21 @@ export function expandPath(path: string, baseDir?: string): string {
 
   // 处理家目录标记
   if (trimmedPath === '~') {
-    return homedir().normalize('NFC')
+    return homedir().normalize('NFC') // 展开为家目录
   }
   if (trimmedPath.startsWith('~/')) {
-    return normalize(homedir() + '/' + trimmedPath.slice(2)).normalize('NFC')
+    return normalize(homedir() + '/' + trimmedPath.slice(2)).normalize('NFC') // 展开为家目录下的路径
   }
+
+
 
   // 绝对路径直接规范化
   if (isAbsolute(trimmedPath)) {
-    return normalize(trimmedPath).normalize('NFC')
+    return normalize(trimmedPath).normalize('NFC') // 直对路径直接规范化
   }
 
   // 相对路径基于 baseDir 解析
-  return normalize(actualBaseDir + '/' + trimmedPath).normalize('NFC')
+  return normalize(actualBaseDir + '/' + trimmedPath).normalize('NFC') // 相对路径基于 baseDir 解析
 }
 
 /**

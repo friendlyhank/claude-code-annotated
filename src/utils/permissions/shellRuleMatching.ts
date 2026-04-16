@@ -1,7 +1,6 @@
 /**
  * Shell 规则通配符匹配
  *
- * 对齐上游实现：按 claude-code/src/utils/permissions/shellRuleMatching.ts 原样复刻
  * 当前仅实现 GlobTool 所需的 matchWildcardPattern
  * TODO: 完整 shellRuleMatching 待后续补齐
  */
@@ -9,7 +8,6 @@
 /**
  * 通配符模式匹配
  *
- * 对齐上游实现：按源码 matchWildcardPattern 原样复刻
  * 设计原因：权限规则中的通配符匹配（如 "Bash(prefix:*" 中的 *）
  *
  * 当前为简化实现：仅支持 * 通配符

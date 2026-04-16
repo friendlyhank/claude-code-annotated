@@ -1,7 +1,6 @@
 /**
  * GlobTool - 文件名模式匹配工具
  *
- * 对齐上游实现：按 claude-code/src/tools/GlobTool/GlobTool.ts 原样复刻
  * 设计原因：
  * 1. 只读、并发安全的搜索工具
  * 2. 基于ripgrep实现，支持glob模式匹配
@@ -15,8 +14,8 @@ import { buildTool, type ToolDef } from '../../Tool.js'
 import { getCwd } from '../../utils/cwd.js'
 import { isENOENT } from '../../utils/errors.js'
 import {
-  FILE_NOT_FOUND_CWD_NOTE,
-  suggestPathUnderCwd,
+  FILE_NOT_FOUND_CWD_NOTE, 
+  suggestPathUnderCwd, 
 } from '../../utils/file.js'
 import { getFsImplementation } from '../../utils/fsOperations.js'
 import { glob } from '../../utils/glob.js'
@@ -45,6 +44,7 @@ function userFacingName(): string {
   return 'Search'
 }
 
+// UI 渲染函数：工具使用消息
 function renderToolUseMessage(
   { pattern, path }: Partial<{ pattern: string; path: string }>,
   _options: { verbose: boolean },
@@ -56,6 +56,7 @@ function renderToolUseMessage(
   return null
 }
 
+// UI 渲染函数：工具使用摘要
 function getToolUseSummary(
   input: Partial<{ pattern: string; path: string }> | undefined,
 ): string | null {
@@ -66,7 +67,7 @@ function getToolUseSummary(
 }
 
 // ============================================================================
-// Schema 定义
+// Schema 定义 重要的glob工具提示词文本
 // ============================================================================
 
 const inputSchema = lazySchema(() =>
@@ -86,14 +87,14 @@ const outputSchema = lazySchema(() =>
   z.object({
     durationMs: z
       .number()
-      .describe('Time taken to execute the search in milliseconds'),
-    numFiles: z.number().describe('Total number of files found'),
+      .describe('Time taken to execute the search in milliseconds'),  // 搜索耗时
+    numFiles: z.number().describe('Total number of files found'),  // 总文件数
     filenames: z
       .array(z.string())
-      .describe('Array of file paths that match the pattern'),
+      .describe('Array of file paths that match the pattern'),  // 匹配文件路径数组
     truncated: z
       .boolean()
-      .describe('Whether results were truncated (limited to 100 files)'),
+      .describe('Whether results were truncated (limited to 100 files)'),  // 是否截断（最多返回100个文件）
   }),
 )
 type OutputSchema = ReturnType<typeof outputSchema>
@@ -105,14 +106,14 @@ export type Output = z.infer<OutputSchema>
 // ============================================================================
 
 export const GlobTool = buildTool({
-  name: GLOB_TOOL_NAME,
-  searchHint: 'find files by name pattern or wildcard',
-  maxResultSizeChars: 100_000,
+  name: GLOB_TOOL_NAME, // 工具名称
+  searchHint: 'find files by name pattern or wildcard', // 搜索提示
+  maxResultSizeChars: 100_000, // 最大结果大小（字符数）
   async description() {
     return DESCRIPTION
   },
-  userFacingName,
-  getToolUseSummary,
+  userFacingName, // 用户可见名称
+  getToolUseSummary, // 工具使用摘要
   getActivityDescription(input) {
     const summary = getToolUseSummary(input)
     return summary ? `Finding ${summary}` : 'Finding files'
@@ -123,32 +124,31 @@ export const GlobTool = buildTool({
   get outputSchema(): OutputSchema {
     return outputSchema()
   },
-  isConcurrencySafe() {
+  isConcurrencySafe() { // 是否并发安全
     return true
   },
-  isReadOnly() {
+  isReadOnly() { // 是否只读
     return true
   },
-  toAutoClassifierInput(input) {
+  toAutoClassifierInput(input) { // 自动分类输入
     return input.pattern
   },
-  isSearchOrReadCommand() {
+  isSearchOrReadCommand() { // 是否搜索或读取命令
     return { isSearch: true, isRead: false }
   },
-  getPath({ path }): string {
+  getPath({ path }): string { // 获取路径
     return path ? expandPath(path) : getCwd()
   },
-  async preparePermissionMatcher({ pattern }) {
+  async preparePermissionMatcher({ pattern }) { // 准备权限匹配器
     return rulePattern => matchWildcardPattern(rulePattern, pattern)
   },
-  async validateInput({ path }): Promise<ValidationResult> {
+  async validateInput({ path }): Promise<ValidationResult> { // 验证输入
     // 边界处理：路径验证——目录必须存在
     if (path) {
-      const fs = getFsImplementation()
-      const absolutePath = expandPath(path)
+      const fs = getFsImplementation() // 获取文件系统实现
+      const absolutePath = expandPath(path) // 展开路径
 
       // 安全检查：跳过 UNC 路径的文件系统操作，防止 NTLM 凭据泄露
-      // 对齐上游实现：按源码原样复刻此安全检查
       if (absolutePath.startsWith('\\\\') || absolutePath.startsWith('//')) {
         return { result: true }
       }
@@ -157,7 +157,9 @@ export const GlobTool = buildTool({
       try {
         stats = await fs.stat(absolutePath)
       } catch (e: unknown) {
+        // 处理文件不存在错误
         if (isENOENT(e)) {
+          // 处理文件不存在错误，提供当前工作目录下的建议路径
           const cwdSuggestion = await suggestPathUnderCwd(absolutePath)
           let message = `Directory does not exist: ${path}. ${FILE_NOT_FOUND_CWD_NOTE} ${getCwd()}.`
           if (cwdSuggestion) {
@@ -194,17 +196,18 @@ export const GlobTool = buildTool({
   async prompt() {
     return DESCRIPTION
   },
-  renderToolUseMessage,
+  renderToolUseMessage, // 渲染工具使用消息
   // TODO: renderToolUseErrorMessage 待 UI.tsx 实现
   // TODO: renderToolResultMessage 待 UI.tsx 实现（复用 GrepTool 的渲染）
   // 对齐上游实现：GlobTool.renderToolResultMessage 复用 GrepTool.renderToolResultMessage
-  extractSearchText({ filenames }) {
-    return filenames.join('\n')
+  extractSearchText({ filenames }) { // 提取搜索文本
+    return filenames.join('\n') // 搜索文本为匹配文件路径数组，每个路径占一行
   },
+  // 调用工具
   async call(input, { abortController, getAppState, globLimits }) {
     const start = Date.now()
     const appState = getAppState() as { toolPermissionContext: ToolPermissionContext }
-    const limit = globLimits?.maxResults ?? 100
+    const limit = globLimits?.maxResults ?? 100 // 最大结果数
     const { files, truncated } = await glob(
       input.pattern,
       GlobTool.getPath?.(input) ?? getCwd(),
@@ -224,7 +227,7 @@ export const GlobTool = buildTool({
       data: output,
     }
   },
-  mapToolResultToToolResultBlockParam(output, toolUseID) {
+  mapToolResultToToolResultBlockParam(output, toolUseID) { // 映射工具结果为工具结果块参数
     // 边界处理：无匹配文件时返回简单提示
     if (output.filenames.length === 0) {
       return {
