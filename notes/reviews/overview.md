@@ -43,6 +43,10 @@
 │   │   └── tools/
 │   │       ├── toolExecution.ts
 │   │       └── toolOrchestration.ts
+│   ├── tools/
+│   │   └── GlobTool/
+│   │       ├── GlobTool.ts
+│   │       └── prompt.ts
 │   ├── types/
 │   │   ├── global.d.ts
 │   │   ├── ids.ts
@@ -52,13 +56,22 @@
 │   │   ├── tools.ts
 │   │   └── utils.ts
 │   ├── utils/
+│   │   ├── cwd.ts
 │   │   ├── envUtils.ts
+│   │   ├── errors.ts
+│   │   ├── file.ts
+│   │   ├── fsOperations.ts
 │   │   ├── generators.ts
+│   │   ├── glob.ts
 │   │   ├── handlePromptSubmit.ts
+│   │   ├── lazySchema.ts
 │   │   ├── messages.ts
+│   │   ├── path.ts
 │   │   ├── permissions/
+│   │   │   ├── filesystem.ts
 │   │   │   ├── permissionRuleParser.ts
-│   │   │   └── permissions.ts
+│   │   │   ├── permissions.ts
+│   │   │   └── shellRuleMatching.ts
 │   │   └── systemPromptType.ts
 │   ├── Tool.ts
 │   ├── ink.ts
@@ -82,12 +95,23 @@
 | `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层入口与 `query()` 接线 | `src/utils/handlePromptSubmit.ts`、`src/query.ts` |
 | `src/utils/handlePromptSubmit.ts` | 把用户输入转换成待提交消息，收口输入清空、处理中提示与共享中断控制器创建 | `src/screens/REPL.tsx`、`src/query.ts` |
 | `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
-| `src/tools.ts` | 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules | `src/Tool.ts`、`src/utils/permissions/` |
+| `src/tools.ts` | 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules | `src/Tool.ts`、`src/utils/permissions/`、`src/tools/GlobTool/` |
+| `src/tools/GlobTool/GlobTool.ts` | 首个真实工具：文件名模式匹配，完整实现 buildTool 工厂模式 | `src/utils/glob.ts`、`src/utils/path.ts` |
+| `src/tools/GlobTool/prompt.ts` | GlobTool 名称与描述常量 | `src/tools/GlobTool/GlobTool.ts` |
 | `src/constants/tools.ts` | 工具名称常量、代理禁用列表、异步代理允许列表 | `src/tools.ts` |
 | `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
 | `src/services/tools/` | `tool_use` 分批、串并行调度与结果回传 | `src/services/tools/toolOrchestration.ts` |
 | `src/services/mcp/mcpStringUtils.ts` | MCP 名称解析/构建：mcpInfoFromString/buildMcpToolName/getToolNameForPermissionCheck | `src/utils/permissions/permissions.ts` |
+| `src/utils/glob.ts` | Glob 文件搜索（简化实现，待 ripgrep 集成） | `src/tools/GlobTool/GlobTool.ts` |
+| `src/utils/path.ts` | 路径展开与相对化：expandPath/toRelativePath | `src/tools/GlobTool/GlobTool.ts`、`src/utils/cwd.ts` |
+| `src/utils/cwd.ts` | 当前工作目录管理：getCwd/runWithCwdOverride | `src/utils/path.ts` |
+| `src/utils/errors.ts` | 错误类型判断：isENOENT | `src/tools/GlobTool/GlobTool.ts` |
+| `src/utils/file.ts` | 文件工具函数：suggestPathUnderCwd | `src/tools/GlobTool/GlobTool.ts` |
+| `src/utils/fsOperations.ts` | 文件系统操作抽象：getFsImplementation | `src/tools/GlobTool/GlobTool.ts` |
+| `src/utils/lazySchema.ts` | 延迟 Schema 构建：lazySchema | `src/tools/GlobTool/GlobTool.ts` |
 | `src/utils/permissions/` | 权限规则提取、匹配与字符串解析 | `src/types/permissions.ts` |
+| `src/utils/permissions/filesystem.ts` | 文件系统权限检查：checkReadPermissionForTool | `src/tools/GlobTool/GlobTool.ts` |
+| `src/utils/permissions/shellRuleMatching.ts` | 通配符模式匹配：matchWildcardPattern | `src/utils/permissions/permissions.ts` |
 | `src/bootstrap/state.ts` | 进程级状态，如交互模式、cwd、session source | `src/types/message.ts` |
 | `src/ink.ts` / `src/interactiveHelpers.tsx` | TUI root/render 抽象、退出与消息式收尾 | `src/components/App.tsx` |
 
@@ -153,6 +177,13 @@ mindmap
       ToolUseContext
       串行与并发批次
       tool_result 回灌
+      GlobTool 首个真实实现
+    工具函数
+      路径展开与相对化
+      当前工作目录管理
+      文件系统操作抽象
+      延迟 Schema 构建
+      错误类型判断
     模型适配
       QueryDeps
       Anthropic client
@@ -161,6 +192,11 @@ mindmap
       bootstrap state
       Message 类型
       REPL 本地状态
+    权限体系
+      类型定义与决策模型
+      规则提取与匹配
+      文件系统权限检查
+      通配符模式匹配
     TUI 运行时
       Ink root
       renderAndRun
@@ -171,8 +207,10 @@ mindmap
 
 - 已实现的是最小主链路，不是完整 Claude Code 全量能力
 - `query.ts` 保留了大量 TODO，占位于压缩、token budget、stop hooks、fallback 等增强能力
-- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，但单工具真实执行仍未落地
-- 权限系统已具备类型定义、规则提取、字符串解析和工具匹配，但分类器评估、用户提示仍未实现
+- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，GlobTool 已完成首个真实工具实现
+- 工具函数层已实现路径处理、错误判断、文件操作抽象等基础设施
+- glob 搜索当前为简化实现（Node.js fs 递归），待 ripgrep 集成后替换
+- 权限系统已具备类型定义、规则提取、字符串解析、工具匹配和文件系统权限检查
 - `App.tsx`、`query/transitions.ts`、`constants/querySource.ts`、`types/tools.ts` 仍以占位实现为主
 - 文档结论只以当前仓库源码为准，不把目标仓库里尚未复刻的能力写进现状
 

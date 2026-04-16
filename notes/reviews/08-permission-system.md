@@ -250,6 +250,62 @@ BashOutputTool → TaskOutput
 | `escapeRuleContent(content)` | `permissionRuleParser.ts` | 转义规则内容中的括号 |
 | `unescapeRuleContent(content)` | `permissionRuleParser.ts` | 反转义规则内容 |
 | `normalizeLegacyToolName(name)` | `permissionRuleParser.ts` | 旧工具名规范化 |
+| `checkReadPermissionForTool(tool, input, context)` | `filesystem.ts` | 只读工具统一权限检查入口 |
+| `matchWildcardPattern(rulePattern, input)` | `shellRuleMatching.ts` | 通配符模式匹配（支持 `*`） |
+
+## 文件系统权限检查
+
+`src/utils/permissions/filesystem.ts` 提供只读工具的统一权限检查入口。
+
+### checkReadPermissionForTool
+
+```text
+输入：
+  - tool: Pick<Tool, 'name' | 'mcpInfo'>  // 工具标识
+  - input: Record<string, unknown>         // 工具输入参数
+  - context: ToolPermissionContext         // 权限上下文
+
+输出：
+  - PermissionResult { behavior, updatedInput }
+```
+
+**当前实现**：简化版，默认返回 `{ behavior: 'allow', updatedInput: input }`
+
+**完整实现路径**（TODO）：
+1. 检查 `allowedDirectories` — 路径是否在允许目录内
+2. 检查 `deny rules` — 是否命中拒绝规则
+3. 返回 allow/ask/deny 决策
+
+**设计意图**：
+- 只读工具（Glob、Grep、Read）统一使用此入口
+- 与 `Tool.checkPermissions()` 配合，形成完整权限链路
+- 为后续目录白名单、拒绝规则检查预留扩展点
+
+## 通配符模式匹配
+
+`src/utils/permissions/shellRuleMatching.ts` 实现权限规则中的通配符匹配。
+
+### matchWildcardPattern
+
+```text
+输入：
+  - rulePattern: string  // 规则模式（如 "Bash(prefix:*"）
+  - input: string        // 待匹配字符串
+
+输出：
+  - boolean
+```
+
+**当前实现**：仅支持 `*` 通配符，转为 `.*` 正则匹配
+
+**使用场景**：
+- `GlobTool.preparePermissionMatcher()` — 支持 `Glob(pattern:*.ts)` 类规则
+- 未来扩展到其他工具的规则内容匹配
+
+**实现原理**：
+1. 转义正则特殊字符（除 `*` 外）
+2. 将 `*` 替换为 `.*`
+3. 构建正则并测试匹配
 
 ## 设计取舍
 

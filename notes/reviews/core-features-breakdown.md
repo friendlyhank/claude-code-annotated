@@ -1,4 +1,4 @@
-- 最新已处理提交：`1296262d9cb9e5e8b9b9e8c7c0e8c8e8c8e8c8e8c`
+- 最新已处理提交：`5c2634e`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -33,9 +33,17 @@
  - `src/constants/tools.ts` 集中管理工具名称常量、代理禁用列表、异步代理允许列表、协调器模式允许列表
  - `src/services/mcp/mcpStringUtils.ts` 提供 MCP 名称解析/构建：`mcpInfoFromString()`、`buildMcpToolName()`、`getToolNameForPermissionCheck()`
  - `src/utils/envUtils.ts` 提供环境变量判断：`isEnvTruthy()`、`hasEmbeddedSearchTools()`
+ - `src/tools/GlobTool/GlobTool.ts` 首个真实工具实现：文件名模式匹配，支持 glob 模式、并发安全、路径相对化
+ - `src/utils/glob.ts` 提供简化 glob 搜索实现（待 ripgrep 集成）
+ - `src/utils/path.ts` 提供路径展开与相对化：`expandPath()`、`toRelativePath()`
+ - `src/utils/cwd.ts` 提供当前工作目录管理：`getCwd()`、`runWithCwdOverride()`
+ - `src/utils/errors.ts` 提供错误类型判断：`isENOENT()`
+ - `src/utils/file.ts` 提供文件工具函数：`suggestPathUnderCwd()`
+ - `src/utils/fsOperations.ts` 提供文件系统操作抽象：`getFsImplementation()`
+ - `src/utils/lazySchema.ts` 提供延迟 Schema 构建：`lazySchema()`
  - `toolOrchestration.ts` 负责按并发安全性切批、限流执行和上下文回放
  - `toolExecution.ts` 负责单个 `tool_use` 的工具查找、schema 校验与 `tool_result` 生成
- - Tool 接口已落地完整定义（call/checkPermissions/validateInput/渲染方法等），真实工具实例仍待实现
+ - Tool 接口已落地完整定义，GlobTool 已完成首个真实工具实现
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
@@ -74,5 +82,7 @@
  - `PermissionUpdate` 支持规则增删替换、模式设置、目录增删 6 种操作
  - `src/utils/permissions/permissions.ts` 实现规则提取与工具匹配：`getAllowRules/getDenyRules/getAskRules`、`toolMatchesRule`、`getDenyRuleForTool/getAskRuleForTool/getDenyRuleForAgent`
  - `src/utils/permissions/permissionRuleParser.ts` 实现规则字符串解析：`permissionRuleValueFromString/ToString`、`escapeRuleContent/unescapeRuleContent`、旧工具名别名映射
+ - `src/utils/permissions/filesystem.ts` 实现文件系统权限检查：`checkReadPermissionForTool()` 为只读工具提供统一权限入口
+ - `src/utils/permissions/shellRuleMatching.ts` 实现通配符模式匹配：`matchWildcardPattern()` 支持权限规则中的 `*` 通配符
  - `PERMISSION_RULE_SOURCES` 定义 8 种规则来源遍历顺序：userSettings → projectSettings → localSettings → flagSettings → policySettings → cliArg → command → session
  - MCP 权限匹配支持服务器级规则：规则 "mcp__server" 匹配该服务器所有工具，通配符 "mcp__server__*" 同效

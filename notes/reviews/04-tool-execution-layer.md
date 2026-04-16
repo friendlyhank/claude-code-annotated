@@ -10,9 +10,18 @@
 
 - `src/Tool.ts` — 工具类型体系 + buildTool 工厂 + 辅助函数
 - `src/tools.ts` — 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules
+- `src/tools/GlobTool/GlobTool.ts` — 首个真实工具实现：文件名模式匹配
+- `src/tools/GlobTool/prompt.ts` — GlobTool 名称与描述常量
 - `src/constants/tools.ts` — 工具名称常量 + 代理禁用列表 + 异步代理允许列表 + 协调器模式允许列表
 - `src/services/mcp/mcpStringUtils.ts` — MCP 名称解析/构建：mcpInfoFromString/buildMcpToolName/getToolNameForPermissionCheck
 - `src/utils/envUtils.ts` — 环境变量判断：isEnvTruthy/hasEmbeddedSearchTools
+- `src/utils/glob.ts` — Glob 文件搜索（简化实现，待 ripgrep 集成）
+- `src/utils/path.ts` — 路径展开与相对化：expandPath/toRelativePath
+- `src/utils/cwd.ts` — 当前工作目录管理：getCwd/runWithCwdOverride
+- `src/utils/errors.ts` — 错误类型判断：isENOENT
+- `src/utils/file.ts` — 文件工具函数：suggestPathUnderCwd
+- `src/utils/fsOperations.ts` — 文件系统操作抽象：getFsImplementation
+- `src/utils/lazySchema.ts` — 延迟 Schema 构建：lazySchema
 - `src/types/permissions.ts` — 权限类型定义（独立文件，避免循环依赖）
 - `src/services/tools/toolOrchestration.ts` — 批次编排
 - `src/services/tools/toolExecution.ts` — 单工具执行
@@ -199,6 +208,118 @@ Tool 接口的方法按职责可分为以下区域：
 3. 工具存在且校验通过：返回"已调度但未真正执行"的错误型 `tool_result`
 
 也就是说，当前工具层已经能维持 query loop 的协议闭环，但还不能产生真实业务结果。
+
+## 首个真实工具：GlobTool
+
+`src/tools/GlobTool/GlobTool.ts` 是第一个完整实现的工具，标志着工具系统从"类型框架完整，执行未满"进入"真实能力落地"阶段。
+
+### 功能概述
+
+GlobTool 实现文件名模式匹配搜索：
+
+- 支持 glob 模式（如 `**/*.ts`、`src/**/*.tsx`）
+- 结果按修改时间排序，最多返回 100 个文件
+- 路径自动相对化以节省 token
+- 只读、并发安全
+
+### 设计原理
+
+#### 1. buildTool 工厂模式的完整落地
+
+GlobTool 完整实现了 Tool 接口的所有关键方法：
+
+| 方法 | 实现 | 设计意图 |
+| --- | --- | --- |
+| `call()` | 执行 glob 搜索 | 核心业务逻辑 |
+| `validateInput()` | 验证路径存在且为目录 | 边界防护，避免无效调用 |
+| `checkPermissions()` | 委托 `checkReadPermissionForTool` | 只读工具统一权限入口 |
+| `getPath()` | 路径展开 | 统一路径处理入口 |
+| `preparePermissionMatcher()` | 通配符模式匹配 | 支持 `Bash(prefix:*)` 类规则 |
+
+#### 2. 延迟 Schema 构建
+
+使用 `lazySchema()` 延迟 Zod schema 构建：
+
+```text
+优势：
+- 避免模块初始化时的 schema 构建开销
+- 支持按需加载，减少启动时间
+- 与 buildTool 工厂模式配合，确保 schema 只在首次访问时构建
+```
+
+#### 3. 路径相对化策略
+
+`toRelativePath()` 将绝对路径转为相对路径：
+
+- 基于当前工作目录计算相对路径
+- 若路径不在 cwd 下，返回原始绝对路径
+- 目的：节省 token（相对路径比绝对路径短）
+
+#### 4. 输入验证边界处理
+
+`validateInput()` 实现三层防护：
+
+1. **UNC 路径安全检查**：跳过 `\\` 或 `//` 开头的路径，防止 NTLM 凭据泄露
+2. **目录存在性检查**：路径不存在时返回友好错误 + 建议路径
+3. **目录类型检查**：路径必须为目录，非目录返回错误
+
+#### 5. 结果截断与提示
+
+当匹配文件超过 100 个时：
+
+- 设置 `truncated: true`
+- 在 `tool_result` 末尾追加提示：建议使用更具体的路径或模式
+- 保持 100 个文件的上限，避免 token 消耗过大
+
+### 实现原理
+
+```mermaid
+flowchart TD
+    A[call 入口] --> B[获取 cwd 和 limit]
+    B --> C[调用 glob 函数]
+    C --> D[递归遍历目录]
+    D --> E{文件名匹配 glob 模式}
+    E -->|是| F[加入结果列表]
+    E -->|否| G[跳过]
+    F --> H{达到 limit?}
+    H -->|是| I[设置 truncated=true]
+    H -->|否| D
+    I --> J[返回截断结果]
+    G --> D
+    D --> K[遍历完成]
+    K --> L[路径相对化]
+    L --> M[返回 Output]
+```
+
+### 关键实现链路
+
+1. **输入验证**：`validateInput()` → `expandPath()` → `fs.stat()` → 目录存在性检查
+2. **权限检查**：`checkPermissions()` → `checkReadPermissionForTool()` → 默认允许
+3. **搜索执行**：`call()` → `glob()` → 递归遍历 → 模式匹配 → 截断处理
+4. **结果映射**：`mapToolResultToToolResultBlockParam()` → `tool_result` 构造
+
+### 工具函数依赖
+
+GlobTool 依赖以下工具函数：
+
+| 函数 | 位置 | 作用 |
+| --- | --- | --- |
+| `glob()` | `src/utils/glob.ts` | 执行文件搜索（简化实现） |
+| `expandPath()` | `src/utils/path.ts` | 展开 ~ 和相对路径 |
+| `toRelativePath()` | `src/utils/path.ts` | 绝对路径转相对路径 |
+| `getCwd()` | `src/utils/cwd.ts` | 获取当前工作目录 |
+| `isENOENT()` | `src/utils/errors.ts` | 判断文件不存在错误 |
+| `suggestPathUnderCwd()` | `src/utils/file.ts` | 生成建议路径 |
+| `getFsImplementation()` | `src/utils/fsOperations.ts` | 获取文件系统实现 |
+| `lazySchema()` | `src/utils/lazySchema.ts` | 延迟 Schema 构建 |
+| `checkReadPermissionForTool()` | `src/utils/permissions/filesystem.ts` | 文件读取权限检查 |
+| `matchWildcardPattern()` | `src/utils/permissions/shellRuleMatching.ts` | 通配符模式匹配 |
+
+### 当前局限
+
+1. **glob 实现简化**：当前使用 Node.js fs 递归遍历，待 ripgrep 集成后替换
+2. **.gitignore 未完全支持**：仅跳过 `.git` 目录，未读取 `.gitignore` 规则
+3. **权限检查简化**：`checkReadPermissionForTool()` 当前默认允许，完整实现需检查 allowedDirectories 和 deny rules
 
 ## 伪代码
 
