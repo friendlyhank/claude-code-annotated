@@ -24,7 +24,10 @@
 - `src/utils/lazySchema.ts` — 延迟 Schema 构建：lazySchema
 - `src/types/permissions.ts` — 权限类型定义（独立文件，避免循环依赖）
 - `src/services/tools/toolOrchestration.ts` — 批次编排
-- `src/services/tools/toolExecution.ts` — 单工具执行
+- `src/services/tools/toolExecution.ts` — 单工具执行：查找→校验→权限→调用→结果映射
+- `src/utils/api.ts` — 工具输入规范化：normalizeToolInput
+- `src/utils/json.ts` — 安全 JSON 解析：safeParseJSON
+- `src/hooks/useCanUseTool.ts` — 权限检查函数类型：CanUseToolFn
 - `src/utils/generators.ts` — 生成器工具函数
 
 ## 设计原理
@@ -39,7 +42,7 @@
 - `TOOL_DEFAULTS` — 安全默认值（fail-closed 原则）
 - `ToolResult<T>` — 工具执行结果（含 data/newMessages/contextModifier/mcpMeta）
 - `ValidationResult` — 输入验证结果（成功/失败+错误信息+错误码）
-- `CanUseToolFn` — 工具可用性检查回调
+- `CanUseToolFn` — 权限检查函数（接收工具、输入、上下文，返回 allow/deny 决策）
 
 工具系统优先稳定的是"工具长什么样、如何创建、如何校验"，而不是先急着堆实现。
 
@@ -199,15 +202,68 @@ Tool 接口的方法按职责可分为以下区域：
 - `extractSearchText(output)` — 搜索文本提取
 - `backfillObservableInput(input)` — 回填可观察输入
 
-## 单工具执行现状
+## 单工具执行：runToolUse 完整链路
 
-`runToolUse()` 当前只覆盖三种路径：
+`runToolUse()` 已从桩实现升级为完整的 5 步执行链路，具备真实工具调用能力：
 
-1. 工具不存在：返回错误型 `tool_result`
-2. 输入校验失败：返回错误型 `tool_result`
-3. 工具存在且校验通过：返回"已调度但未真正执行"的错误型 `tool_result`
+### 执行流程
 
-也就是说，当前工具层已经能维持 query loop 的协议闭环，但还不能产生真实业务结果。
+```mermaid
+flowchart TD
+    A[接收 tool_use] --> B[查找工具 findToolByName]
+    B --> C{工具存在?}
+    C -->|否| D[返回错误型 tool_result]
+    C -->|是| E{中断信号?}
+    E -->|已中断| F[返回取消型 tool_result]
+    E -->|否| G[inputSchema.safeParse 校验输入]
+    G --> H{校验通过?}
+    H -->|否| I[返回验证错误 tool_result]
+    H -->|是| J{validateInput 通过?}
+    J -->|否| K[返回业务验证错误 tool_result]
+    J -->|是| L[canUseTool 权限检查]
+    L --> M{权限允许?}
+    M -->|否| N[返回权限拒绝 tool_result]
+    M -->|是| O[tool.call 真实执行]
+    O --> P{执行成功?}
+    P -->|是| Q[映射结果 + contextModifier 回放]
+    P -->|异常| R[返回执行错误 tool_result]
+```
+
+### 5 步详细说明
+
+| 步骤 | 函数/方法 | 失败处理 |
+| --- | --- | --- |
+| 1. 查找工具 | `findToolByName()` | 返回 `No such tool available` 错误 |
+| 2. 输入校验 | `inputSchema.safeParse()` + `validateInput()` | 返回 `InputValidationError` 或业务验证错误 |
+| 3. 权限检查 | `canUseTool(tool, input, context)` | 返回 `Permission denied` 错误 |
+| 4. 真实调用 | `tool.call(input, context, canUseTool, assistantMessage)` | 捕获异常返回执行错误 |
+| 5. 结果映射 | `mapToolResultToToolResultBlockParam()` + `contextModifier` 回放 | — |
+
+### 中断信号检查
+
+在工具存在后、输入校验前，检查 `abortController.signal.aborted`：
+- 若已中断，直接返回取消型 `tool_result`，避免无效执行
+- 这与查询层的 `aborted_tools` 终止原因配合
+
+### CanUseToolFn 签名升级
+
+`src/hooks/useCanUseTool.ts` 的 `CanUseToolFn` 已从最小签名升级为完整权限检查函数：
+
+```typescript
+type CanUseToolFn = (
+  tool: { name: string; mcpInfo?: { serverName: string; toolName: string } },
+  input: Record<string, unknown>,
+  context: unknown,
+) => Promise<{ result: true } | { result: false; message: string }>
+```
+
+- 返回 `{ result: true }` 表示允许执行
+- 返回 `{ result: false, message }` 表示拒绝并附原因
+- 当前 REPL 中 `canUseTool` 默认返回 `{ result: true }`，完整权限决策待后续接入
+
+### MessageUpdateLazy 泛化
+
+`MessageUpdateLazy` 类型从 `{ message?: Message }` 升级为 `{ message: M }` 泛化形式，确保每一步都产出确定性消息，不再允许 `message` 为 `undefined`。
 
 ## 首个真实工具：GlobTool
 
@@ -392,29 +448,33 @@ GlobTool 依赖以下工具函数：
 
 ### 代价
 
-- 真实工具还没落地，当前只能证明主回合协议能继续
-- `_canUseTool` 目前没有真正参与权限决策
+- 真实工具调用已落地，`runToolUse()` 具备完整执行链路
+- GlobTool 已是首个可被真实调用的工具
+- `_canUseTool` 已接入权限检查签名，当前默认允许，待完整权限决策接入
 - Tool 接口方法较多，但大部分由 buildTool 填充默认值
 
 ## 关键判断
 
 当前最重要的事实不是"工具会不会执行"，而是：
 
-- `tool_use` 已经能被识别
+- 工具真实调用链路已打通（查找→校验→权限→调用→结果映射）
+- `tool_use` 已经能被识别并真实执行
 - 工具调度已经能区分串行和并发
 - `tool_result` 已经能被拼回 query loop
+- `contextModifier` 回放机制已与真实调用结果联动
 - Tool 接口已覆盖完整的调用→验证→权限→结果链路
 
-因此后续只要补足 `runToolUse()` 内部真实调用，整个工具能力就能在现有骨架上自然加深。
+因此后续只需继续补足更多工具实现和完整权限决策，整个工具能力就能在现有链路上自然加深。
 
 ## 小结
 
-工具层现在处于"类型框架完整，执行未满"的阶段。它已经证明了：
+工具层现在处于"类型框架完整，真实调用已落地"的阶段。它已经证明了：
 
 - 查询层和工具层的协议是通的
 - 工具上下文怎样共享和更新是明确的
 - 并发执行的确定性问题已经提前被设计进来
 - buildTool 工厂保证了工具创建的一致性和安全性
+- `runToolUse()` 已具备完整 5 步执行链路，GlobTool 已可被真实调用
 
 这让它成为后续继续复刻真实工具能力的天然落点。
 

@@ -14,6 +14,8 @@
 - `src/services/api/claude.ts`
 - `src/services/api/client.ts`
 - `src/utils/systemPromptType.ts`
+- `src/utils/api.ts`
+- `src/utils/json.ts`
 
 ## 设计原理
 
@@ -30,9 +32,30 @@
 
 查询层只关心统一的内部消息，不关心外部协议细节。
 
+### 3. 内容块归一化与工具输入规范化
+
+`src/utils/messages.ts` 的 `normalizeContentFromAPI()` 负责将流式事件中的内容块归一化：
+
+- `tool_use` 块：input 为字符串时用 `safeParseJSON` 递归解析，再通过 `normalizeToolInput` 做工具特定规范化
+- `server_tool_use` 块：input 为字符串时解析为对象
+- `text`/`mcp_tool_use`/`mcp_tool_result`/`container_upload` 块：直接透传
+
+`src/utils/api.ts` 的 `normalizeToolInput()` 当前为最小闭环，直接返回原始输入。后续需按工具类型补充特定规范化逻辑（BashTool 命令规范化、FileEditTool 路径规范化等）。
+
+`src/utils/json.ts` 的 `safeParseJSON()` 提供安全 JSON 解析，解析失败返回 `null`。用于流式 `tool_use.input` 的递归解析。
+
 ### 3. 客户端创建与请求发送拆开
 
 `src/services/api/client.ts` 专注客户端创建、缓存和环境变量解析；`claude.ts` 专注一次请求的组装和响应还原。这样认证策略与消息协议可以分开演进。
+
+### 4. 工具定义转换为 API 格式
+
+`toolsToApiFormat()` 将内部 `Tools` 转换为 Anthropic API 的 `BetaToolUnion[]`：
+
+- 优先使用 `tool.inputJSONSchema`（MCP 工具直接提供 JSON Schema）
+- 否则使用简化 schema 提取（TODO: zod-to-json-schema）
+- 调用 `tool.prompt()` 生成工具描述，使用默认权限上下文
+- 工具列表通过 `queryModelWithStreaming()` 参数透传到 API
 
 ## 调用链
 
@@ -225,14 +248,19 @@ ttftMs = Date.now() - start
 - **双产出机制**（StreamEvent + AssistantMessage）
 - **TTFT 追踪**
 - **Usage 增量累加**
+- **工具定义转换为 API 格式**（toolsToApiFormat）
+- **内容块归一化升级**（normalizeContentFromAPI 支持 tool_use input 解析与规范化）
+- **工具列表透传到 API**（query.ts → queryModelWithStreaming → Anthropic API）
 
 ### 未落地
 
 - retry / fallback 策略
 - 多 provider 分支
-- 更完整的系统提示、工具参数与 thinking 配置透传
+- 更完整的系统提示、thinking 配置透传
 - citations_delta 处理
 - max_output_tokens 等错误消息特殊处理
+- zod-to-json-schema 集成（当前 inputSchema 转换为简化 JSON Schema）
+- 工具特定输入规范化（normalizeToolInput 当前为 passthrough）
 
 ## 设计取舍
 

@@ -1,4 +1,4 @@
-- 最新已处理提交：`5c2634e`
+- 最新已处理提交：`6db75b2`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -28,7 +28,7 @@
  - 文档：`notes/reviews/04-tool-execution-layer.md`
  - `Tool` / `ToolDef` / `Tools` / `ToolUseContext` 提供统一工具边界与工厂模式
  - `buildTool()` 工厂函数 + `TOOL_DEFAULTS` 统一工具创建流程，填充安全默认值（fail-closed 原则）
- - `CanUseToolFn` / `ValidationResult` / `ToolResult<T>` 定义完整的调用→验证→权限→结果链路
+ - `CanUseToolFn` 定义完整权限检查函数签名：接收工具、输入、上下文，返回 allow/deny 决策
  - `src/tools.ts` 提供工具注册机制：`getAllBaseTools()` 真相源、`getTools()` 权限过滤、`assembleToolPool()` 内置+MCP 合并、`filterToolsByDenyRules()` 拒绝规则过滤
  - `src/constants/tools.ts` 集中管理工具名称常量、代理禁用列表、异步代理允许列表、协调器模式允许列表
  - `src/services/mcp/mcpStringUtils.ts` 提供 MCP 名称解析/构建：`mcpInfoFromString()`、`buildMcpToolName()`、`getToolNameForPermissionCheck()`
@@ -42,15 +42,20 @@
  - `src/utils/fsOperations.ts` 提供文件系统操作抽象：`getFsImplementation()`
  - `src/utils/lazySchema.ts` 提供延迟 Schema 构建：`lazySchema()`
  - `toolOrchestration.ts` 负责按并发安全性切批、限流执行和上下文回放
- - `toolExecution.ts` 负责单个 `tool_use` 的工具查找、schema 校验与 `tool_result` 生成
- - Tool 接口已落地完整定义，GlobTool 已完成首个真实工具实现
+ - `toolExecution.ts` 负责单个 `tool_use` 的完整执行链路：查找→校验→权限→调用→结果映射
+ - `src/utils/api.ts` 提供工具输入规范化：`normalizeToolInput`
+ - `src/utils/json.ts` 提供安全 JSON 解析：`safeParseJSON`
+ - `src/hooks/useCanUseTool.ts` 定义权限检查函数类型：`CanUseToolFn`
+ - Tool 接口已落地完整定义，GlobTool 已完成首个真实工具实现，`runToolUse()` 已升级为完整 5 步执行链路
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
  - `src/query/deps.ts` 用 `QueryDeps` 把查询层与外部 I/O 解耦
- - `src/services/api/claude.ts` 负责消息归一化、流式事件处理和 assistant 消息回填
+ - `src/services/api/claude.ts` 负责消息归一化、流式事件处理、assistant 消息回填和工具定义转换为 API 格式
  - `src/services/api/client.ts` 负责 API key 读取、客户端缓存和超时配置
+ - `src/utils/messages.ts` 的 `normalizeContentFromAPI()` 负责流式内容块归一化（tool_use input 解析与规范化）
  - 流式事件处理（message_start、content_block_*、message_delta）已落地，支持双产出机制（StreamEvent + AssistantMessage）
+ - 工具定义通过 `toolsToApiFormat()` 转换为 API 格式并透传到 Anthropic API
  - 当前 retry / 多 provider 尚未复刻
 
 6. 会话状态与消息类型
@@ -75,6 +80,7 @@
 8. 权限类型与决策体系
  - 文档：`notes/reviews/08-permission-system.md`
  - `src/types/permissions.ts` 独立权限类型定义，与实现分离以避免循环依赖
+ - `CanUseToolFn` 已从最小签名升级为完整权限检查函数类型，REPL 中默认返回允许
  - 权限模式：5 种外部模式（acceptEdits/bypassPermissions/default/dontAsk/plan）+ 2 种内部模式（auto/bubble）
  - 权限决策三态 + passthrough：`PermissionDecision<Allow/Ask/Deny>` + `PermissionResult` 含 passthrough 透传
  - `PermissionDecisionReason` 覆盖 rule/mode/hook/classifier/safetyCheck 等 10 种决策溯源

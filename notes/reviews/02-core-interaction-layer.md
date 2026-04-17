@@ -139,8 +139,9 @@ sequenceDiagram
 
 - `main.tsx` 仍保留大量 TODO，很多上游参数分支只定义了形态，没有真实执行逻辑
 - REPL 当前只支持最基本的单行输入、回车提交、ESC 中断后退出
-- 权限检查目前直接是 `async () => true`
 - 交互层没有真正的全局 AppState、slash commands 或会话恢复 UI
+- REPL 已接入 `getTools()` 权限过滤，`canUseTool` 当前默认返回 `{ result: true }`，待完整权限决策接入
+- `createDefaultPermissionContext()` 提供默认权限上下文，完整实现需对接 App 级权限状态
 
 ## 小结
 

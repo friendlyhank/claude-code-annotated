@@ -64,6 +64,8 @@
 │   │   ├── generators.ts
 │   │   ├── glob.ts
 │   │   ├── handlePromptSubmit.ts
+│   │   ├── api.ts
+│   │   ├── json.ts
 │   │   ├── lazySchema.ts
 │   │   ├── messages.ts
 │   │   ├── path.ts
@@ -147,7 +149,7 @@
 2. `src/services/tools/toolOrchestration.ts`
 3. `src/services/tools/toolExecution.ts`
 
-这条路径回答“工具如何被匹配、如何按并发安全性切批、为什么当前返回的是 stub `tool_result`”。
+这条路径回答“工具如何被匹配、校验、权限检查、真实调用，结果如何回传”。
 
 ### 4. 想看模型适配与状态边界
 
@@ -207,7 +209,7 @@ mindmap
 
 - 已实现的是最小主链路，不是完整 Claude Code 全量能力
 - `query.ts` 保留了大量 TODO，占位于压缩、token budget、stop hooks、fallback 等增强能力
-- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，GlobTool 已完成首个真实工具实现
+- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，GlobTool 已完成首个真实工具实现，`runToolUse()` 已升级为完整 5 步执行链路
 - 工具函数层已实现路径处理、错误判断、文件操作抽象等基础设施
 - glob 搜索当前为简化实现（Node.js fs 递归），待 ripgrep 集成后替换
 - 权限系统已具备类型定义、规则提取、字符串解析、工具匹配和文件系统权限检查

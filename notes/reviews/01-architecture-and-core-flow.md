@@ -77,7 +77,7 @@ flowchart LR
 | CLI 入口层 | `src/entrypoints/cli.tsx`、`src/main.tsx` | 快速路径分流、Commander 命令定义、交互模式判定、Ink root 创建、REPL 启动 | 不推进单轮 query，不解析 assistant/tool 协议 |
 | 交互装配层 | `src/replLauncher.tsx`、`src/screens/REPL.tsx`、`src/utils/handlePromptSubmit.ts` | 输入采集、消息展示、提交编排、查询事件消费、共享 `AbortController` 生命周期管理 | 不直接调用 SDK，不决定工具批次策略 |
 | 查询引擎层 | `src/query.ts`、`src/query/deps.ts`、`src/query/transitions.ts` | 维护跨轮状态、发起模型调用、识别 `tool_use`、驱动下一轮或终止 | 不持有终端渲染，不直接依赖 Anthropic 客户端细节 |
-| 工具编排层 | `src/Tool.ts`、`src/services/tools/toolOrchestration.ts`、`src/services/tools/toolExecution.ts` | 统一工具协议、按并发安全性切批、生成 `tool_result`、回放上下文修改 | 当前不提供真实工具能力执行结果 |
+| 工具编排层 | `src/Tool.ts`、`src/services/tools/toolOrchestration.ts`、`src/services/tools/toolExecution.ts` | 统一工具协议、按并发安全性切批、生成 `tool_result`、真实工具调用与结果映射 | 当前不支持 hooks 系统、telemetry 日志、MCP 工具处理、进度报告 |
 | 模型适配层 | `src/services/api/client.ts`、`src/services/api/claude.ts` | 客户端缓存、消息归一化、Anthropic `messages.create()` 调用、assistant 消息回填 | 不推进回合状态，不决定何时继续循环 |
 | 状态与类型层 | `src/bootstrap/state.ts`、`src/types/message.ts`、`src/constants/querySource.ts` | 保存进程态、统一 transcript 结构、定义跨层消息协议 | 不承载业务流程控制 |
 | TUI 运行时层 | `src/ink.ts`、`src/interactiveHelpers.tsx`、`src/components/App.tsx` | 创建终端 root、挂载 React 树、退出与消息式收尾、预留 App Provider 挂点 | 不理解代理循环语义 |
@@ -261,7 +261,7 @@ flowchart LR
 
 - 模型调用异常在 `query.ts` 中被转换为 `model_error`
 - REPL 层会在终态是 `model_error` 且包含 `Error` 时追加系统消息
-- 工具不存在、输入非法、执行未落地时，工具层统一返回错误型 `tool_result`
+- 工具不存在、输入非法、权限拒绝、执行异常时，工具层统一返回错误型 `tool_result`
 
 当前错误处理已经形成清晰边界，但尚未覆盖更细粒度的重试、分类恢复和 stop hooks。
 
@@ -306,13 +306,17 @@ flowchart LR
 - `query()` / `queryLoop()` 最小回合骨架
 - `QueryDeps.callModel` 与 `runTools` 两个窄口
 - `tool_use -> tool_result -> 下一轮` 的协议闭环
+- 工具真实调用链路（查找→校验→权限→调用→结果映射）
+- 工具定义转换为 API 格式（toolsToApiFormat）
+- 内容块归一化（normalizeContentFromAPI 支持 input 解析与规范化）
 
 ### 仍是挂点或存根的部分
 
 - 非交互 `print` 主路径
 - 流式 Anthropic 事件细化
 - stop hooks / compact / token budget / fallback 恢复
-- 真实工具执行与权限体系
+- hooks / telemetry / MCP 工具处理 / 进度报告
+- 完整权限决策（分类器、用户提示、hook 执行）
 - App 级 Provider、Stats、FpsMetrics、复杂对话框
 - 多 provider API 适配与更完整 `QuerySource`
 
