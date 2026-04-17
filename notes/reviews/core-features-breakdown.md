@@ -31,22 +31,28 @@
  - 权限检查函数定义完整签名：接收工具、输入、上下文，返回允许/拒绝决策
  - 工具注册机制：基础工具真相源、权限过滤、内置+MCP 合并、拒绝规则过滤
  - 集中管理工具名称常量、代理禁用列表、异步代理允许列表、协调器模式允许列表
- - MCP 名称解析/构建：信息解析、工具名构建、权限检查用名称提取
- - 环境变量判断：真值检测、嵌入式搜索工具判断
- - 首个真实工具实现：文件名模式匹配，支持 glob 模式、并发安全、路径相对化
- - 简化 glob 搜索实现（待 ripgrep 集成）
- - 路径展开与相对化工具函数
- - 当前工作目录管理：获取与覆盖
- - 错误类型判断工具函数
- - 文件工具函数：路径建议
- - 文件系统操作抽象层
- - 延迟 Schema 构建工具
  - 工具编排按并发安全性切批、限流执行和上下文回放
  - 单个工具调用的完整执行链路：查找→校验→权限→调用→结果映射
- - 工具输入规范化
- - 安全 JSON 解析
- - 权限检查函数类型定义
- - 工具接口已落地完整定义，首个真实工具已完成实现，执行函数已升级为完整 5 步执行链路
+ - 工具输入规范化与安全 JSON 解析
+ - 4.1 glob 搜索工具实现
+     - 文档：`notes/reviews/04-01-glob-search-tool.md`
+     - GlobTool 完整实现：buildTool 工厂模式落地、延迟 Schema 构建、路径相对化策略
+     - 输入验证边界处理：UNC 路径安全检查、目录存在性检查、目录类型检查
+     - 结果截断与提示：100 文件上限、truncated 标记、建议更具体路径
+     - glob 搜索核心实现：文件名模式匹配、递归目录遍历、并发安全
+     - 路径工具函数：expandPath 路径展开、toRelativePath 相对化、getCwd 工作目录管理
+     - 文件工具函数：isENOENT 错误判断、suggestPathUnderCwd 路径建议、getFsImplementation 文件系统抽象
+     - 当前局限：简化 glob 实现（待 ripgrep 集成）、.gitignore 未完全支持
+ - 4.2 mcp 工具实现
+     - 文档：`notes/reviews/04-02-mcp-tool-implementation.md`
+     - MCP 名称解析/构建：mcpInfoFromString 信息解析、buildMcpToolName 工具名构建、getToolNameForPermissionCheck 权限检查用名称提取
+     - MCP 名称规范化：normalizeNameForMCP 合规化、getMcpPrefix 前缀生成、getMcpDisplayName/extractMcpToolDisplayName 显示名提取
+     - Tool 类型 MCP 扩展：isMcp 标记、mcpInfo 元数据、inputJSONSchema JSON Schema 直通、mcpMeta 结构化内容透传
+     - MCP 工具注册：ListMcpResources/ReadMcpResource 占位工具、assembleToolPool 内置+MCP 合并去重、specialTools 过滤
+     - MCP 权限匹配：服务器级拒绝规则（mcp__server）、通配符匹配（mcp__server__*）、完整名匹配
+     - MCP 流式处理：mcp_tool_use/mcp_tool_result 内容块识别与透传
+     - MCP API 适配：inputJSONSchema 直接透传绕过 Zod 转换
+     - 当前局限：MCP 客户端连接未实现、mcpClients/mcpResources 为 TODO 占位、MCPProgress 类型为 any 桩
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
