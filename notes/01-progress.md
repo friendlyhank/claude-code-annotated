@@ -1,6 +1,6 @@
 # 阶段进度
 
-> 最后更新：2026-04-16
+> 最后更新：2026-04-17
 
 ## 阶段状态
 
@@ -8,7 +8,7 @@
 |---|---|---:|
 | 阶段 1：最小闭环 | `done` | 100% |
 | 阶段 2：核心查询引擎 | `doing` | 15% |
-| 阶段 3：工具系统 | `doing` | 15% |
+| 阶段 3：工具系统 | `doing` | 25% |
 | 阶段 4：会话与状态管理 | `backlog` | 0% |
 | 阶段 5：TUI 完善 | `backlog` | 0% |
 | 阶段 6：扩展能力 | `backlog` | 0% |
@@ -48,7 +48,7 @@
 | 权限规则解析 | `done` | 100% |
 | 权限类型系统 | `done` | 100% |
 | GlobTool | `done` | 100% |
-| FileReadTool | `ready` | 0% |
+| FileReadTool | `doing` | 55% |
 | BashTool | `planned` | 0% |
 | FileEditTool | `backlog` | 0% |
 | FileWriteTool | `backlog` | 0% |

@@ -2,18 +2,23 @@
  * 文件系统操作抽象层
  *
  * 对齐上游实现：按 claude-code/src/utils/fsOperations.ts 原样复刻
- * 当前仅实现 GlobTool 所需的 getFsImplementation 函数
- * TODO: 完整 fsOperations 待后续阶段补齐
+ * 当前实现 FileReadTool 所需的 getFsImplementation 函数
+ * TODO: readFileBytes、safeResolvePath、getPathsForPermissionCheck 等待后续补齐
  */
 
-import { stat } from 'fs/promises'
+import { stat, readFile as readFileAsync } from 'fs/promises'
 
 /**
  * 文件系统实现接口
- * 当前仅包含 GlobTool 所需的 stat 方法
+ * 包含 FileReadTool 所需的 stat、readFile、cwd 方法
  */
 interface FsImplementation {
-  stat(path: string): Promise<{ isDirectory(): boolean }>
+  stat(path: string): Promise<{ isDirectory(): boolean; mtimeMs: number }>
+  readFile(
+    path: string,
+    options: { encoding: string; signal?: AbortSignal },
+  ): Promise<string>
+  readFileSync(path: string, options: { encoding: string }): string
   cwd(): string
 }
 
@@ -23,7 +28,13 @@ interface FsImplementation {
  */
 export function getFsImplementation(): FsImplementation {
   return {
-    stat, // 获取文件信息
-    cwd: () => process.cwd(), // 获取当前工作目录
+    stat,
+    readFile: readFileAsync as FsImplementation['readFile'],
+    readFileSync: (() => {
+      // 同步读取的懒加载，避免顶层 import 同步 fs
+      const { readFileSync } = require('fs')
+      return readFileSync
+    })(),
+    cwd: () => process.cwd(),
   }
 }

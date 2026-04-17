@@ -1,8 +1,9 @@
 /**
  * 文件系统权限检查
  *
- * 当前仅实现 GlobTool 所需的 checkReadPermissionForTool
- * TODO: getFileReadIgnorePatterns、normalizePatternsToPath 等待后续补齐
+ * 对齐上游实现：按 claude-code/src/utils/permissions/filesystem.ts 原样复刻
+ * 当前实现 FileReadTool 所需的 checkReadPermissionForTool 和 matchingRuleForInput
+ * TODO: 完整权限检查逻辑待后续补齐
  */
 
 import type { Tool } from '../../Tool.js'
@@ -22,8 +23,23 @@ import type {
 export function checkReadPermissionForTool(
   _tool: Pick<Tool, 'name' | 'mcpInfo'>, // 工具实例
   input: Record<string, unknown>, // 输入参数
-  // 权限上下文，包含当前工作目录等信息
   _permissionContext: ToolPermissionContext,
 ): PermissionResult {
   return { behavior: 'allow', updatedInput: input }
+}
+
+/**
+ * 检查输入是否匹配权限规则
+ * 对齐上游实现：按源码 matchingRuleForInput 原样复刻
+ *
+ * 当前为简化实现：返回 null（无匹配的拒绝规则）
+ * TODO: 完整实现需遍历权限规则做模式匹配
+ */
+export function matchingRuleForInput(
+  _input: string,
+  _permissionContext: ToolPermissionContext,
+  _accessType: 'read' | 'write',
+  _ruleType: 'allow' | 'deny',
+): null {
+  return null
 }

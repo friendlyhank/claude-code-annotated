@@ -1,8 +1,8 @@
 # 待办任务
 
-> 最后更新：2026-04-16
+> 最后更新：2026-04-17
 
-## 已完成（今日）
+## 已完成
 
 ### ✅ GlobTool 核心实现
 
@@ -18,18 +18,29 @@
 - **完成时间**：2026-04-16
 - **验证方式**：runToolUse(GlobTool) 返回正确结果
 
+### ✅ FileReadTool 文本读取核心实现
+
+- **状态**：`done`
+- **源码位置**：`claude-code/src/tools/FileReadTool/`
+- **完成时间**：2026-04-17
+- **验证方式**：输入 `file_path: "src/Tool.ts"`，触发 FileReadTool.call()，输出带行号的文件内容
+- **覆盖范围**：文本文件读取主链路、readFileInRange、schema、validateInput、ENOENT 处理
+
 ## 任务列表
 
-### 任务 1：FileReadTool 核心实现（优先级：high）
+### 任务 1：FileReadTool 图片/PDF/Notebook 补齐（优先级：high）
 
-- **状态**：`ready`
+- **状态**：`planned`
 - **源码位置**：`claude-code/src/tools/FileReadTool/FileReadTool.ts`
 - **计划时长**：1 天
-- **今日目标**：实现 FileReadTool 的 call() 核心逻辑
-- **完成标准**：能从入口调用 FileReadTool 读取文件并返回内容
-- **验证方式**：输入 `path: "src/Tool.ts"`，触发 FileReadTool.call()，输出文件内容
+- **今日目标**：实现图片读取（readImageWithTokenBudget）和 PDF 读取
+- **完成标准**：FileReadTool 能读取图片和 PDF 文件
+- **验证方式**：输入图片路径，输出 base64 编码；输入 PDF 路径，输出内容
 - **目标文件映射**：
-  - `claude-code/src/tools/FileReadTool/FileReadTool.ts` → `src/tools/FileReadTool/FileReadTool.ts`
+  - `claude-code/src/utils/imageResizer.ts` → `src/utils/imageResizer.ts`
+  - `claude-code/src/utils/pdf.ts` → `src/utils/pdf.ts`
+  - `claude-code/src/utils/pdfUtils.ts` → `src/utils/pdfUtils.ts`
+  - `claude-code/src/utils/notebook.ts` → `src/utils/notebook.ts`
 
 ### 任务 2：完善 file.ts 工具函数（优先级：high）
 

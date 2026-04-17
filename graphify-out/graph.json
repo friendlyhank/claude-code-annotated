@@ -59,7 +59,7 @@
       "source_file": "build.ts",
       "source_location": "L1",
       "id": "build_ts",
-      "community": 17,
+      "community": 22,
       "norm_label": "build.ts"
     },
     {
@@ -68,7 +68,7 @@
       "source_file": "src/main.tsx",
       "source_location": "L1",
       "id": "src_main_tsx",
-      "community": 6,
+      "community": 2,
       "norm_label": "main.tsx"
     },
     {
@@ -77,7 +77,7 @@
       "source_file": "src/main.tsx",
       "source_location": "L55",
       "id": "main_main",
-      "community": 6,
+      "community": 2,
       "norm_label": "main()"
     },
     {
@@ -86,7 +86,7 @@
       "source_file": "src/main.tsx",
       "source_location": "L116",
       "id": "main_run",
-      "community": 6,
+      "community": 2,
       "norm_label": "run()"
     },
     {
@@ -149,7 +149,7 @@
       "source_file": "src/replLauncher.tsx",
       "source_location": "L1",
       "id": "src_repllauncher_tsx",
-      "community": 6,
+      "community": 2,
       "norm_label": "repllauncher.tsx"
     },
     {
@@ -158,7 +158,7 @@
       "source_file": "src/replLauncher.tsx",
       "source_location": "L37",
       "id": "repllauncher_launchrepl",
-      "community": 6,
+      "community": 2,
       "norm_label": "launchrepl()"
     },
     {
@@ -171,7 +171,7 @@
       "author": null,
       "contributor": null,
       "id": "tools_getAllBaseTools",
-      "community": 1,
+      "community": 5,
       "norm_label": "getallbasetools"
     },
     {
@@ -223,7 +223,7 @@
       "author": null,
       "contributor": null,
       "id": "tools_createPlaceholderTool",
-      "community": 2,
+      "community": 5,
       "norm_label": "createplaceholdertool"
     },
     {
@@ -236,7 +236,7 @@
       "author": null,
       "contributor": null,
       "id": "concept_toolRegistrationArchitecture",
-      "community": 1,
+      "community": 5,
       "norm_label": "tool registration architecture"
     },
     {
@@ -263,7 +263,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L1",
       "id": "src_interactivehelpers_tsx",
-      "community": 5,
+      "community": 2,
       "norm_label": "interactivehelpers.tsx"
     },
     {
@@ -272,7 +272,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L28",
       "id": "interactivehelpers_renderandrun",
-      "community": 5,
+      "community": 2,
       "norm_label": "renderandrun()"
     },
     {
@@ -281,7 +281,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L46",
       "id": "interactivehelpers_gracefulshutdown",
-      "community": 5,
+      "community": 2,
       "norm_label": "gracefulshutdown()"
     },
     {
@@ -290,7 +290,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L57",
       "id": "interactivehelpers_gracefulshutdownsync",
-      "community": 5,
+      "community": 2,
       "norm_label": "gracefulshutdownsync()"
     },
     {
@@ -299,7 +299,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L72",
       "id": "interactivehelpers_exitwitherror",
-      "community": 5,
+      "community": 2,
       "norm_label": "exitwitherror()"
     },
     {
@@ -308,7 +308,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L83",
       "id": "interactivehelpers_exitwithmessage",
-      "community": 5,
+      "community": 2,
       "norm_label": "exitwithmessage()"
     },
     {
@@ -317,7 +317,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L117",
       "id": "interactivehelpers_showdialog",
-      "community": 5,
+      "community": 2,
       "norm_label": "showdialog()"
     },
     {
@@ -326,7 +326,7 @@
       "source_file": "src/interactiveHelpers.tsx",
       "source_location": "L141",
       "id": "interactivehelpers_getrendercontext",
-      "community": 5,
+      "community": 2,
       "norm_label": "getrendercontext()"
     },
     {
@@ -335,7 +335,7 @@
       "source_file": "src/ink.ts",
       "source_location": "L1",
       "id": "src_ink_ts",
-      "community": 6,
+      "community": 2,
       "norm_label": "ink.ts"
     },
     {
@@ -344,7 +344,7 @@
       "source_file": "src/ink.ts",
       "source_location": "L41",
       "id": "ink_createroot",
-      "community": 6,
+      "community": 2,
       "norm_label": "createroot()"
     },
     {
@@ -353,7 +353,7 @@
       "source_file": "src/ink.ts",
       "source_location": "L72",
       "id": "ink_render",
-      "community": 6,
+      "community": 2,
       "norm_label": "render()"
     },
     {
@@ -366,7 +366,7 @@
       "author": null,
       "contributor": null,
       "id": "GlobTool",
-      "community": 2,
+      "community": 5,
       "norm_label": "globtool"
     },
     {
@@ -375,8 +375,143 @@
       "source_file": "src/tools/GlobTool/prompt.ts",
       "source_location": "L1",
       "id": "src_tools_globtool_prompt_ts",
-      "community": 18,
+      "community": 23,
       "norm_label": "prompt.ts"
+    },
+    {
+      "label": "prompt.ts",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/prompt.ts",
+      "source_location": "L1",
+      "id": "src_tools_filereadtool_prompt_ts",
+      "community": 3,
+      "norm_label": "prompt.ts"
+    },
+    {
+      "label": "renderPromptTemplate()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/prompt.ts",
+      "source_location": "L56",
+      "id": "prompt_renderprompttemplate",
+      "community": 3,
+      "norm_label": "renderprompttemplate()"
+    },
+    {
+      "label": "FileReadTool.ts",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L1",
+      "id": "src_tools_filereadtool_filereadtool_ts",
+      "community": 3,
+      "norm_label": "filereadtool.ts"
+    },
+    {
+      "label": "isBlockedDevicePath()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L66",
+      "id": "filereadtool_isblockeddevicepath",
+      "community": 3,
+      "norm_label": "isblockeddevicepath()"
+    },
+    {
+      "label": "getAlternateScreenshotPath()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L90",
+      "id": "filereadtool_getalternatescreenshotpath",
+      "community": 3,
+      "norm_label": "getalternatescreenshotpath()"
+    },
+    {
+      "label": "registerFileReadListener()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L111",
+      "id": "filereadtool_registerfilereadlistener",
+      "community": 3,
+      "norm_label": "registerfilereadlistener()"
+    },
+    {
+      "label": "MaxFileReadTokenExceededError",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L125",
+      "id": "filereadtool_maxfilereadtokenexceedederror",
+      "community": 3,
+      "norm_label": "maxfilereadtokenexceedederror"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L126",
+      "id": "filereadtool_maxfilereadtokenexceedederror_constructor",
+      "community": 3,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": "pickLineFormatInstruction()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L575",
+      "id": "filereadtool_picklineformatinstruction",
+      "community": 3,
+      "norm_label": "picklineformatinstruction()"
+    },
+    {
+      "label": "formatFileLines()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L579",
+      "id": "filereadtool_formatfilelines",
+      "community": 3,
+      "norm_label": "formatfilelines()"
+    },
+    {
+      "label": "shouldIncludeFileReadMitigation()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L591",
+      "id": "filereadtool_shouldincludefilereadmitigation",
+      "community": 3,
+      "norm_label": "shouldincludefilereadmitigation()"
+    },
+    {
+      "label": "callInner()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L601",
+      "id": "filereadtool_callinner",
+      "community": 3,
+      "norm_label": "callinner()"
+    },
+    {
+      "label": "limits.ts",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L1",
+      "id": "src_tools_filereadtool_limits_ts",
+      "community": 3,
+      "norm_label": "limits.ts"
+    },
+    {
+      "label": "getEnvMaxTokens()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L21",
+      "id": "limits_getenvmaxtokens",
+      "community": 3,
+      "norm_label": "getenvmaxtokens()"
+    },
+    {
+      "label": "getDefaultFileReadingLimits()",
+      "file_type": "code",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L49",
+      "id": "limits_getdefaultfilereadinglimits",
+      "community": 3,
+      "norm_label": "getdefaultfilereadinglimits()"
     },
     {
       "label": "ids.ts",
@@ -424,7 +559,7 @@
       "author": null,
       "contributor": null,
       "id": "concept_toolPermissionContext",
-      "community": 2,
+      "community": 1,
       "norm_label": "toolpermissioncontext"
     },
     {
@@ -433,7 +568,7 @@
       "source_file": "src/types/utils.ts",
       "source_location": "L1",
       "id": "src_types_utils_ts",
-      "community": 19,
+      "community": 24,
       "norm_label": "utils.ts"
     },
     {
@@ -460,7 +595,7 @@
       "source_file": "src/types/global.d.ts",
       "source_location": "L1",
       "id": "src_types_global_d_ts",
-      "community": 20,
+      "community": 25,
       "norm_label": "global.d.ts"
     },
     {
@@ -469,7 +604,7 @@
       "source_file": "src/types/index.ts",
       "source_location": "L1",
       "id": "src_types_index_ts",
-      "community": 21,
+      "community": 26,
       "norm_label": "index.ts"
     },
     {
@@ -478,7 +613,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L1",
       "id": "src_bootstrap_state_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "state.ts"
     },
     {
@@ -487,7 +622,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L29",
       "id": "state_getinitialstate",
-      "community": 3,
+      "community": 4,
       "norm_label": "getinitialstate()"
     },
     {
@@ -496,7 +631,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L55",
       "id": "state_getisnoninteractivesession",
-      "community": 3,
+      "community": 4,
       "norm_label": "getisnoninteractivesession()"
     },
     {
@@ -505,7 +640,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L59",
       "id": "state_getisinteractive",
-      "community": 3,
+      "community": 4,
       "norm_label": "getisinteractive()"
     },
     {
@@ -514,7 +649,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L63",
       "id": "state_setisinteractive",
-      "community": 3,
+      "community": 4,
       "norm_label": "setisinteractive()"
     },
     {
@@ -523,7 +658,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L71",
       "id": "state_getclienttype",
-      "community": 3,
+      "community": 4,
       "norm_label": "getclienttype()"
     },
     {
@@ -532,7 +667,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L75",
       "id": "state_setclienttype",
-      "community": 3,
+      "community": 4,
       "norm_label": "setclienttype()"
     },
     {
@@ -541,7 +676,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L83",
       "id": "state_getoriginalcwd",
-      "community": 3,
+      "community": 4,
       "norm_label": "getoriginalcwd()"
     },
     {
@@ -550,7 +685,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L87",
       "id": "state_setoriginalcwd",
-      "community": 3,
+      "community": 4,
       "norm_label": "setoriginalcwd()"
     },
     {
@@ -559,7 +694,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L91",
       "id": "state_getcwdstate",
-      "community": 3,
+      "community": 4,
       "norm_label": "getcwdstate()"
     },
     {
@@ -568,7 +703,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L95",
       "id": "state_setcwdstate",
-      "community": 3,
+      "community": 4,
       "norm_label": "setcwdstate()"
     },
     {
@@ -577,7 +712,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L103",
       "id": "state_getsessionsource",
-      "community": 3,
+      "community": 4,
       "norm_label": "getsessionsource()"
     },
     {
@@ -586,7 +721,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L107",
       "id": "state_setsessionsource",
-      "community": 3,
+      "community": 4,
       "norm_label": "setsessionsource()"
     },
     {
@@ -595,7 +730,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L115",
       "id": "state_gettotalduration",
-      "community": 3,
+      "community": 4,
       "norm_label": "gettotalduration()"
     },
     {
@@ -604,7 +739,7 @@
       "source_file": "src/bootstrap/state.ts",
       "source_location": "L126",
       "id": "state_resetstatefortests_only",
-      "community": 3,
+      "community": 4,
       "norm_label": "resetstatefortests_only()"
     },
     {
@@ -643,6 +778,51 @@
       "norm_label": "agent tool disallow lists"
     },
     {
+      "label": "apiLimits.ts",
+      "file_type": "code",
+      "source_file": "src/constants/apiLimits.ts",
+      "source_location": "L1",
+      "id": "src_constants_apilimits_ts",
+      "community": 27,
+      "norm_label": "apilimits.ts"
+    },
+    {
+      "label": "files.ts",
+      "file_type": "code",
+      "source_file": "src/constants/files.ts",
+      "source_location": "L1",
+      "id": "src_constants_files_ts",
+      "community": 16,
+      "norm_label": "files.ts"
+    },
+    {
+      "label": "hasBinaryExtension()",
+      "file_type": "code",
+      "source_file": "src/constants/files.ts",
+      "source_location": "L123",
+      "id": "files_hasbinaryextension",
+      "community": 16,
+      "norm_label": "hasbinaryextension()"
+    },
+    {
+      "label": "semanticNumber.ts",
+      "file_type": "code",
+      "source_file": "src/utils/semanticNumber.ts",
+      "source_location": "L1",
+      "id": "src_utils_semanticnumber_ts",
+      "community": 17,
+      "norm_label": "semanticnumber.ts"
+    },
+    {
+      "label": "semanticNumber()",
+      "file_type": "code",
+      "source_file": "src/utils/semanticNumber.ts",
+      "source_location": "L12",
+      "id": "semanticnumber_semanticnumber",
+      "community": 17,
+      "norm_label": "semanticnumber()"
+    },
+    {
       "label": "expandPath",
       "file_type": "code",
       "source_file": "src/utils/path.ts",
@@ -652,7 +832,7 @@
       "author": null,
       "contributor": null,
       "id": "path_expandPath",
-      "community": 2,
+      "community": 5,
       "norm_label": "expandpath"
     },
     {
@@ -665,7 +845,7 @@
       "author": null,
       "contributor": null,
       "id": "path_toRelativePath",
-      "community": 2,
+      "community": 5,
       "norm_label": "torelativepath"
     },
     {
@@ -678,7 +858,7 @@
       "author": null,
       "contributor": null,
       "id": "concept_pathTokenOptimization",
-      "community": 2,
+      "community": 5,
       "norm_label": "path token optimization strategy"
     },
     {
@@ -687,7 +867,7 @@
       "source_file": "src/utils/json.ts",
       "source_location": "L1",
       "id": "src_utils_json_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "json.ts"
     },
     {
@@ -696,7 +876,7 @@
       "source_file": "src/utils/json.ts",
       "source_location": "L14",
       "id": "json_safeparsejson",
-      "community": 8,
+      "community": 9,
       "norm_label": "safeparsejson()"
     },
     {
@@ -709,7 +889,7 @@
       "author": null,
       "contributor": null,
       "id": "cwd_getCwd",
-      "community": 2,
+      "community": 5,
       "norm_label": "getcwd"
     },
     {
@@ -718,7 +898,7 @@
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L1",
       "id": "src_utils_handlepromptsubmit_ts",
-      "community": 12,
+      "community": 13,
       "norm_label": "handlepromptsubmit.ts"
     },
     {
@@ -727,7 +907,7 @@
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L70",
       "id": "handlepromptsubmit_createusertextmessage",
-      "community": 12,
+      "community": 13,
       "norm_label": "createusertextmessage()"
     },
     {
@@ -736,7 +916,7 @@
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L86",
       "id": "handlepromptsubmit_handlepromptsubmit",
-      "community": 12,
+      "community": 13,
       "norm_label": "handlepromptsubmit()"
     },
     {
@@ -745,21 +925,35 @@
       "source_file": "src/utils/handlePromptSubmit.ts",
       "source_location": "L107",
       "id": "handlepromptsubmit_executeuserinput",
-      "community": 12,
+      "community": 13,
       "norm_label": "executeuserinput()"
     },
     {
-      "label": "isENOENT",
+      "label": "errors.ts",
       "file_type": "code",
       "source_file": "src/utils/errors.ts",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "errors_isENOENT",
-      "community": 2,
-      "norm_label": "isenoent"
+      "source_location": "L1",
+      "id": "src_utils_errors_ts",
+      "community": 14,
+      "norm_label": "errors.ts"
+    },
+    {
+      "label": "getErrnoCode()",
+      "file_type": "code",
+      "source_file": "src/utils/errors.ts",
+      "source_location": "L13",
+      "id": "errors_geterrnocode",
+      "community": 14,
+      "norm_label": "geterrnocode()"
+    },
+    {
+      "label": "isENOENT()",
+      "file_type": "code",
+      "source_file": "src/utils/errors.ts",
+      "source_location": "L24",
+      "id": "errors_isenoent",
+      "community": 14,
+      "norm_label": "isenoent()"
     },
     {
       "label": "messages.ts",
@@ -767,7 +961,7 @@
       "source_file": "src/utils/messages.ts",
       "source_location": "L1",
       "id": "src_utils_messages_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "messages.ts"
     },
     {
@@ -776,7 +970,7 @@
       "source_file": "src/utils/messages.ts",
       "source_location": "L36",
       "id": "messages_handlemessagefromstream",
-      "community": 8,
+      "community": 9,
       "norm_label": "handlemessagefromstream()"
     },
     {
@@ -785,7 +979,7 @@
       "source_file": "src/utils/messages.ts",
       "source_location": "L238",
       "id": "messages_normalizecontentfromapi",
-      "community": 8,
+      "community": 9,
       "norm_label": "normalizecontentfromapi()"
     },
     {
@@ -798,34 +992,53 @@
       "author": null,
       "contributor": null,
       "id": "lazySchema_lazySchema",
-      "community": 2,
+      "community": 5,
       "norm_label": "lazyschema"
     },
     {
-      "label": "suggestPathUnderCwd",
+      "label": "file.ts",
       "file_type": "code",
       "source_file": "src/utils/file.ts",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "file_suggestPathUnderCwd",
-      "community": 2,
-      "norm_label": "suggestpathundercwd"
+      "source_location": "L1",
+      "id": "src_utils_file_ts",
+      "community": 10,
+      "norm_label": "file.ts"
     },
     {
-      "label": "FILE_NOT_FOUND_CWD_NOTE",
+      "label": "addLineNumbers()",
       "file_type": "code",
       "source_file": "src/utils/file.ts",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "file_FILE_NOT_FOUND_CWD_NOTE",
-      "community": 2,
-      "norm_label": "file_not_found_cwd_note"
+      "source_location": "L29",
+      "id": "file_addlinenumbers",
+      "community": 10,
+      "norm_label": "addlinenumbers()"
+    },
+    {
+      "label": "getFileModificationTimeAsync()",
+      "file_type": "code",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L49",
+      "id": "file_getfilemodificationtimeasync",
+      "community": 10,
+      "norm_label": "getfilemodificationtimeasync()"
+    },
+    {
+      "label": "suggestPathUnderCwd()",
+      "file_type": "code",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L63",
+      "id": "file_suggestpathundercwd",
+      "community": 10,
+      "norm_label": "suggestpathundercwd()"
+    },
+    {
+      "label": "findSimilarFile()",
+      "file_type": "code",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L73",
+      "id": "file_findsimilarfile",
+      "community": 10,
+      "norm_label": "findsimilarfile()"
     },
     {
       "label": "api.ts",
@@ -833,7 +1046,7 @@
       "source_file": "src/utils/api.ts",
       "source_location": "L1",
       "id": "src_utils_api_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "api.ts"
     },
     {
@@ -842,7 +1055,7 @@
       "source_file": "src/utils/api.ts",
       "source_location": "L23",
       "id": "api_normalizetoolinput",
-      "community": 8,
+      "community": 9,
       "norm_label": "normalizetoolinput()"
     },
     {
@@ -851,7 +1064,7 @@
       "source_file": "src/utils/glob.ts",
       "source_location": "L1",
       "id": "src_utils_glob_ts",
-      "community": 2,
+      "community": 5,
       "norm_label": "glob.ts"
     },
     {
@@ -860,7 +1073,7 @@
       "source_file": "src/utils/glob.ts",
       "source_location": "L27",
       "id": "glob_glob",
-      "community": 2,
+      "community": 5,
       "norm_label": "glob()"
     },
     {
@@ -869,7 +1082,7 @@
       "source_file": "src/utils/glob.ts",
       "source_location": "L88",
       "id": "glob_globtoregex",
-      "community": 2,
+      "community": 5,
       "norm_label": "globtoregex()"
     },
     {
@@ -878,7 +1091,7 @@
       "source_file": "src/utils/generators.ts",
       "source_location": "L1",
       "id": "src_utils_generators_ts",
-      "community": 11,
+      "community": 12,
       "norm_label": "generators.ts"
     },
     {
@@ -887,7 +1100,7 @@
       "source_file": "src/utils/generators.ts",
       "source_location": "L5",
       "id": "generators_lastx",
-      "community": 11,
+      "community": 12,
       "norm_label": "lastx()"
     },
     {
@@ -896,7 +1109,7 @@
       "source_file": "src/utils/generators.ts",
       "source_location": "L16",
       "id": "generators_returnvalue",
-      "community": 11,
+      "community": 12,
       "norm_label": "returnvalue()"
     },
     {
@@ -905,7 +1118,7 @@
       "source_file": "src/utils/generators.ts",
       "source_location": "L43",
       "id": "generators_next",
-      "community": 11,
+      "community": 12,
       "norm_label": "next()"
     },
     {
@@ -914,21 +1127,125 @@
       "source_file": "src/utils/generators.ts",
       "source_location": "L82",
       "id": "generators_toarray",
-      "community": 11,
+      "community": 12,
       "norm_label": "toarray()"
     },
     {
-      "label": "getFsImplementation",
+      "label": "format.ts",
+      "file_type": "code",
+      "source_file": "src/utils/format.ts",
+      "source_location": "L1",
+      "id": "src_utils_format_ts",
+      "community": 6,
+      "norm_label": "format.ts"
+    },
+    {
+      "label": "formatFileSize()",
+      "file_type": "code",
+      "source_file": "src/utils/format.ts",
+      "source_location": "L12",
+      "id": "format_formatfilesize",
+      "community": 6,
+      "norm_label": "formatfilesize()"
+    },
+    {
+      "label": "fsOperations.ts",
       "file_type": "code",
       "source_file": "src/utils/fsOperations.ts",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "fsOperations_getFsImplementation",
-      "community": 2,
-      "norm_label": "getfsimplementation"
+      "source_location": "L1",
+      "id": "src_utils_fsoperations_ts",
+      "community": 10,
+      "norm_label": "fsoperations.ts"
+    },
+    {
+      "label": "getFsImplementation()",
+      "file_type": "code",
+      "source_file": "src/utils/fsOperations.ts",
+      "source_location": "L29",
+      "id": "fsoperations_getfsimplementation",
+      "community": 10,
+      "norm_label": "getfsimplementation()"
+    },
+    {
+      "label": "readFileInRange.ts",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L1",
+      "id": "src_utils_readfileinrange_ts",
+      "community": 6,
+      "norm_label": "readfileinrange.ts"
+    },
+    {
+      "label": "FileTooLargeError",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L32",
+      "id": "readfileinrange_filetoolargeerror",
+      "community": 6,
+      "norm_label": "filetoolargeerror"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L33",
+      "id": "readfileinrange_filetoolargeerror_constructor",
+      "community": 6,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": "readFileInRange()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L48",
+      "id": "readfileinrange_readfileinrange",
+      "community": 6,
+      "norm_label": "readfileinrange()"
+    },
+    {
+      "label": "readFileInRangeFast()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L101",
+      "id": "readfileinrange_readfileinrangefast",
+      "community": 6,
+      "norm_label": "readfileinrangefast()"
+    },
+    {
+      "label": "streamOnOpen()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L190",
+      "id": "readfileinrange_streamonopen",
+      "community": 6,
+      "norm_label": "streamonopen()"
+    },
+    {
+      "label": "streamOnData()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L196",
+      "id": "readfileinrange_streamondata",
+      "community": 6,
+      "norm_label": "streamondata()"
+    },
+    {
+      "label": "streamOnEnd()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L269",
+      "id": "readfileinrange_streamonend",
+      "community": 6,
+      "norm_label": "streamonend()"
+    },
+    {
+      "label": "readFileInRangeStreaming()",
+      "file_type": "code",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L307",
+      "id": "readfileinrange_readfileinrangestreaming",
+      "community": 6,
+      "norm_label": "readfileinrangestreaming()"
     },
     {
       "label": "hasEmbeddedSearchTools",
@@ -940,7 +1257,7 @@
       "author": null,
       "contributor": null,
       "id": "envUtils_hasEmbeddedSearchTools",
-      "community": 1,
+      "community": 5,
       "norm_label": "hasembeddedsearchtools"
     },
     {
@@ -953,7 +1270,7 @@
       "author": null,
       "contributor": null,
       "id": "envUtils_isEnvTruthy",
-      "community": 1,
+      "community": 5,
       "norm_label": "isenvtruthy"
     },
     {
@@ -984,7 +1301,7 @@
       "author": null,
       "contributor": null,
       "id": "shellRuleMatching_matchWildcardPattern",
-      "community": 2,
+      "community": 5,
       "norm_label": "matchwildcardpattern"
     },
     {
@@ -997,7 +1314,7 @@
       "author": null,
       "contributor": null,
       "id": "permissions_getDenyRuleForTool",
-      "community": 9,
+      "community": 1,
       "norm_label": "getdenyrulefortool"
     },
     {
@@ -1010,7 +1327,7 @@
       "author": null,
       "contributor": null,
       "id": "permissions_toolMatchesRule",
-      "community": 9,
+      "community": 1,
       "norm_label": "toolmatchesrule"
     },
     {
@@ -1118,17 +1435,31 @@
       "norm_label": "unescaperulecontent"
     },
     {
-      "label": "checkReadPermissionForTool",
+      "label": "filesystem.ts",
       "file_type": "code",
       "source_file": "src/utils/permissions/filesystem.ts",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "filesystem_checkReadPermissionForTool",
-      "community": 2,
-      "norm_label": "checkreadpermissionfortool"
+      "source_location": "L1",
+      "id": "src_utils_permissions_filesystem_ts",
+      "community": 15,
+      "norm_label": "filesystem.ts"
+    },
+    {
+      "label": "checkReadPermissionForTool()",
+      "file_type": "code",
+      "source_file": "src/utils/permissions/filesystem.ts",
+      "source_location": "L23",
+      "id": "filesystem_checkreadpermissionfortool",
+      "community": 15,
+      "norm_label": "checkreadpermissionfortool()"
+    },
+    {
+      "label": "matchingRuleForInput()",
+      "file_type": "code",
+      "source_file": "src/utils/permissions/filesystem.ts",
+      "source_location": "L38",
+      "id": "filesystem_matchingruleforinput",
+      "community": 15,
+      "norm_label": "matchingruleforinput()"
     },
     {
       "label": "REPL.tsx",
@@ -1136,7 +1467,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L1",
       "id": "src_screens_repl_tsx",
-      "community": 4,
+      "community": 7,
       "norm_label": "repl.tsx"
     },
     {
@@ -1145,7 +1476,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L51",
       "id": "repl_createmessageuuid",
-      "community": 4,
+      "community": 7,
       "norm_label": "createmessageuuid()"
     },
     {
@@ -1154,7 +1485,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L55",
       "id": "repl_isstreamevent",
-      "community": 4,
+      "community": 7,
       "norm_label": "isstreamevent()"
     },
     {
@@ -1163,7 +1494,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L66",
       "id": "repl_isterminalwithreason",
-      "community": 4,
+      "community": 7,
       "norm_label": "isterminalwithreason()"
     },
     {
@@ -1172,7 +1503,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L77",
       "id": "repl_formatmessagecontent",
-      "community": 4,
+      "community": 7,
       "norm_label": "formatmessagecontent()"
     },
     {
@@ -1181,7 +1512,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L122",
       "id": "repl_getmessagelabel",
-      "community": 4,
+      "community": 7,
       "norm_label": "getmessagelabel()"
     },
     {
@@ -1190,7 +1521,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L135",
       "id": "repl_getmessagecolor",
-      "community": 4,
+      "community": 7,
       "norm_label": "getmessagecolor()"
     },
     {
@@ -1199,7 +1530,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L148",
       "id": "repl_createdefaultpermissioncontext",
-      "community": 4,
+      "community": 7,
       "norm_label": "createdefaultpermissioncontext()"
     },
     {
@@ -1208,7 +1539,7 @@
       "source_file": "src/screens/REPL.tsx",
       "source_location": "L162",
       "id": "repl_createrepltoolusecontext",
-      "community": 4,
+      "community": 7,
       "norm_label": "createrepltoolusecontext()"
     },
     {
@@ -1217,7 +1548,7 @@
       "source_file": "src/components/App.tsx",
       "source_location": "L1",
       "id": "src_components_app_tsx",
-      "community": 13,
+      "community": 18,
       "norm_label": "app.tsx"
     },
     {
@@ -1226,7 +1557,7 @@
       "source_file": "src/components/App.tsx",
       "source_location": "L39",
       "id": "app_app",
-      "community": 13,
+      "community": 18,
       "norm_label": "app()"
     },
     {
@@ -1235,7 +1566,7 @@
       "source_file": "src/components/Spinner/types.ts",
       "source_location": "L1",
       "id": "src_components_spinner_types_ts",
-      "community": 22,
+      "community": 28,
       "norm_label": "types.ts"
     },
     {
@@ -1253,7 +1584,7 @@
       "source_file": "src/entrypoints/cli.tsx",
       "source_location": "L1",
       "id": "src_entrypoints_cli_tsx",
-      "community": 14,
+      "community": 19,
       "norm_label": "cli.tsx"
     },
     {
@@ -1262,7 +1593,7 @@
       "source_file": "src/entrypoints/cli.tsx",
       "source_location": "L30",
       "id": "cli_main",
-      "community": 14,
+      "community": 19,
       "norm_label": "main()"
     },
     {
@@ -1298,7 +1629,7 @@
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L1",
       "id": "src_services_tools_toolorchestration_ts",
-      "community": 10,
+      "community": 11,
       "norm_label": "toolorchestration.ts"
     },
     {
@@ -1307,7 +1638,7 @@
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L17",
       "id": "toolorchestration_getmaxtooluseconcurrency",
-      "community": 10,
+      "community": 11,
       "norm_label": "getmaxtooluseconcurrency()"
     },
     {
@@ -1316,7 +1647,7 @@
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L110",
       "id": "toolorchestration_partitiontoolcalls",
-      "community": 10,
+      "community": 11,
       "norm_label": "partitiontoolcalls()"
     },
     {
@@ -1325,7 +1656,7 @@
       "source_file": "src/services/tools/toolOrchestration.ts",
       "source_location": "L226",
       "id": "toolorchestration_marktooluseascomplete",
-      "community": 10,
+      "community": 11,
       "norm_label": "marktooluseascomplete()"
     },
     {
@@ -1334,7 +1665,7 @@
       "source_file": "src/services/tools/toolExecution.ts",
       "source_location": "L1",
       "id": "src_services_tools_toolexecution_ts",
-      "community": 10,
+      "community": 11,
       "norm_label": "toolexecution.ts"
     },
     {
@@ -1343,7 +1674,7 @@
       "source_file": "src/services/tools/toolExecution.ts",
       "source_location": "L27",
       "id": "toolexecution_createtoolresultmessage",
-      "community": 10,
+      "community": 11,
       "norm_label": "createtoolresultmessage()"
     },
     {
@@ -1356,7 +1687,7 @@
       "author": null,
       "contributor": null,
       "id": "mcpStringUtils_mcpInfoFromString",
-      "community": 9,
+      "community": 1,
       "norm_label": "mcpinfofromstring"
     },
     {
@@ -1369,7 +1700,7 @@
       "author": null,
       "contributor": null,
       "id": "mcpStringUtils_getToolNameForPermissionCheck",
-      "community": 9,
+      "community": 1,
       "norm_label": "gettoolnameforpermissioncheck"
     },
     {
@@ -1382,7 +1713,7 @@
       "author": null,
       "contributor": null,
       "id": "mcpStringUtils_buildMcpToolName",
-      "community": 9,
+      "community": 1,
       "norm_label": "buildmcptoolname"
     },
     {
@@ -1395,7 +1726,7 @@
       "author": null,
       "contributor": null,
       "id": "mcpStringUtils_normalizeNameForMCP",
-      "community": 9,
+      "community": 1,
       "norm_label": "normalizenameformcp"
     },
     {
@@ -1408,7 +1739,7 @@
       "author": null,
       "contributor": null,
       "id": "concept_mcpToolNamingScheme",
-      "community": 9,
+      "community": 1,
       "norm_label": "mcp tool naming scheme"
     },
     {
@@ -1417,7 +1748,7 @@
       "source_file": "src/services/api/client.ts",
       "source_location": "L1",
       "id": "src_services_api_client_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "client.ts"
     },
     {
@@ -1426,7 +1757,7 @@
       "source_file": "src/services/api/client.ts",
       "source_location": "L13",
       "id": "client_getanthropicclient",
-      "community": 7,
+      "community": 8,
       "norm_label": "getanthropicclient()"
     },
     {
@@ -1435,7 +1766,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L1",
       "id": "src_services_api_claude_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "claude.ts"
     },
     {
@@ -1444,7 +1775,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L62",
       "id": "claude_normalizemessagerole",
-      "community": 7,
+      "community": 8,
       "norm_label": "normalizemessagerole()"
     },
     {
@@ -1453,7 +1784,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L79",
       "id": "claude_normalizemessagesforapi",
-      "community": 7,
+      "community": 8,
       "norm_label": "normalizemessagesforapi()"
     },
     {
@@ -1462,7 +1793,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L111",
       "id": "claude_toolstoapiformat",
-      "community": 7,
+      "community": 8,
       "norm_label": "toolstoapiformat()"
     },
     {
@@ -1471,7 +1802,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L165",
       "id": "claude_updateusage",
-      "community": 7,
+      "community": 8,
       "norm_label": "updateusage()"
     },
     {
@@ -1480,7 +1811,7 @@
       "source_file": "src/services/api/claude.ts",
       "source_location": "L185",
       "id": "claude_toassistantmessage",
-      "community": 7,
+      "community": 8,
       "norm_label": "toassistantmessage()"
     },
     {
@@ -1492,7 +1823,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 16,
+      "community": 21,
       "norm_label": "graphify knowledge graph system",
       "id": "AGENTS_md_graphify"
     },
@@ -1505,7 +1836,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 20,
       "norm_label": "graph report (god nodes and community structure)",
       "id": "AGENTS_md_graph_report"
     },
@@ -1518,7 +1849,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 20,
       "norm_label": "wiki navigation index",
       "id": "AGENTS_md_wiki_index"
     },
@@ -1531,7 +1862,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 16,
+      "community": 21,
       "norm_label": "graphify output directory",
       "id": "AGENTS_md_graphify_out"
     }
@@ -2157,30 +2488,6 @@
       "source_location": null,
       "weight": 1.0,
       "_src": "GlobTool",
-      "_tgt": "errors_isENOENT",
-      "source": "GlobTool",
-      "target": "errors_isENOENT"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tools/GlobTool/GlobTool.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "GlobTool",
-      "_tgt": "fsOperations_getFsImplementation",
-      "source": "GlobTool",
-      "target": "fsOperations_getFsImplementation"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tools/GlobTool/GlobTool.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "GlobTool",
       "_tgt": "glob_glob",
       "source": "GlobTool",
       "target": "glob_glob"
@@ -2229,45 +2536,9 @@
       "source_location": null,
       "weight": 1.0,
       "_src": "GlobTool",
-      "_tgt": "filesystem_checkReadPermissionForTool",
-      "source": "GlobTool",
-      "target": "filesystem_checkReadPermissionForTool"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tools/GlobTool/GlobTool.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "GlobTool",
       "_tgt": "shellRuleMatching_matchWildcardPattern",
       "source": "GlobTool",
       "target": "shellRuleMatching_matchWildcardPattern"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tools/GlobTool/GlobTool.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "GlobTool",
-      "_tgt": "file_suggestPathUnderCwd",
-      "source": "GlobTool",
-      "target": "file_suggestPathUnderCwd"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tools/GlobTool/GlobTool.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "GlobTool",
-      "_tgt": "file_FILE_NOT_FOUND_CWD_NOTE",
-      "source": "GlobTool",
-      "target": "file_FILE_NOT_FOUND_CWD_NOTE"
     },
     {
       "relation": "references",
@@ -2292,6 +2563,186 @@
       "_tgt": "envUtils_hasEmbeddedSearchTools",
       "source": "GlobTool",
       "target": "envUtils_hasEmbeddedSearchTools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/prompt.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_prompt_ts",
+      "_tgt": "prompt_renderprompttemplate",
+      "source": "src_tools_filereadtool_prompt_ts",
+      "target": "prompt_renderprompttemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "src_tools_filereadtool_prompt_ts",
+      "source": "src_tools_filereadtool_prompt_ts",
+      "target": "src_tools_filereadtool_filereadtool_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "src_tools_filereadtool_limits_ts",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "src_tools_filereadtool_limits_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_isblockeddevicepath",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_isblockeddevicepath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_getalternatescreenshotpath",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_getalternatescreenshotpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_registerfilereadlistener",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_registerfilereadlistener",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_maxfilereadtokenexceedederror",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_maxfilereadtokenexceedederror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L575",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_picklineformatinstruction",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_picklineformatinstruction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L579",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_formatfilelines",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_formatfilelines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L591",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_shouldincludefilereadmitigation",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_shouldincludefilereadmitigation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L601",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_filereadtool_ts",
+      "_tgt": "filereadtool_callinner",
+      "source": "src_tools_filereadtool_filereadtool_ts",
+      "target": "filereadtool_callinner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/FileReadTool.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_src": "filereadtool_maxfilereadtokenexceedederror",
+      "_tgt": "filereadtool_maxfilereadtokenexceedederror_constructor",
+      "source": "filereadtool_maxfilereadtokenexceedederror",
+      "target": "filereadtool_maxfilereadtokenexceedederror_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_limits_ts",
+      "_tgt": "limits_getenvmaxtokens",
+      "source": "src_tools_filereadtool_limits_ts",
+      "target": "limits_getenvmaxtokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "src_tools_filereadtool_limits_ts",
+      "_tgt": "limits_getdefaultfilereadinglimits",
+      "source": "src_tools_filereadtool_limits_ts",
+      "target": "limits_getdefaultfilereadinglimits",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/FileReadTool/limits.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "limits_getdefaultfilereadinglimits",
+      "_tgt": "limits_getenvmaxtokens",
+      "source": "limits_getenvmaxtokens",
+      "target": "limits_getdefaultfilereadinglimits",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -2340,18 +2791,6 @@
       "_tgt": "concept_toolPermissionContext",
       "source": "concept_toolPermissionContext",
       "target": "permissions_getDenyRules"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/utils/permissions/filesystem.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "filesystem_checkReadPermissionForTool",
-      "_tgt": "concept_toolPermissionContext",
-      "source": "concept_toolPermissionContext",
-      "target": "filesystem_checkReadPermissionForTool"
     },
     {
       "relation": "contains",
@@ -2558,6 +2997,30 @@
       "target": "permissions_getDenyRules"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants/files.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_src": "src_constants_files_ts",
+      "_tgt": "files_hasbinaryextension",
+      "source": "src_constants_files_ts",
+      "target": "files_hasbinaryextension",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/semanticNumber.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "src_utils_semanticnumber_ts",
+      "_tgt": "semanticnumber_semanticnumber",
+      "source": "src_utils_semanticnumber_ts",
+      "target": "semanticnumber_semanticnumber",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -2568,18 +3031,6 @@
       "_tgt": "cwd_getCwd",
       "source": "path_expandPath",
       "target": "cwd_getCwd"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/utils/path.ts",
-      "source_location": null,
-      "weight": 1.0,
-      "_src": "path_expandPath",
-      "_tgt": "fsOperations_getFsImplementation",
-      "source": "path_expandPath",
-      "target": "fsOperations_getFsImplementation"
     },
     {
       "relation": "shares_data_with",
@@ -2642,18 +3093,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/utils/file.ts",
-      "source_location": null,
-      "weight": 0.8,
-      "_src": "cwd_getCwd",
-      "_tgt": "file_suggestPathUnderCwd",
-      "source": "cwd_getCwd",
-      "target": "file_suggestPathUnderCwd"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/handlePromptSubmit.ts",
@@ -2714,6 +3153,42 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/errors.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "src_utils_errors_ts",
+      "_tgt": "errors_geterrnocode",
+      "source": "src_utils_errors_ts",
+      "target": "errors_geterrnocode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/errors.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "src_utils_errors_ts",
+      "_tgt": "errors_isenoent",
+      "source": "src_utils_errors_ts",
+      "target": "errors_isenoent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/errors.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_src": "errors_isenoent",
+      "_tgt": "errors_geterrnocode",
+      "source": "errors_geterrnocode",
+      "target": "errors_isenoent",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/messages.ts",
@@ -2747,6 +3222,66 @@
       "_tgt": "messages_normalizecontentfromapi",
       "source": "src_utils_messages_ts",
       "target": "messages_normalizecontentfromapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "src_utils_file_ts",
+      "_tgt": "src_utils_fsoperations_ts",
+      "source": "src_utils_file_ts",
+      "target": "src_utils_fsoperations_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "src_utils_file_ts",
+      "_tgt": "file_addlinenumbers",
+      "source": "src_utils_file_ts",
+      "target": "file_addlinenumbers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "src_utils_file_ts",
+      "_tgt": "file_getfilemodificationtimeasync",
+      "source": "src_utils_file_ts",
+      "target": "file_getfilemodificationtimeasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "src_utils_file_ts",
+      "_tgt": "file_suggestpathundercwd",
+      "source": "src_utils_file_ts",
+      "target": "file_suggestpathundercwd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/file.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "src_utils_file_ts",
+      "_tgt": "file_findsimilarfile",
+      "source": "src_utils_file_ts",
+      "target": "file_findsimilarfile",
       "confidence_score": 1.0
     },
     {
@@ -2870,6 +3405,162 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/format.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "src_utils_format_ts",
+      "_tgt": "format_formatfilesize",
+      "source": "src_utils_format_ts",
+      "target": "format_formatfilesize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "src_utils_format_ts",
+      "source": "src_utils_format_ts",
+      "target": "src_utils_readfileinrange_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/fsOperations.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "src_utils_fsoperations_ts",
+      "_tgt": "fsoperations_getfsimplementation",
+      "source": "src_utils_fsoperations_ts",
+      "target": "fsoperations_getfsimplementation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_filetoolargeerror",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_filetoolargeerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_readfileinrange",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_readfileinrange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L101",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_readfileinrangefast",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_readfileinrangefast",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L190",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_streamonopen",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_streamonopen",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L196",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_streamondata",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_streamondata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L269",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_streamonend",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_streamonend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L307",
+      "weight": 1.0,
+      "_src": "src_utils_readfileinrange_ts",
+      "_tgt": "readfileinrange_readfileinrangestreaming",
+      "source": "src_utils_readfileinrange_ts",
+      "target": "readfileinrange_readfileinrangestreaming",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "readfileinrange_filetoolargeerror",
+      "_tgt": "readfileinrange_filetoolargeerror_constructor",
+      "source": "readfileinrange_filetoolargeerror",
+      "target": "readfileinrange_filetoolargeerror_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_src": "readfileinrange_readfileinrange",
+      "_tgt": "readfileinrange_readfileinrangefast",
+      "source": "readfileinrange_readfileinrange",
+      "target": "readfileinrange_readfileinrangefast",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/readFileInRange.ts",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_src": "readfileinrange_readfileinrange",
+      "_tgt": "readfileinrange_readfileinrangestreaming",
+      "source": "readfileinrange_readfileinrange",
+      "target": "readfileinrange_readfileinrangestreaming",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -2916,18 +3607,6 @@
       "_tgt": "permissions_toolMatchesRule",
       "source": "permissions_getDenyRuleForTool",
       "target": "permissions_toolMatchesRule"
-    },
-    {
-      "relation": "semantically_similar_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "src/utils/permissions/filesystem.ts",
-      "source_location": null,
-      "weight": 0.75,
-      "_src": "permissions_getDenyRuleForTool",
-      "_tgt": "filesystem_checkReadPermissionForTool",
-      "source": "permissions_getDenyRuleForTool",
-      "target": "filesystem_checkReadPermissionForTool"
     },
     {
       "relation": "calls",
@@ -3072,6 +3751,30 @@
       "_tgt": "permissionRuleParser_unescapeRuleContent",
       "source": "permissionRuleParser_escapeRuleContent",
       "target": "permissionRuleParser_unescapeRuleContent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/permissions/filesystem.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "src_utils_permissions_filesystem_ts",
+      "_tgt": "filesystem_checkreadpermissionfortool",
+      "source": "src_utils_permissions_filesystem_ts",
+      "target": "filesystem_checkreadpermissionfortool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/permissions/filesystem.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "src_utils_permissions_filesystem_ts",
+      "_tgt": "filesystem_matchingruleforinput",
+      "source": "src_utils_permissions_filesystem_ts",
+      "target": "filesystem_matchingruleforinput",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
