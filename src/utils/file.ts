@@ -43,7 +43,6 @@ export function addLineNumbers(file: {
 
 /**
  * 异步获取文件修改时间（毫秒，取整）
- * 对齐上游实现：按源码 getFileModificationTimeAsync 原样复刻
  * 设计原因：Math.floor 确保时间戳比较一致，避免亚毫秒精度变化导致误判
  */
 export async function getFileModificationTimeAsync(

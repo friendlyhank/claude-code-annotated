@@ -264,7 +264,7 @@ export const FileReadTool = buildTool({
   maxResultSizeChars: Infinity, // 最大输出字符数
   strict: true, // 严格模式
   async description() {
-    return DESCRIPTION
+    return DESCRIPTION // 读取文件工具描述
   },
   async prompt() {
     const limits = getDefaultFileReadingLimits()
@@ -301,6 +301,7 @@ export const FileReadTool = buildTool({
   isReadOnly() {
     return true
   },
+  // 自动分类输入：返回文件路径
   toAutoClassifierInput(input) {
     return input.file_path
   },
@@ -310,12 +311,14 @@ export const FileReadTool = buildTool({
   getPath({ file_path }): string {
     return file_path || getCwd()
   },
+  // 后填充可观察输入：扩展路径 ~ 或相对路径
   backfillObservableInput(input) {
     // hooks.mdx 文档 file_path 为绝对路径；扩展以防止 hook allowlist 通过 ~ 或相对路径绕过
     if (typeof input.file_path === 'string') {
       input.file_path = expandPath(input.file_path)
     }
   },
+  // 准备权限匹配器
   async preparePermissionMatcher({ file_path }) {
     return pattern => matchWildcardPattern(pattern, file_path)
   },
@@ -323,6 +326,7 @@ export const FileReadTool = buildTool({
     // TODO: 完整权限检查，当前简化为允许
     return { behavior: 'allow', updatedInput: input }
   },
+  // UI 渲染函数：工具使用消息
   renderToolUseMessage(
     { file_path }: Partial<Input>,
     _options: { verbose: boolean },
@@ -333,6 +337,7 @@ export const FileReadTool = buildTool({
   renderToolUseTag() {
     return null
   },
+  // UI 渲染函数：工具结果消息
   renderToolResultMessage(output: Output) {
     switch (output.type) {
       case 'text': {
@@ -355,9 +360,11 @@ export const FileReadTool = buildTool({
     // UI 只展示摘要（行数/大小），不展示内容本身，无需索引
     return ''
   },
+  // UI 渲染函数：工具错误消息
   renderToolUseErrorMessage() {
     return 'Error reading file'
   },
+  // 校验输入：检查文件路径是否存在
   async validateInput({ file_path, pages }, toolUseContext: ToolUseContext) {
     // TODO: pages 参数校验（parsePDFPageRange）待 pdfUtils 实现后补齐
 
@@ -382,6 +389,7 @@ export const FileReadTool = buildTool({
     // PDF、图片、SVG 除外 — 本工具原生渲染
     const ext = path.extname(fullFilePath).toLowerCase()
     if (
+      // 检查文件扩展名是否为二进制文件
       hasBinaryExtension(fullFilePath) &&
       !IMAGE_EXTENSIONS.has(ext.slice(1))
     ) {
@@ -410,18 +418,20 @@ export const FileReadTool = buildTool({
     _parentMessage?,
   ) {
     const { readFileState, fileReadingLimits } = context
-
+    // 从上下文获取文件读取限制
     const defaults = getDefaultFileReadingLimits()
+    // 从上下文获取文件读取限制
     const maxSizeBytes =
       fileReadingLimits?.maxSizeBytes ?? defaults.maxSizeBytes
     const maxTokens = fileReadingLimits?.maxTokens ?? defaults.maxTokens
 
+    // 文件扩展名（无点号）
     const ext = path.extname(file_path).toLowerCase().slice(1)
     // expandPath 用于一致的路径规范化（处理空白修剪和 Windows 路径分隔符）
     const fullFilePath = expandPath(file_path)
 
     // 去重：如果已读取相同范围且文件未修改，返回 stub 而非重发全部内容
-    // 仅适用于文本/Notebook — 图片/PDF 不在 readFileState 中缓存
+    // 仅适用于文本/Notebook — 图片/PDF 不在 readFileState 中缓存 isPartialView表示是否为部分视图
     const existingState = (readFileState as Map<string, {
       isPartialView?: boolean
       offset?: number
@@ -433,12 +443,15 @@ export const FileReadTool = buildTool({
       !existingState.isPartialView &&
       existingState.offset !== undefined
     ) {
+      // 检查读取范围是否相同
       const rangeMatch =
         existingState.offset === offset && existingState.limit === limit
       if (rangeMatch) {
         try {
           const mtimeMs = await getFileModificationTimeAsync(fullFilePath)
+          // 检查文件修改时间是否相同
           if (mtimeMs === existingState.timestamp) {
+            // 如果文件未修改，不用重复读取，会返回告诉LLM文件未变更的提示FILE_UNCHANGED_STUB，节省token
             return {
               data: {
                 type: 'file_unchanged' as const,
@@ -611,17 +624,17 @@ function shouldIncludeFileReadMitigation(): boolean {
 // ---------------------------------------------------------------------------
 
 async function callInner(
-  file_path: string,
-  fullFilePath: string,
-  resolvedFilePath: string,
-  ext: string,
-  offset: number,
-  limit: number | undefined,
-  pages: string | undefined,
-  maxSizeBytes: number,
-  maxTokens: number,
-  readFileState: ToolUseContext['readFileState'],
-  context: ToolUseContext,
+  file_path: string, // 输入文件路径
+  fullFilePath: string, // 完整文件路径（包含扩展名）
+  resolvedFilePath: string, // 已解析文件路径（包含扩展名）
+  ext: string, // 文件扩展名（无点号）
+  offset: number, // 读取偏移量（行号）
+  limit: number | undefined, // 最大读取行数（行号）
+  pages: string | undefined, // PDF 页面范围（无默认值）
+  maxSizeBytes: number, // 最大文件大小
+  maxTokens: number, // 最大输出 token 数
+  readFileState: ToolUseContext['readFileState'], // 文件读取状态缓存
+  context: ToolUseContext, // 工具调用上下文
 ): Promise<{
   data: Output
   newMessages?: (UserMessage | AssistantMessage | AttachmentMessage | SystemMessage)[]
@@ -648,10 +661,11 @@ async function callInner(
   const lineOffset = offset === 0 ? 0 : offset - 1
   const { content, lineCount, totalLines, totalBytes, readBytes, mtimeMs } =
     await readFileInRange(
-      resolvedFilePath,
-      lineOffset,
-      limit,
-      limit === undefined ? maxSizeBytes : undefined,
+      resolvedFilePath, // 输入路径（包含扩展名）
+      lineOffset, // 读取偏移量（行号）
+      limit, // 最大读取行数（行号）
+      limit === undefined ? maxSizeBytes : undefined, // 截断字节数
+      // 取消信号
       context.abortController.signal,
     )
 
@@ -659,10 +673,10 @@ async function callInner(
 
   // 更新 readFileState（去重用）
   const stateMap = readFileState as Map<string, {
-    content: string
-    timestamp: number
-    offset: number
-    limit: number | undefined
+    content: string // 选中的行内容
+    timestamp: number // 文件修改时间时间戳
+    offset: number // 读取偏移量（行号）
+    limit: number | undefined // 最大读取行数（行号）
   }>
   if (stateMap && stateMap instanceof Map) {
     stateMap.set(fullFilePath, {

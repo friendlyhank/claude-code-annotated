@@ -29,11 +29,12 @@ function getEnvMaxTokens(): number | undefined {
   return undefined
 }
 
+// 读取限制配置
 export type FileReadingLimits = {
-  maxTokens: number
-  maxSizeBytes: number
-  includeMaxSizeInPrompt?: boolean
-  targetedRangeNudge?: boolean
+  maxTokens: number // 最大输出 token 数
+  maxSizeBytes: number // 最大文件大小
+  includeMaxSizeInPrompt?: boolean // 是否在提示词中包含最大文件大小
+  targetedRangeNudge?: boolean // 是否使用目标范围提示
 }
 
 /**
