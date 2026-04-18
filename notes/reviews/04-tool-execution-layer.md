@@ -73,24 +73,153 @@
 
 是否并发执行由工具的 `isConcurrencySafe()` 决定。若工具缺失、schema 校验失败或判断抛错，统一保守降级为串行。
 
+### 7. lazySchema 延迟 Schema 构建
+
+`src/utils/lazySchema.ts` 提供通用惰性缓存原语：
+
+```typescript
+function lazySchema<T>(factory: () => T): () => T {
+  let cached: T | undefined
+  return () => (cached ??= factory())
+}
+```
+
+**设计原因**：Zod schema 构建在模块初始化时执行，会拖慢启动。`lazySchema` 把"立即执行"变成"用的时候再执行，且只执行一次"。
+
+**接入方式**：工具在模块顶层声明 lazy thunk，通过 `get` 访问器桥接到 `Tool` 接口：
+
+```typescript
+const inputSchema = lazySchema(() => z.strictObject({...}))
+type InputSchema = ReturnType<typeof inputSchema>
+
+buildTool({
+  get inputSchema(): InputSchema { return inputSchema() },  // 首次访问触发构建并缓存
+  ...
+})
+```
+
+**使用范围**：当前仅 GlobTool 和 FileReadTool 使用 lazySchema（它们的 schema 构建成本较高）。其余工具为 `createPlaceholderTool` 占位，schema 为 `z.object({})`，无需延迟。
+
+**下游消费者**（首次访问时触发构建）：
+- `claude.ts:123` — API 格式转换时访问 `tool.inputSchema`
+- `toolExecution.ts:104` — 执行时 `tool.inputSchema.safeParse(toolInput)`
+- `toolOrchestration.ts:117` — 切批时 `tool.inputSchema.safeParse(toolUse.input)` 判断并发安全性
+
+**API 层延迟**（与 lazySchema 正交）：`Tool` 类型另有 `shouldDefer` / `alwaysLoad` 标志，控制在 Anthropic API 协议层是否以 `defer_loading: true` 发送工具定义，属于模型侧按需加载 schema 的机制，与进程内 lazySchema 是两个不同层次的延迟策略。
+
 ### 6. 工具常量集中管理
 
 `src/constants/tools.ts` 集中管理工具名称常量和代理权限规则。设计原因：工具重命名后，旧名称仍需支持（通过 `permissionRuleParser.ts` 的别名映射）。
 
 ## 主流程
 
+### 总体编排流程
+
 ```mermaid
 flowchart TD
-    A[assistant message 中的 tool_use] --> B[partitionToolCalls]
-    B --> C{是否可并发}
-    C -->|否| D[runToolsSerially]
-    C -->|是| E[runToolsConcurrently]
-    D --> F[runToolUse]
-    E --> F
-    F --> G[生成 tool_result]
-    G --> H[回放 contextModifier 或保持当前上下文]
-    H --> I[返回给 query loop]
+    A["assistant message 中的 tool_use blocks"] --> B[partitionToolCalls]
+    B --> C1["Batch 1: 并发安全<br/>Glob, Read, Read"]
+    B --> C2["Batch 2: 非并发安全<br/>Bash"]
+    B --> C3["Batch 3: 并发安全<br/>Glob, Read"]
+    C1 --> D1[runToolsConcurrently]
+    C2 --> D2[runToolsSerially]
+    C3 --> D3[runToolsConcurrently]
+    D1 --> E["runToolUse × N<br/>并发上限 10"]
+    D2 --> F["runToolUse × 1<br/>串行执行"]
+    D3 --> G["runToolUse × N<br/>并发上限 10"]
+    E --> H["contextModifier<br/>按 input 顺序重放"]
+    F --> I[contextModifier 立即应用]
+    G --> J["contextModifier<br/>按 input 顺序重放"]
+    H & I & J --> K["返回 tool_result 给 query loop"]
 ```
+
+### 并发批执行流程
+
+```mermaid
+sequenceDiagram
+    participant Orch as runTools
+    participant Con as runToolsConcurrently
+    participant T1 as Tool_A (Glob)
+    participant T2 as Tool_B (Read)
+    participant T3 as Tool_C (Read)
+
+    Orch->>Con: Batch [Glob, Read, Read]
+    Note over Con: 并发上限 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=10
+
+    par 全部启动
+        Con->>T1: setInProgress → runToolUse
+        Con->>T2: setInProgress → runToolUse
+        Con->>T3: setInProgress → runToolUse
+    end
+
+    Note over T1,T3: 消息按完成顺序 yield，上下文保持批次前快照
+
+    T3-->>Con: yield {message, contextModifier_C}
+    Note right of Con: queuedModifiers["C"] = [mod_C]\nnewContext 仍为批次前快照
+
+    T1-->>Con: yield {message, contextModifier_A}
+    Note right of Con: queuedModifiers["A"] = [mod_A]\nnewContext 仍为批次前快照
+
+    T2-->>Con: yield {message, contextModifier_B}
+    Note right of Con: queuedModifiers["B"] = [mod_B]\nnewContext 仍为批次前快照
+
+    Note over Con: 全部完成后，按 input 原始顺序 [A,B,C] 重放
+    Con->>Con: context = mod_A(context)
+    Con->>Con: context = mod_B(context)
+    Con->>Con: context = mod_C(context)
+    Con-->>Orch: yield {newContext: mergedContext}
+```
+
+**关键约束**：
+- 消息按**完成顺序** yield（非阻塞，及时反馈 UI）
+- 上下文修改按 **input 原始顺序**重放（确定性，不依赖调度时序）
+- 并发期间 yield 的 `newContext` 均为批次前快照，真实合并上下文在批次结束后一次性 yield
+
+### 串行批执行流程
+
+```mermaid
+sequenceDiagram
+    participant Orch as runTools
+    participant Ser as runToolsSerially
+    participant T1 as Tool_A (Bash)
+    participant T2 as Tool_B (Bash)
+
+    Orch->>Ser: Batch [Bash1, Bash2]
+
+    Ser->>T1: setInProgress → runToolUse
+    T1-->>Ser: yield {message, contextModifier_A}
+    Note right of Ser: 立即应用: currentContext = mod_A(currentContext)
+    Ser->>Ser: markComplete(Bash1)
+
+    Note over Ser: Tool_B 看到的是 A 执行后的上下文
+
+    Ser->>T2: setInProgress → runToolUse
+    T2-->>Ser: yield {message, contextModifier_B}
+    Note right of Ser: 立即应用: currentContext = mod_B(currentContext)
+    Ser->>Ser: markComplete(Bash2)
+
+    Ser-->>Orch: yield {message, newContext}
+```
+
+**关键约束**：
+- 严格按 input 顺序逐个执行
+- 每个工具的 contextModifier **立即应用**，后续工具看到最新上下文
+- 适用于有副作用的工具（Bash、Edit 等），保证因果关系
+
+### partitionToolCalls 切批规则
+
+对每个 `tool_use` 块，依次判断：
+1. 查找工具 → 未找到则非并发安全
+2. schema 校验 → 失败则非并发安全
+3. 调用 `isConcurrencySafe(parsedInput)` → 异常保守降级为串行
+
+**合并规则**：相邻并发安全块合并为同一批次，一个非安全块即产生批次边界。
+
+| 输入 | 切批结果 |
+| --- | --- |
+| Glob, Read, Bash, Glob, Read | Batch₁[并发: Glob,Read] + Batch₂[串行: Bash] + Batch₃[并发: Glob,Read] |
+| Bash, Bash | Batch₁[串行: Bash, Bash] |
+| Glob, Read, Glob | Batch₁[并发: Glob,Read,Glob] |
 
 ## 子功能点导航
 
@@ -106,6 +235,13 @@ flowchart TD
   - Tool 类型 MCP 扩展：isMcp 标记、mcpInfo 元数据、inputJSONSchema 直通
   - MCP 工具注册与权限匹配
   - MCP 权限匹配：服务器级规则、通配符匹配、完整名匹配
+
+- **4.3 read 工具实现** — [`04-03-read-tool-implementation.md`](04-03-read-tool-implementation.md)
+  - FileReadTool 完整实现：buildTool 工厂落地、lazySchema 延迟构建、多类型输出判别联合
+  - 输入验证与安全防护：二进制扩展名拒绝、设备文件黑名单、UNC 路径标记
+  - 文本文件按行范围读取：快速路径与流式路径
+  - 文件未变更去重：mtimeMs 比对节省 token
+  - 多媒体扩展预留：image/notebook/pdf
 
 ## 组合使用
 

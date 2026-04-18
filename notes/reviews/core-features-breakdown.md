@@ -1,4 +1,4 @@
-- 最新已处理提交：`3d3acf6a4e74db9726fb2b0e48cdeb973b87f304`
+- 最新已处理提交：`b795a87ec6f4b25e19bd04b8003ac5a190df6be8`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -34,6 +34,7 @@
  - 工具编排按并发安全性切批、限流执行和上下文回放
  - 单个工具调用的完整执行链路：查找→校验→权限→调用→结果映射
  - 工具输入规范化与安全 JSON 解析
+ - lazySchema 延迟 Schema 构建：延迟 Zod schema 从模块初始化到首次访问，缓存后复用
  - 4.1 glob 搜索工具实现
      - 文档：`notes/reviews/04-01-glob-search-tool.md`
      - GlobTool 完整实现：buildTool 工厂模式落地、延迟 Schema 构建、路径相对化策略
@@ -53,6 +54,14 @@
      - MCP 流式处理：mcp_tool_use/mcp_tool_result 内容块识别与透传
      - MCP API 适配：inputJSONSchema 直接透传绕过 Zod 转换
      - 当前局限：MCP 客户端连接未实现、mcpClients/mcpResources 为 TODO 占位、MCPProgress 类型为 any 桩
+ - 4.3 read 工具实现
+     - 文档：`notes/reviews/04-03-read-tool-implementation.md`
+     - FileReadTool 完整实现：buildTool 工厂落地、lazySchema 延迟构建、多类型输出判别联合
+     - 输入验证与安全防护：二进制扩展名拒绝、设备文件黑名单、UNC 路径标记
+     - 文本文件按行范围读取：快速路径（<10MB 整文件内存分割）与流式路径（>=10MB 增量扫描）
+     - 文件未变更去重：mtimeMs 比对 + offset/limit 匹配，返回 file_unchanged 节省 token
+     - 多媒体扩展预留：image/notebook/pdf 输出 schema 已定义，实现为 TODO
+     - macOS 截图薄空格处理、二进制文件安全风险提示、语义数字预处理
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
