@@ -1,7 +1,6 @@
 /**
  * 文件系统权限检查
  *
- * 对齐上游实现：按 claude-code/src/utils/permissions/filesystem.ts 原样复刻
  * 当前实现 FileReadTool 所需的 checkReadPermissionForTool 和 matchingRuleForInput
  * TODO: 完整权限检查逻辑待后续补齐
  */

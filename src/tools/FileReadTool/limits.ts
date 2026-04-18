@@ -1,7 +1,6 @@
 /**
  * FileReadTool 读取限制配置
  *
- * 对齐上游实现：按 claude-code/src/tools/FileReadTool/limits.ts 原样复刻
  *
  * 两个上限：
  *   | limit         | default | checks                    | cost          | on overflow     |
@@ -12,6 +11,7 @@
 
 import { MAX_OUTPUT_SIZE } from '../../utils/file.js'
 
+//  默认最大输出 token 数
 export const DEFAULT_MAX_OUTPUT_TOKENS = 25000
 
 /**

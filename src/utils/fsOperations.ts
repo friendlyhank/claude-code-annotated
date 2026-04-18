@@ -1,7 +1,6 @@
 /**
  * 文件系统操作抽象层
  *
- * 对齐上游实现：按 claude-code/src/utils/fsOperations.ts 原样复刻
  * 当前实现 FileReadTool 所需的 getFsImplementation 函数
  * TODO: readFileBytes、safeResolvePath、getPathsForPermissionCheck 等待后续补齐
  */

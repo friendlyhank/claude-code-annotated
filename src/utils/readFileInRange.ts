@@ -31,6 +31,8 @@ export type ReadFileRangeResult = {
   truncatedByBytes?: boolean // 是否根据字节数截断
 }
 
+// 文件内容超出最大允许大小错误
+// 设计原因：在读取文件内容前，检查文件大小是否超出最大允许大小
 export class FileTooLargeError extends Error {
   constructor(
     public sizeInBytes: number,

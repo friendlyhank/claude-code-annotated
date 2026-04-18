@@ -1,7 +1,6 @@
 /**
  * 纯显示格式化函数
  *
- * 对齐上游实现：按 claude-code/src/utils/format.ts 原样复刻
  * 当前仅实现 FileReadTool 所需的 formatFileSize
  * TODO: formatSecondsShort、formatDuration 等待后续补齐
  */

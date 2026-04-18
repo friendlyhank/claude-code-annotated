@@ -120,6 +120,8 @@ function getAlternateScreenshotPath(filePath: string): string | undefined {
 type FileReadListener = (filePath: string, content: string) => void
 const fileReadListeners: FileReadListener[] = []
 
+// 注册文件读取监听器
+// 设计原因：在读取文件内容后，通知监听器文件路径和内容
 export function registerFileReadListener(
   listener: FileReadListener,
 ): () => void {
@@ -509,8 +511,10 @@ export const FileReadTool = buildTool({
             // 备选路径也不存在 — 继续输出友好错误
           }
         }
-
+        
+        // 检查是否有相似文件名
         const similarFilename = findSimilarFile(fullFilePath)
+        // 检查是否有当前工作目录下的相似文件名
         const cwdSuggestion = await suggestPathUnderCwd(fullFilePath)
         let message = `File does not exist. ${FILE_NOT_FOUND_CWD_NOTE} ${getCwd()}.`
         if (cwdSuggestion) {
