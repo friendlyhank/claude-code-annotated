@@ -12,6 +12,7 @@
  */
 
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
+import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
 import { hasEmbeddedSearchTools, isEnvTruthy } from './utils/envUtils.js'
@@ -122,8 +123,7 @@ export function getAllBaseTools(): Tools {
         ]),
     // TODO: ExitPlanModeV2Tool - 替换为 tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts
     createPlaceholderTool('ExitPlanMode', 'Exit plan mode and start implementing'),
-    // TODO: FileReadTool - 替换为 tools/FileReadTool/FileReadTool.ts
-    createPlaceholderTool('Read', 'Read a file from the filesystem'),
+   FileReadTool,
     // TODO: FileEditTool - 替换为 tools/FileEditTool/FileEditTool.ts
     createPlaceholderTool('Edit', 'Edit a file with exact string replacement'),
     // TODO: FileWriteTool - 替换为 tools/FileWriteTool/FileWriteTool.ts

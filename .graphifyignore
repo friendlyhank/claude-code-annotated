@@ -1,5 +1,7 @@
 .idea/
 .trae/
+.iflow/
+.codebuddy/
 dist/
 node_modules/
 notes/
