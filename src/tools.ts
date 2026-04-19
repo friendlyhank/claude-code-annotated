@@ -14,6 +14,8 @@
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
 import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
+import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
+import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
 import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
 import { hasEmbeddedSearchTools, isEnvTruthy } from './utils/envUtils.js'
@@ -123,10 +125,8 @@ export function getAllBaseTools(): Tools {
     // TODO: ExitPlanModeV2Tool - 替换为 tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts
     createPlaceholderTool('ExitPlanMode', 'Exit plan mode and start implementing'),
    FileReadTool,
-    // TODO: FileEditTool - 替换为 tools/FileEditTool/FileEditTool.ts
-    createPlaceholderTool('Edit', 'Edit a file with exact string replacement'),
-    // TODO: FileWriteTool - 替换为 tools/FileWriteTool/FileWriteTool.ts
-    createPlaceholderTool('Write', 'Write content to a file'),
+    FileEditTool,
+    FileWriteTool,
     // TODO: NotebookEditTool - 替换为 tools/NotebookEditTool/NotebookEditTool.ts
     createPlaceholderTool('NotebookEdit', 'Edit a Jupyter notebook cell'),
     // TODO: WebFetchTool - 替换为 tools/WebFetchTool/WebFetchTool.ts

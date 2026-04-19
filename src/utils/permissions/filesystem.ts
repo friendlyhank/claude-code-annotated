@@ -1,12 +1,13 @@
 /**
  * 文件系统权限检查
  *
- * 当前实现 FileReadTool 所需的 checkReadPermissionForTool 和 matchingRuleForInput
- * TODO: 完整权限检查逻辑待后续补齐
+ * 当前实现 FileReadTool/FileWriteTool 所需的权限检查函数
+ * TODO: 完整权限检查逻辑（allowedDirectories、deny rules 遍历）待后续补齐
  */
 
 import type { Tool } from '../../Tool.js'
 import type {
+  PermissionDecision,
   PermissionResult,
   ToolPermissionContext,
 } from '../../types/permissions.js'
@@ -14,17 +15,53 @@ import type {
 /**
  * 检查工具的文件读取权限
  *
- * 设计原因：只读工具（Glob、Grep、Read）统一使用此函数检查权限
- *
  * 当前为简化实现：默认允许
  * TODO: 完整实现需检查 allowedDirectories 和 deny rules
  */
 export function checkReadPermissionForTool(
-  _tool: Pick<Tool, 'name' | 'mcpInfo'>, // 工具实例
-  input: Record<string, unknown>, // 输入参数
+  _tool: Pick<Tool, 'name' | 'mcpInfo'>,
+  input: Record<string, unknown>,
   _permissionContext: ToolPermissionContext,
 ): PermissionResult {
   return { behavior: 'allow', updatedInput: input }
+}
+
+/**
+ * 检查工具的文件写入权限
+ *
+ * 对齐上游实现：按 claude-code/src/utils/permissions/filesystem.ts checkWritePermissionForTool 原样复刻
+ * 设计原因：
+ * 1. 先检查 deny 规则，拒绝则返回 deny
+ * 2. 检查内部可编辑路径（plan 文件、scratchpad）
+ * 3. 检查安全路径（.claude 目录等）
+ * 4. 无匹配规则时返回 ask
+ *
+ * 当前为简化实现：检查 deny 规则后默认允许
+ * TODO: 完整实现需包含 checkEditableInternalPath、isDangerousFilePathToAutoEdit 等子流程
+ */
+export function checkWritePermissionForTool(
+  tool: Pick<Tool, 'name' | 'mcpInfo'> & { getPath?(input: unknown): string },
+  input: Record<string, unknown>,
+  _permissionContext: ToolPermissionContext,
+): PermissionDecision {
+  if (typeof tool.getPath !== 'function') {
+    return {
+      behavior: 'ask',
+      message: `Claude requested permissions to use ${tool.name}, but you haven't granted it yet.`,
+    }
+  }
+
+  // TODO: 遍历 deny 规则做路径匹配，当前 matchingRuleForInput 返回 null
+  // const path = tool.getPath(input)
+  // const denyRule = matchingRuleForInput(path, _permissionContext, 'edit', 'deny')
+  // if (denyRule) {
+  //   return { behavior: 'deny', message: `Permission to edit ${path} has been denied.`, decisionReason: { type: 'rule', rule: denyRule } }
+  // }
+
+  // TODO: checkEditableInternalPath 待内部路径检查实现后补齐
+  // TODO: isDangerousFilePathToAutoEdit 待安全路径检查实现后补齐
+
+  return { behavior: 'allow' }
 }
 
 /**
@@ -37,7 +74,7 @@ export function checkReadPermissionForTool(
 export function matchingRuleForInput(
   _input: string,
   _permissionContext: ToolPermissionContext,
-  _accessType: 'read' | 'write',
+  _accessType: 'read' | 'write' | 'edit',
   _ruleType: 'allow' | 'deny',
 ): null {
   return null

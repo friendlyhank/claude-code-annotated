@@ -1,7 +1,6 @@
 /**
  * 文件工具函数
  *
- * 对齐上游实现：按 claude-code/src/utils/file.ts 原样复刻
  * 当前实现 FileReadTool 所需的函数
  * TODO: getDisplayPath、findSimilarFile、writeTextContent 等待后续补齐
  */
@@ -63,6 +62,53 @@ export async function suggestPathUnderCwd(
   _absolutePath: string,
 ): Promise<string | null> {
   return null
+}
+
+/**
+ * 将内容中每行开头的制表符转为空格
+ * 设计原因：diff 展示时制表符宽度不确定，统一转为空格确保对齐
+ */
+export function convertLeadingTabsToSpaces(content: string): string {
+  // 对齐上游实现：不含制表符时跳过正则，避免全行扫描开销
+  if (!content.includes('\t')) return content
+  return content.replace(/^\t+/gm, _ => '  '.repeat(_.length))
+}
+
+/**
+ * 同步获取文件修改时间（毫秒，取整）
+ * 对齐上游实现：FileEditTool.validateInput 和 call 中用于检测文件在读后被修改
+ */
+export function getFileModificationTime(filePath: string): number {
+  try {
+    // eslint-disable-next-line custom-rules/no-sync-fs
+    const stat = require('fs').statSync(filePath)
+    return Math.floor(stat.mtimeMs)
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * 将文本内容写入文件，保留编码和行尾符
+ * 对齐上游实现：按 claude-code/src/utils/file.ts writeTextContent 原样复刻
+ */
+export function writeTextContent(
+  filePath: string, // 文件路径
+  content: string, // 内容
+   encoding: BufferEncoding = 'utf8', // 编码
+  lineEndings?: string, // 行尾符
+): void {
+  // 对齐上游实现：CRLF 行尾需在写入前转换
+  let finalContent = content
+  if (lineEndings === 'CRLF') {
+    finalContent = content.replace(/\n/g, '\r\n')
+  }
+
+  // 确保父目录存在
+  const dir = require('path').dirname(filePath)
+  require('fs').mkdirSync(dir, { recursive: true })
+
+  require('fs').writeFileSync(filePath, finalContent, encoding)
 }
 
 /**

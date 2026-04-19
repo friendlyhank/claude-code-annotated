@@ -1,22 +1,26 @@
 # 待办任务
 
-> 最后更新：2026-04-18
+> 最后更新：2026-04-19
 
 ## 任务列表
 
 ### 任务 1：FileEditTool 实现（优先级：high）
 
-- **状态**：`backlog`
+- **状态**：`done`
 - **源码位置**：`claude-code/src/tools/FileEditTool/FileEditTool.ts`
 - **完成标准**：能精确替换文件中的字符串
 - **验证方式**：替换 "old" 为 "new"，验证文件内容更新
+- **当前进度**：核心实现完成（validateInput + call 主链路 + utils 全量），82% 覆盖率
+- **待补齐**：UI.tsx 渲染、src/ 子目录、LSP/日志等次要依赖
 
 ### 任务 2：FileWriteTool 实现（优先级：high）
 
-- **状态**：`backlog`
+- **状态**：`done`
 - **源码位置**：`claude-code/src/tools/FileWriteTool/FileWriteTool.ts`
 - **完成标准**：能创建或覆盖写入文件
 - **验证方式**：写入内容，验证文件创建成功
+- **当前进度**：核心实现完成（validateInput + call 主链路），77% 覆盖率
+- **待补齐**：UI.tsx 渲染、LSP 通知、VSCode 通知、fileHistory、skill 发现
 
 ### 任务 3：BashTool 核心实现（优先级：high）
 

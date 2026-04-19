@@ -1,6 +1,6 @@
 # 复刻流水日志
 
-> 最后更新：2026-04-16
+> 最后更新：2026-04-19
 
 ## 已完成清单
 
@@ -24,6 +24,8 @@
 | 阶段 2 核心流程闭环 | 2026-04-16 | query() → queryLoop() → callModel() → tool_use → runTools() 全链路打通 |
 | GlobTool 实现 | 2026-04-16 | GlobTool.ts + prompt.ts + glob.ts；工具注册、模式匹配、结果映射完整 |
 | toolExecution 核心链路 | 2026-04-16 | runToolUse 实现真正的工具调用：查找→校验→权限→call→映射 |
+| FileEditTool 实现 | 2026-04-19 | validateInput + call 主链路 + utils 全量；constants/types/prompt/utils/FileEditTool 5 文件 |
+| FileWriteTool 实现 | 2026-04-19 | validateInput + call 主链路；prompt/FileWriteTool 2 文件 + diff.ts/fileRead.ts 新建 |
 
 ## 知识点记录
 
@@ -83,6 +85,11 @@
 - glob 模式匹配（`**` 匹配任意路径，`*` 匹配非路径分隔符）
 - 相对路径匹配模式（ripgrep 使用相对路径匹配 glob 模式）
 - 工具执行链路（findToolByName → safeParse → validateInput → canUseTool → call → mapResult）
+- FileWriteTool 全量写入模式（覆盖写入、强制 LF 行尾、临界区原子性保证）
+- readFileSyncWithMetadata 同步读取模式（编码检测 + 行尾检测 + CRLF 规范化，一次 IO 完成所有元数据提取）
+- safeResolvePath 安全路径解析（UNC 阻断、特殊文件类型检测、符号链接解析、ENOENT 容错）
+- diff.ts &/$ 转义模式（diff 库对 & 和 $ 解析错误，需要 token 替换后还原）
+- checkWritePermissionForTool 权限检查模式（deny 规则优先、内部可编辑路径检查、安全路径检查）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -125,14 +132,16 @@
 - [ ] 会话管理
 - [ ] FileReadTool
 - [ ] BashTool
-- [ ] FileEditTool
-- [ ] FileWriteTool
+- [x] FileEditTool
+- [x] FileWriteTool
 - [ ] GrepTool
 
 ## 历史记录
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-19 | 1.24% → 1.32% | FileWriteTool 完成：prompt.ts + FileWriteTool.ts + diff.ts + fileRead.ts；fsOperations 补充 safeResolvePath；filesystem 新增 checkWritePermissionForTool |
+| 2026-04-18 | 1.23% → 1.24% | FileEditTool 完成：constants/types/prompt/utils/FileEditTool 5 文件 + semanticBoolean.ts |
 | 2026-04-16 | 0.69% → 0.70% | API tools 参数传递修复：claude.ts toolsToApiFormat、query.ts tools 传递、REPL.tsx getTools()；完整 REPL → API → 工具执行链路验证通过 ✅ |
 | 2026-04-16 | 0.61% → 0.67% | GlobTool 完成：GlobTool.ts + prompt.ts + glob.ts；修复 glob 模式匹配逻辑 |
 | 2026-04-16 | 0.61% → 0.62% | 阶段 2 核心流程闭环完成；FileReadTool 任务规划完成；启动流程分析完成 |

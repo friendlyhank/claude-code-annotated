@@ -1,6 +1,6 @@
 # 阶段进度
 
-> 最后更新：2026-04-18
+> 最后更新：2026-04-19
 
 ## 阶段状态
 
@@ -50,8 +50,8 @@
 | GlobTool | `done` | 100% |
 | FileReadTool | `doing` | 55% |
 | BashTool | `doing` | 16% |
-| FileEditTool | `backlog` | 0% |
-| FileWriteTool | `backlog` | 0% |
+| FileEditTool | `done` | 82% |
+| FileWriteTool | `doing` | 77% |
 | GrepTool | `backlog` | 0% |
 | WebFetchTool | `backlog` | 0% |
 | WebSearchTool | `backlog` | 0% |
