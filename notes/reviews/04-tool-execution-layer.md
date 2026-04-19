@@ -2,7 +2,7 @@
 
 ## 概述
 
-这一层负责接住模型返回的 `tool_use`，并把它们转换成下一轮可消费的 `tool_result`。核心职责划分为：类型体系与工厂（`Tool.ts`）、工具注册与池组装（`tools.ts`）、批次编排（`toolOrchestration.ts`）、单工具执行（`toolExecution.ts`），以及具体工具实现（GlobTool、MCP 等）。
+这一层负责接住模型返回的 `tool_use`，并把它们转换成下一轮可消费的 `tool_result`。核心职责划分为：类型体系与工厂（`Tool.ts`）、工具注册与池组装（`tools.ts`）、批次编排（`toolOrchestration.ts`）、单工具执行（`toolExecution.ts`），以及具体工具实现（GlobTool、FileReadTool、FileEditTool、FileWriteTool、BashTool、MCP 等）。
 
 ## 关键源码
 
@@ -18,6 +18,12 @@
 | `src/utils/api.ts` | 工具输入规范化：normalizeToolInput |
 | `src/utils/json.ts` | 安全 JSON 解析：safeParseJSON |
 | `src/hooks/useCanUseTool.ts` | 权限检查函数类型：CanUseToolFn |
+| `src/tools/BashTool/` | BashTool：命令执行主链路、命令分类、命令语义解析 |
+| `src/tools/FileEditTool/` | FileEditTool：精确字符串替换、引号规范化、patch 生成 |
+| `src/tools/FileWriteTool/` | FileWriteTool：全量文件写入、create/update 区分 |
+| `src/utils/Shell.ts` | Shell 执行引擎：exec 入口、findSuitableShell、getShellConfig |
+| `src/utils/ShellCommand.ts` | 命令生命周期：spawn 包装、超时控制、中断响应 |
+| `src/utils/diff.ts` | Diff 工具函数：getPatchForDisplay、&/$ 转义 |
 
 ## 设计原理
 
@@ -242,6 +248,24 @@ sequenceDiagram
   - 文本文件按行范围读取：快速路径与流式路径
   - 文件未变更去重：mtimeMs 比对节省 token
   - 多媒体扩展预留：image/notebook/pdf
+
+- **4.4 Edit 工具实现** — [`04-04-edit-tool-implementation.md`](04-04-edit-tool-implementation.md)
+  - FileEditTool 精确字符串替换（old_string → new_string）
+  - 10 步验证链：相同内容拒绝→deny 规则→UNC 安全→文件大小→存在性→先读后写→修改时间→引号查找→多匹配检测
+  - 7 步执行链：加载文件→确认未修改→引号规范化→弯引号风格保持→生成 patch→写入磁盘→更新时间戳
+  - 编辑工具函数集：引号规范化、patch 生成、反净化处理、等价性判断
+
+- **4.5 Write 工具实现** — [`04-05-write-tool-implementation.md`](04-05-write-tool-implementation.md)
+  - FileWriteTool 全量文件写入（创建/覆盖）
+  - 5 步验证链 + 5 步执行链，始终 LF 行尾
+  - 与 Edit 工具的对比：操作粒度、验证深度、行尾策略、权限检查
+
+- **4.6 Bash 工具实现** — [`04-06-bash-tool-implementation.md`](04-06-bash-tool-implementation.md)
+  - BashTool 命令执行主链路
+  - 命令分类体系：搜索/读取/列表/静默/中性
+  - 命令语义解析：grep/rg/find/diff/test 的非零退出码解释
+  - Shell 执行引擎：exec 入口、findSuitableShell、getShellConfig
+  - ShellCommand 生命周期：spawn→收集→超时→中断→退出
 
 ## 组合使用
 

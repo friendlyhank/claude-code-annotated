@@ -44,6 +44,21 @@
 │   │       ├── toolExecution.ts
 │   │       └── toolOrchestration.ts
 │   ├── tools/
+│   │   ├── BashTool/
+│   │   │   ├── BashTool.ts
+│   │   │   ├── commandSemantics.ts
+│   │   │   ├── prompt.ts
+│   │   │   ├── toolName.ts
+│   │   │   └── utils.ts
+│   │   ├── FileEditTool/
+│   │   │   ├── FileEditTool.ts
+│   │   │   ├── constants.ts
+│   │   │   ├── prompt.ts
+│   │   │   ├── types.ts
+│   │   │   └── utils.ts
+│   │   ├── FileWriteTool/
+│   │   │   ├── FileWriteTool.ts
+│   │   │   └── prompt.ts
 │   │   └── GlobTool/
 │   │       ├── GlobTool.ts
 │   │       └── prompt.ts
@@ -60,6 +75,7 @@
 │   │   ├── envUtils.ts
 │   │   ├── errors.ts
 │   │   ├── file.ts
+│   │   ├── fileRead.ts
 │   │   ├── fsOperations.ts
 │   │   ├── generators.ts
 │   │   ├── glob.ts
@@ -74,7 +90,11 @@
 │   │   │   ├── permissionRuleParser.ts
 │   │   │   ├── permissions.ts
 │   │   │   └── shellRuleMatching.ts
-│   │   └── systemPromptType.ts
+│   │   ├── semanticBoolean.ts
+│   │   ├── semanticNumber.ts
+│   │   ├── Shell.ts
+│   │   ├── ShellCommand.ts
+│   │   ├── systemPromptType.ts
 │   ├── Tool.ts
 │   ├── ink.ts
 │   ├── interactiveHelpers.tsx
@@ -97,8 +117,11 @@
 | `src/screens/REPL.tsx` | 输入采集、消息展示、提交编排层入口与 `query()` 接线 | `src/utils/handlePromptSubmit.ts`、`src/query.ts` |
 | `src/utils/handlePromptSubmit.ts` | 把用户输入转换成待提交消息，收口输入清空、处理中提示与共享中断控制器创建 | `src/screens/REPL.tsx`、`src/query.ts` |
 | `src/query.ts` | 代理主循环、模型调用、工具分支与终止判断 | `src/query/deps.ts`、`src/services/tools/` |
-| `src/tools.ts` | 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules | `src/Tool.ts`、`src/utils/permissions/`、`src/tools/GlobTool/` |
-| `src/tools/GlobTool/GlobTool.ts` | 首个真实工具：文件名模式匹配，完整实现 buildTool 工厂模式 | `src/utils/glob.ts`、`src/utils/path.ts` |
+| `src/tools.ts` | 工具注册机制：getAllBaseTools/getTools/assembleToolPool/filterToolsByDenyRules | `src/Tool.ts`、`src/utils/permissions/`、`src/tools/` |
+| `src/tools/GlobTool/GlobTool.ts` | GlobTool：文件名模式匹配，buildTool 工厂模式 | `src/utils/glob.ts`、`src/utils/path.ts` |
+| `src/tools/BashTool/BashTool.ts` | BashTool：命令执行主链路，命令分类体系 | `src/utils/Shell.ts`、`src/tools/BashTool/commandSemantics.ts` |
+| `src/tools/FileEditTool/FileEditTool.ts` | FileEditTool：精确字符串替换，引号规范化，防冲突 | `src/tools/FileEditTool/utils.ts`、`src/utils/diff.ts` |
+| `src/tools/FileWriteTool/FileWriteTool.ts` | FileWriteTool：全量文件写入，行尾策略 | `src/utils/fileRead.ts`、`src/utils/diff.ts` |
 | `src/tools/GlobTool/prompt.ts` | GlobTool 名称与描述常量 | `src/tools/GlobTool/GlobTool.ts` |
 | `src/constants/tools.ts` | 工具名称常量、代理禁用列表、异步代理允许列表 | `src/tools.ts` |
 | `src/services/api/` | 模型请求归一化、Anthropic 客户端与最小 API 适配 | `src/services/api/claude.ts` |
@@ -179,7 +202,15 @@ mindmap
       ToolUseContext
       串行与并发批次
       tool_result 回灌
-      GlobTool 首个真实实现
+      GlobTool 文件搜索
+      FileReadTool 文件读取
+      FileEditTool 精确编辑
+      FileWriteTool 全量写入
+      BashTool 命令执行
+    Shell 引擎
+      exec 执行入口
+      ShellCommand 生命周期
+      命令语义解析
     工具函数
       路径展开与相对化
       当前工作目录管理
@@ -209,10 +240,10 @@ mindmap
 
 - 已实现的是最小主链路，不是完整 Claude Code 全量能力
 - `query.ts` 保留了大量 TODO，占位于压缩、token budget、stop hooks、fallback 等增强能力
-- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，GlobTool 已完成首个真实工具实现，`runToolUse()` 已升级为完整 5 步执行链路
+- 工具系统已具备类型边界、批次调度、结果回传框架和注册机制，GlobTool/FileReadTool/FileEditTool/FileWriteTool/BashTool 已完成真实工具实现，Shell 命令执行引擎已落地，`runToolUse()` 已升级为完整 5 步执行链路
 - 工具函数层已实现路径处理、错误判断、文件操作抽象等基础设施
 - glob 搜索当前为简化实现（Node.js fs 递归），待 ripgrep 集成后替换
-- 权限系统已具备类型定义、规则提取、字符串解析、工具匹配和文件系统权限检查
+- 权限系统已具备类型定义、规则提取、字符串解析、工具匹配、文件系统权限检查（读取+写入）
 - `App.tsx`、`query/transitions.ts`、`constants/querySource.ts`、`types/tools.ts` 仍以占位实现为主
 - 文档结论只以当前仓库源码为准，不把目标仓库里尚未复刻的能力写进现状
 

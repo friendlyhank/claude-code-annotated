@@ -1,4 +1,4 @@
-- 最新已处理提交：`b795a87ec6f4b25e19bd04b8003ac5a190df6be8`
+- 最新已处理提交：`323abc84368a707a0f4e17e47b72a43086062309`
 
 1. 架构设计和核心流程
  - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -62,6 +62,35 @@
      - 文件未变更去重：mtimeMs 比对 + offset/limit 匹配，返回 file_unchanged 节省 token
      - 多媒体扩展预留：image/notebook/pdf 输出 schema 已定义，实现为 TODO
      - macOS 截图薄空格处理、二进制文件安全风险提示、语义数字预处理
+ - 4.4 Edit 工具实现
+     - 文档：`notes/reviews/04-04-edit-tool-implementation.md`
+     - FileEditTool 完整实现：精确字符串替换（old_string → new_string）
+     - 验证链（10 步）：相同内容拒绝 → deny 规则 → UNC 安全 → 文件大小限制 → 文件存在性 → 先读后写 → 修改时间检查 → 引号规范化查找 → 多匹配检测
+     - 执行链：加载文件 → 确认未修改 → 引号规范化匹配 → 弯引号风格保持 → 生成 patch → 写入磁盘 → 更新读取时间戳
+     - 编辑工具函数集：引号规范化、弯引号风格保持、精确字符串查找、编辑应用（删除智能尾部换行）、patch 生成、snippet 生成、反净化处理、输入规范化、编辑等价性判断
+     - diff 工具函数：getPatchForDisplay 展示用 patch 生成、&/$ 转义处理
+     - 先读后写原则 + 修改时间防冲突（mtimeMs 比对 + 内容比较兜底）
+     - 当前局限：fileHistory 备份撤销、LSP 通知、VSCode 集成、日志事件待补齐
+ - 4.5 Write 工具实现
+     - 文档：`notes/reviews/04-05-write-tool-implementation.md`
+     - FileWriteTool 完整实现：全量文件写入（创建/覆盖）
+     - 验证链：deny 规则 → UNC 安全 → 文件存在性 → 先读后写 → 修改时间检查
+     - 执行链：确保父目录 → 同步加载文件 → 确认未修改 → 写入磁盘（始终 LF 行尾）→ 更新读取时间戳
+     - 行尾策略：模型发送的 content 包含明确行尾，不保留旧文件行尾风格（避免跨平台损坏）
+     - 输出区分 create/update：新文件返回空 structuredPatch，已有文件生成 diff patch
+     - 当前局限：fileHistory 备份撤销、LSP 通知、VSCode 集成、日志事件待补齐
+ - 4.6 Bash 工具实现
+     - 文档：`notes/reviews/04-06-bash-tool-implementation.md`
+     - BashTool 完整实现：buildTool 工厂落地、lazySchema 延迟构建、命令分类体系
+     - 命令分类：搜索类/读取类/列表类/静默类/中性类，用于只读判断和 UI 折叠显示
+     - 执行主链路：exec 调用 → ShellCommand 执行 → interpretCommandResult 退出码解释 → CWD 恢复检查
+     - 命令语义解析：grep/rg/find/diff/test/[ 的非零退出码解释（非匹配 ≠ 错误）
+     - 输出处理：空行清除、退出码追加、中断标记、结果映射
+     - 并发安全：只读命令（搜索/读取/列表）可并发，其他串行
+     - 后台任务：run_in_background 字段（受 CLAUDE_CODE_DISABLE_BACKGROUND_TASKS 控制）
+     - Shell 执行引擎：exec 命令执行入口、findSuitableShell 查找可用 shell、getShellConfig 缓存配置
+     - ShellCommand 命令生命周期：spawn 包装、stdout/stderr 收集、退出码处理、中断信号响应、超时控制、进程组 kill
+     - 当前局限：sandbox 集成、完整权限检查、PowerShell 支持、输出持久化待补齐
 
 5. 模型调用与 Anthropic API 适配
  - 文档：`notes/reviews/05-api-client-layer.md`
@@ -103,7 +132,8 @@
  - 权限更新支持规则增删替换、模式设置、目录增删 6 种操作
  - 规则提取与工具匹配：获取允许/拒绝/询问规则、工具匹配规则、按工具获取对应规则
  - 规则字符串解析：值解析/序列化、内容转义/反转义、旧工具名别名映射
- - 文件系统权限检查：为只读工具提供统一权限入口
+ - 文件系统权限检查：为只读/写入工具提供统一权限入口（checkReadPermissionForTool、checkWritePermissionForTool、matchingRuleForInput）
+ - 写入权限检查：deny 规则优先 → 内部可编辑路径 → 安全路径 → 无匹配则 ask（当前简化实现默认允许）
  - 通配符模式匹配：支持权限规则中的 `*` 通配符
  - 规则来源定义 8 种遍历顺序：用户设置 → 项目设置 → 本地设置 → 标志设置 → 策略设置 → CLI 参数 → 命令 → 会话
  - MCP 权限匹配支持服务器级规则：规则 "mcp__server" 匹配该服务器所有工具，通配符 "mcp__server__*" 同效

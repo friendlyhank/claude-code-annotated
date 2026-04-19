@@ -251,11 +251,13 @@ BashOutputTool → TaskOutput
 | `unescapeRuleContent(content)` | `permissionRuleParser.ts` | 反转义规则内容 |
 | `normalizeLegacyToolName(name)` | `permissionRuleParser.ts` | 旧工具名规范化 |
 | `checkReadPermissionForTool(tool, input, context)` | `filesystem.ts` | 只读工具统一权限检查入口 |
+| `checkWritePermissionForTool(tool, input, context)` | `filesystem.ts` | 写入工具统一权限检查入口 |
+| `matchingRuleForInput(input, context, accessType, ruleType)` | `filesystem.ts` | 匹配输入的权限规则（deny/allow） |
 | `matchWildcardPattern(rulePattern, input)` | `shellRuleMatching.ts` | 通配符模式匹配（支持 `*`） |
 
 ## 文件系统权限检查
 
-`src/utils/permissions/filesystem.ts` 提供只读工具的统一权限检查入口。
+`src/utils/permissions/filesystem.ts` 为文件操作工具提供统一权限检查入口，当前包含读取和写入两个检查函数。
 
 ### checkReadPermissionForTool
 
@@ -280,6 +282,55 @@ BashOutputTool → TaskOutput
 - 只读工具（Glob、Grep、Read）统一使用此入口
 - 与 `Tool.checkPermissions()` 配合，形成完整权限链路
 - 为后续目录白名单、拒绝规则检查预留扩展点
+
+### checkWritePermissionForTool
+
+```text
+输入：
+  - tool: Pick<Tool, 'name' | 'mcpInfo'> & { getPath?(input): string }  // 含路径提取的工具
+  - input: Record<string, unknown>           // 工具输入参数
+  - context: ToolPermissionContext           // 权限上下文
+
+输出：
+  - PermissionDecision { behavior, message? }
+```
+
+**当前实现**：
+1. 工具无 `getPath` 函数 → 返回 `{ behavior: 'ask' }`（无法确定路径，需用户确认）
+2. 有 `getPath` 函数 → 默认返回 `{ behavior: 'allow' }`
+
+**完整实现路径**（TODO）：
+1. 检查 `deny rules` — `matchingRuleForInput(path, context, 'edit', 'deny')` 命中则拒绝
+2. 检查 `checkEditableInternalPath` — 内部可编辑路径（plan 文件、scratchpad）
+3. 检查 `isDangerousFilePathToAutoEdit` — 安全路径（.claude 目录等）
+4. 无匹配规则时返回 `{ behavior: 'ask' }`
+
+**设计意图**：
+- 写入工具（Edit、Write）统一使用此入口
+- deny 规则优先，确保显式拒绝始终生效
+- 内部路径和安全路径的自动允许避免频繁弹确认
+- `getPath` 前置检查防止无路径信息的工具绕过权限
+
+### matchingRuleForInput
+
+```text
+输入：
+  - input: string                             // 待检查的输入（通常是文件路径）
+  - permissionContext: ToolPermissionContext   // 权限上下文
+  - accessType: 'read' | 'write' | 'edit'     // 访问类型
+  - ruleType: 'allow' | 'deny'                // 规则类型
+
+输出：
+  - PermissionRule | null                      // 匹配的规则，或 null
+```
+
+**当前实现**：简化版，始终返回 `null`（无匹配规则）
+
+**完整实现路径**（TODO）：遍历权限规则做模式匹配，结合 `preparePermissionMatcher` 的通配符匹配
+
+**使用方**：
+- `FileEditTool.validateInput` — 检查写入 deny 规则
+- `FileWriteTool.validateInput` — 检查编辑 deny 规则
 
 ## 通配符模式匹配
 
