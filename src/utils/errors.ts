@@ -24,3 +24,31 @@ export function getErrnoCode(e: unknown): string | undefined {
 export function isENOENT(e: unknown): boolean {
   return getErrnoCode(e) === 'ENOENT'
 }
+
+/**
+ * Shell 命令执行错误
+ * 对齐上游实现：按 claude-code/src/utils/errors.ts ShellError 原样复刻
+ * 设计原因：区分 Shell 执行错误与其他错误，携带退出码和中断状态
+ */
+export class ShellError extends Error {
+  constructor(
+    message: string,
+    public readonly stderr: string,
+    public readonly code: number | null,
+    public readonly interrupted: boolean,
+  ) {
+    super(message)
+    this.name = 'ShellError'
+  }
+}
+
+/**
+ * 从未知错误中提取可读错误消息
+ * 对齐上游：errorMessage() 工具函数
+ */
+export function errorMessage(e: unknown): string {
+  if (e instanceof Error) {
+    return e.message
+  }
+  return String(e)
+}

@@ -20,10 +20,12 @@
 
 ### 任务 3：BashTool 核心实现（优先级：high）
 
-- **状态**：`planned`
+- **状态**：`doing`
 - **源码位置**：`claude-code/src/tools/BashTool/BashTool.tsx`
 - **完成标准**：能执行简单 bash 命令并返回结果
 - **验证方式**：输入 `command: "echo hello"`，输出 "hello"
+- **当前进度**：简单版已实现（call 主链路 + exec + ShellCommand），16% 覆盖率
+- **待补齐**：权限检查、后台任务、sandbox、sed 编辑、UI 渲染
 
 ### 任务 4：ripgrep 集成（优先级：high）
 

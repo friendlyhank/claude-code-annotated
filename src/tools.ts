@@ -12,6 +12,7 @@
  */
 
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
+import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
@@ -110,13 +111,11 @@ export function getAllBaseTools(): Tools {
     createPlaceholderTool('Agent', 'Launch a sub-agent to handle complex tasks'),
     // TODO: TaskOutputTool - 替换为 tools/TaskOutputTool/TaskOutputTool.ts
     createPlaceholderTool('TaskOutput', 'Get output from a background task'),
-    // TODO: BashTool - 替换为 tools/BashTool/BashTool.ts
-    createPlaceholderTool('Bash', 'Execute a bash command'),
+    BashTool,
     // 对齐上游实现：嵌入式搜索工具可用时，不需要独立 Glob/Grep 工具
     ...(hasEmbeddedSearchTools()
       ? []
       : [
-          // 对齐上游实现：GlobTool 已从占位替换为真实实现
           GlobTool,
           // TODO: GrepTool - 替换为 tools/GrepTool/GrepTool.ts
           createPlaceholderTool('Grep', 'Search file contents with regex'),

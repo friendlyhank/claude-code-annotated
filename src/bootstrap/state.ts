@@ -14,12 +14,12 @@
 // ========================================
 
 type State = {
-  originalCwd: string
-  cwd: string
-  isInteractive: boolean
-  clientType: string
-  sessionSource: string | undefined
-  startTime: number
+  originalCwd: string // 会话启动时的初始目录，用作稳定的项目锚点，在特定场景下会被更新。
+  cwd: string // 当前工作目录，会随用户操作（如 cd）随时变化。
+  isInteractive: boolean // 是否为交互式会话
+  clientType: string // 客户端类型，如 'cli' 或 'web'
+  sessionSource: string | undefined // 会话来源，如 'cli' 或 'web'，根据客户端类型自动设置
+  startTime: number // 会话开始时间（毫秒）
 }
 
 // ========================================
