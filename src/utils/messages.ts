@@ -235,6 +235,67 @@ export function handleMessageFromStream(
 }
 
 /**
+ * Check if a block is a thinking block. 判断是否为思考块
+ */
+function isThinkingBlock(block: { type: string }): boolean {
+  return block.type === 'thinking' || block.type === 'redacted_thinking'
+}
+
+/**
+ * Filter trailing thinking blocks from the last message if it's an assistant message.
+ * The API doesn't allow assistant messages to end with thinking/redacted_thinking blocks.
+ */
+// 过滤最后一条 assistant 消息尾部尾部 thinking blocks
+function filterTrailingThinkingFromLastAssistant(
+  messages: (UserMessage | AssistantMessage)[],
+): (UserMessage | AssistantMessage)[] {
+  const lastMessage = messages.at(-1)
+  // 如果最后一条消息不是 assistant 消息，直接返回么，不允许最后一条消息是 thinking blocks
+  if (!lastMessage || lastMessage.type !== 'assistant') {
+     // Last message is not assistant, nothing to filter
+    return messages
+  }
+
+  const content = lastMessage.message?.content
+  // 如果最后一条消息内容不是数组，直接返回, thinking blocks只存在于数组中
+  if (!Array.isArray(content)) return messages
+  // Content中获取最后一个Block
+  const lastBlock = content.at(-1)
+  if (!lastBlock || typeof lastBlock === 'string' || !isThinkingBlock(lastBlock)) {
+    return messages
+  }
+
+  // Find last non-thinking block
+  let lastValidIndex = content.length - 1
+  // 从后往前遍历，找到第一个不是思考块的块
+  while (lastValidIndex >= 0) {
+    const block = content[lastValidIndex]
+    if (!block || typeof block === 'string' || !isThinkingBlock(block)) {
+      break
+    }
+    lastValidIndex--
+  }
+
+  // Insert placeholder if all blocks were thinking
+  // 如果lastValidIndex小于0，说明所有块都是思考块，直接插入占位符No message content
+  // 否则，从数组开头到lastValidIndex+1的块
+  const filteredContent =
+    lastValidIndex < 0
+      ? [{ type: 'text' as const, text: '[No message content]', citations: [] }]
+      : content.slice(0, lastValidIndex + 1)
+
+  const result = [...messages]
+  result[messages.length - 1] = {
+    ...lastMessage,
+    message: {
+      ...lastMessage.message,
+      content: filteredContent,
+    },
+  }
+  return result
+}
+
+/**
  * Ensure all non-final assistant messages have non-empty content.
  *
  * The API requires "all messages must have non-empty content except for the
@@ -247,6 +308,7 @@ export function handleMessageFromStream(
  * Note: Whitespace-only text content is handled separately by filterWhitespaceOnlyAssistantMessages.
  */
 // 确保所有非最后一条 assistant 消息有非空 content
+// 设计原因：Anthropic API 允许最后一条 assistant 消息为空（用于 prefill）
 function ensureNonEmptyAssistantContent(
   messages: (UserMessage | AssistantMessage)[],
 ): (UserMessage | AssistantMessage)[] {
@@ -289,7 +351,6 @@ function ensureNonEmptyAssistantContent(
 
 // ============================================================================
 // normalizeMessagesForAPI
-// 对齐上游实现：按 claude-code/src/utils/messages.ts:2008 原样复刻
 // 设计原因：将消息归一化为符合 Anthropic API 要求的格式
 
 export function normalizeMessagesForAPI(
@@ -327,8 +388,9 @@ export function normalizeMessagesForAPI(
     }
   }
 
-  // 对齐上游实现：调用 ensureNonEmptyAssistantContent
-  return ensureNonEmptyAssistantContent(result)
+  // 对齐上游实现：先过滤尾部 thinking blocks，再确保非空 content
+  const withFilteredThinking = filterTrailingThinkingFromLastAssistant(result)
+  return ensureNonEmptyAssistantContent(withFilteredThinking)
 }
 
 // ============================================================================
