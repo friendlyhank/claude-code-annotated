@@ -28,6 +28,7 @@ import type {
   Message,
   StreamEvent,
   SystemAPIErrorMessage,
+  UserMessage,
 } from '../../types/message.js'
 import type { SystemPrompt } from '../../utils/systemPromptType.js'
 import {
@@ -54,6 +55,36 @@ type Options = {
 type MutableUsage = Partial<BetaUsage> & {
   input_tokens: number
   output_tokens: number
+}
+
+// ============================================================================
+// 辅助函数：消息转换为 API 格式
+// 对齐上游实现：按 claude-code/src/services/api/claude.ts:575-661 原样复刻
+
+function userMessageToMessageParam(message: UserMessage): MessageParam {
+  const content = message.message?.content
+  return {
+    role: 'user',
+    content: Array.isArray(content)
+      ? [...content]
+      : content ?? '',
+  }
+}
+
+function assistantMessageToMessageParam(message: AssistantMessage): MessageParam {
+  return {
+    role: 'assistant',
+    content: message.message?.content ?? [],
+  }
+}
+
+function messagesToApiFormat(messages: (UserMessage | AssistantMessage)[]): MessageParam[] {
+  return messages.map(msg => {
+    if (msg.type === 'user') {
+      return userMessageToMessageParam(msg)
+    }
+    return assistantMessageToMessageParam(msg)
+  })
 }
 
 // ============================================================================
@@ -215,7 +246,7 @@ export async function* queryModelWithStreaming({
   const params = {
     model: options.model,
     max_tokens: maxOutputTokens,
-    messages: normalizeMessagesForAPI(messages), // 归一化消息格式
+    messages: messagesToApiFormat(normalizeMessagesForAPI(messages)), // 归一化消息格式
     ...(systemPrompt.length > 0
       ? {
           system: systemPrompt.join('\n\n'),

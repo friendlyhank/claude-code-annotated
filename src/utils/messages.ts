@@ -2,13 +2,14 @@ import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages
 import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ThinkingBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { ContentBlock } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
-import type { BetaMessageParam as MessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
   Message,
   RequestStartEvent,
   StreamEvent,
   TombstoneMessage,
   ToolUseSummaryMessage,
+  UserMessage,
+  AssistantMessage,
 } from '../types/message.js'
 import type { SpinnerMode } from '../components/Spinner/types.js'
 import type { Tools } from '../Tool.js'
@@ -234,6 +235,61 @@ export function handleMessageFromStream(
 }
 
 // ============================================================================
+// ensureNonEmptyAssistantContent
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:4973-5017 原样复刻
+// 设计原因：确保所有非最后一条 assistant 消息有非空 content
+
+/**
+ * Ensure all non-final assistant messages have non-empty content.
+ *
+ * The API requires "all messages must have non-empty content except for the
+ * optional final assistant message". This can happen when the model returns
+ * an empty content array.
+ *
+ * For non-final assistant messages with empty content, we insert a placeholder.
+ * The final assistant message is left as-is since it's allowed to be empty (for prefill).
+ */
+function ensureNonEmptyAssistantContent(
+  messages: (UserMessage | AssistantMessage)[],
+): (UserMessage | AssistantMessage)[] {
+  if (messages.length === 0) {
+    return messages
+  }
+
+  let hasChanges = false
+  const result = messages.map((message, index) => {
+    // Skip non-assistant messages
+    if (message.type !== 'assistant') {
+      return message
+    }
+
+    // Skip the final message (allowed to be empty for prefill)
+    if (index === messages.length - 1) {
+      return message
+    }
+
+    // Check if content is empty
+    const content = message.message?.content
+    if (Array.isArray(content) && content.length === 0) {
+      hasChanges = true
+      return {
+        ...message,
+        message: {
+          ...message.message,
+          content: [
+            { type: 'text' as const, text: NO_CONTENT_MESSAGE, citations: [] },
+          ],
+        },
+      }
+    }
+
+    return message
+  })
+
+  return hasChanges ? result : messages
+}
+
+// ============================================================================
 // normalizeMessagesForAPI
 // 对齐上游实现：按 claude-code/src/utils/messages.ts:2008 原样复刻
 // 设计原因：将消息归一化为符合 Anthropic API 要求的格式
@@ -241,69 +297,44 @@ export function handleMessageFromStream(
 export function normalizeMessagesForAPI(
   messages: Message[],
   _tools: Tools = [],
-): MessageParam[] {
-  const result: MessageParam[] = []
+): (UserMessage | AssistantMessage)[] {
+  const result: (UserMessage | AssistantMessage)[] = []
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i]
 
     // 只处理 user 和 assistant 角色
-    let role: 'user' | 'assistant' | null = null
-    if (message.message?.role === 'user' || message.type === 'user') {
-      role = 'user'
-    } else if (message.message?.role === 'assistant' || message.type === 'assistant') {
-      role = 'assistant'
-    }
-    if (!role) {
-      continue
-    }
-
-    // 取出消息正文
-    const content = message.message?.content
-
-    if (typeof content === 'string') {
-      result.push({ role, content })
-      continue
-    }
-
-    if (Array.isArray(content)) {
-      result.push({
-        role,
-        content: content as MessageParam['content'],
-      })
-      continue
-    }
-
-    // content 不存在的情况
-    // 对齐上游实现：assistant 消息默认空数组，后续 ensureNonEmptyAssistantContent 处理
-    if (role === 'assistant') {
-      result.push({
-        role,
-        content: [],
-      })
-    }
-    // user 消息没有 content 则跳过
-  }
-
-  // 对齐上游实现：ensureNonEmptyAssistantContent 逻辑
-  // 参考 src/utils/messages.ts:4973-5017
-  // 非最后一条 assistant 消息的空 content 填充占位文本
-  if (result.length > 0) {
-    for (let i = 0; i < result.length - 1; i++) {
-      const msg = result[i]
-      if (msg.role === 'assistant') {
-        const content = msg.content
-        if (Array.isArray(content) && content.length === 0) {
-          result[i] = {
-            role: 'assistant',
-            content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
-          }
-        }
+    if (message.type === 'user') {
+      // content 处理：确保 user 消息有 content
+      const content = message.message?.content
+      if (content === undefined || content === null) {
+        continue
       }
+      result.push(message as UserMessage)
+      continue
+    }
+
+    if (message.type === 'assistant') {
+      // content 处理：assistant 消息默认空数组
+      const content = message.message?.content
+      if (content === undefined || content === null) {
+        // 对齐上游实现：assistant 消息无 content 时设为空数组
+        result.push({
+          ...message,
+          message: {
+            ...message.message,
+            content: [],
+          },
+        } as AssistantMessage)
+      } else {
+        result.push(message as AssistantMessage)
+      }
+      continue
     }
   }
 
-  return result
+  // 对齐上游实现：调用 ensureNonEmptyAssistantContent
+  return ensureNonEmptyAssistantContent(result)
 }
 
 // ============================================================================
