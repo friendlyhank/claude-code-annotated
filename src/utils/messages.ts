@@ -264,15 +264,33 @@ export function normalizeMessagesForAPI(
     // 对齐上游实现：确保 assistant 消息有非空 content
     // 参考 src/utils/messages.ts:4973-5017 ensureNonEmptyAssistantContent
     if (role === 'assistant') {
-      // 最后一条消息允许为空（用于 prefill）
+      // 最后一条消息允许为空（用于 prefill），但需要有 content 字段
       const isLastMessage = i === messages.length - 1
 
-      if (Array.isArray(content) && content.length === 0 && !isLastMessage) {
-        // 空内容的 assistant 消息填充占位文本
+      // content 不存在或为空数组的情况
+      if (content === undefined || content === null) {
+        // content 不存在，填充占位文本
         result.push({
           role,
           content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
         })
+        continue
+      }
+
+      if (Array.isArray(content) && content.length === 0) {
+        if (isLastMessage) {
+          // 最后一条消息允许空数组（用于 prefill）
+          result.push({
+            role,
+            content: [],
+          })
+        } else {
+          // 非最后一条消息，填充占位文本
+          result.push({
+            role,
+            content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
+          })
+        }
         continue
       }
     }
@@ -290,14 +308,8 @@ export function normalizeMessagesForAPI(
       continue
     }
 
-    // content 不存在的情况
-    if (role === 'assistant') {
-      // assistant 消息必须有 content
-      result.push({
-        role,
-        content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
-      })
-    }
+    // content 不存在且不是 assistant 的情况，跳过
+    // （user 消息必须有 content，如果没有则跳过）
   }
 
   return result
