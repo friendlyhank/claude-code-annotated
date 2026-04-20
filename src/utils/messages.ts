@@ -2,6 +2,7 @@ import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages
 import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ThinkingBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { ContentBlock } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
+import type { BetaMessageParam as MessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
   Message,
   RequestStartEvent,
@@ -18,6 +19,8 @@ import { normalizeToolInput } from './api.js'
 // 对齐上游实现：按 claude-code/src/utils/messages.ts:155
 import { safeParseJSON } from './json.js'
 import { findToolByName } from '../Tool.js'
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:25
+import { NO_CONTENT_MESSAGE } from '../constants/messages.js'
 
 // 流式工具调用 - 用于表示模型在流式输出中调用的工具
 export type StreamingToolUse = {
@@ -228,6 +231,76 @@ export function handleMessageFromStream(
       onSetStreamMode('responding')
       return
   }
+}
+
+// ============================================================================
+// normalizeMessagesForAPI
+// 对齐上游实现：按 claude-code/src/utils/messages.ts:2008 原样复刻
+// 设计原因：将消息归一化为符合 Anthropic API 要求的格式
+
+export function normalizeMessagesForAPI(
+  messages: Message[],
+  _tools: Tools = [],
+): MessageParam[] {
+  const result: MessageParam[] = []
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i]
+
+    // 只处理 user 和 assistant 角色
+    let role: 'user' | 'assistant' | null = null
+    if (message.message?.role === 'user' || message.type === 'user') {
+      role = 'user'
+    } else if (message.message?.role === 'assistant' || message.type === 'assistant') {
+      role = 'assistant'
+    }
+    if (!role) {
+      continue
+    }
+
+    // 取出消息正文
+    const content = message.message?.content
+
+    // 对齐上游实现：确保 assistant 消息有非空 content
+    // 参考 src/utils/messages.ts:4973-5017 ensureNonEmptyAssistantContent
+    if (role === 'assistant') {
+      // 最后一条消息允许为空（用于 prefill）
+      const isLastMessage = i === messages.length - 1
+
+      if (Array.isArray(content) && content.length === 0 && !isLastMessage) {
+        // 空内容的 assistant 消息填充占位文本
+        result.push({
+          role,
+          content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
+        })
+        continue
+      }
+    }
+
+    if (typeof content === 'string') {
+      result.push({ role, content })
+      continue
+    }
+
+    if (Array.isArray(content)) {
+      result.push({
+        role,
+        content: content as MessageParam['content'],
+      })
+      continue
+    }
+
+    // content 不存在的情况
+    if (role === 'assistant') {
+      // assistant 消息必须有 content
+      result.push({
+        role,
+        content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
+      })
+    }
+  }
+
+  return result
 }
 
 // ============================================================================

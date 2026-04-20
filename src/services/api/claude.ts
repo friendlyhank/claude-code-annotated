@@ -30,8 +30,10 @@ import type {
   SystemAPIErrorMessage,
 } from '../../types/message.js'
 import type { SystemPrompt } from '../../utils/systemPromptType.js'
-// 对齐上游实现：按 claude-code/src/services/api/claude.ts:80 从 messages.ts 导入
-import { normalizeContentFromAPI } from '../../utils/messages.js'
+import {
+  normalizeContentFromAPI,
+  normalizeMessagesForAPI,
+} from '../../utils/messages.js'
 
 // ============================================================================
 // 类型定义
@@ -52,56 +54,6 @@ type Options = {
 type MutableUsage = Partial<BetaUsage> & {
   input_tokens: number
   output_tokens: number
-}
-
-// ============================================================================
-// 辅助函数：消息角色归一化
-// 对齐上游实现：按源码原样复刻
-
-// 将消息角色归一化以符合 Anthropic API 要求
-function normalizeMessageRole(message: Message): 'user' | 'assistant' | null {
-  if (message.message?.role === 'user' || message.type === 'user') {
-    return 'user'
-  }
-
-  if (message.message?.role === 'assistant' || message.type === 'assistant') {
-    return 'assistant'
-  }
-
-  return null
-}
-
-// ============================================================================
-// 辅助函数：消息归一化
-// 对齐上游实现：按源码原样复刻
-
-// 将消息归一化为符合 Anthropic API 要求的格式
-function normalizeMessagesForApi(messages: Message[]): MessageParam[] {
-  // 遍历消息数组中的每个元素，过滤无效消息并合并为新的 API 消息数组
-  return messages.flatMap(message => {
-    // 只处理 user 和 assistant 角色
-    const role = normalizeMessageRole(message)
-    if (!role) {
-      return []
-    }
-
-    // 取出消息正文
-    const content = message.message?.content
-    if (typeof content === 'string') {
-      return [{ role, content }]
-    }
-
-    if (Array.isArray(content)) {
-      return [
-        {
-          role,
-          content: content as MessageParam['content'],
-        },
-      ]
-    }
-
-    return []
-  })
 }
 
 // ============================================================================
@@ -263,7 +215,7 @@ export async function* queryModelWithStreaming({
   const params = {
     model: options.model,
     max_tokens: maxOutputTokens,
-    messages: normalizeMessagesForApi(messages), // 归一化消息格式
+    messages: normalizeMessagesForAPI(messages), // 归一化消息格式
     ...(systemPrompt.length > 0
       ? {
           system: systemPrompt.join('\n\n'),
