@@ -234,11 +234,6 @@ export function handleMessageFromStream(
   }
 }
 
-// ============================================================================
-// ensureNonEmptyAssistantContent
-// 对齐上游实现：按 claude-code/src/utils/messages.ts:4973-5017 原样复刻
-// 设计原因：确保所有非最后一条 assistant 消息有非空 content
-
 /**
  * Ensure all non-final assistant messages have non-empty content.
  *
@@ -248,7 +243,10 @@ export function handleMessageFromStream(
  *
  * For non-final assistant messages with empty content, we insert a placeholder.
  * The final assistant message is left as-is since it's allowed to be empty (for prefill).
+ *
+ * Note: Whitespace-only text content is handled separately by filterWhitespaceOnlyAssistantMessages.
  */
+// 确保所有非最后一条 assistant 消息有非空 content
 function ensureNonEmptyAssistantContent(
   messages: (UserMessage | AssistantMessage)[],
 ): (UserMessage | AssistantMessage)[] {

@@ -86,7 +86,6 @@ export function assistantMessageToMessageParam(
   }
 }
 
-// 对齐上游实现：按 claude-code/src/services/api/claude.ts:3059 原样复刻
 export function addCacheBreakpoints(
   messages: (UserMessage | AssistantMessage)[],
   _enablePromptCaching = false,
