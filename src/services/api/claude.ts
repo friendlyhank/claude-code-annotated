@@ -61,7 +61,11 @@ type MutableUsage = Partial<BetaUsage> & {
 // 辅助函数：消息转换为 API 格式
 // 对齐上游实现：按 claude-code/src/services/api/claude.ts:575-661 原样复刻
 
-function userMessageToMessageParam(message: UserMessage): MessageParam {
+export function userMessageToMessageParam(
+  message: UserMessage,
+  _addCache = false,
+  _enablePromptCaching = false,
+): MessageParam {
   const content = message.message?.content
   return {
     role: 'user',
@@ -71,14 +75,22 @@ function userMessageToMessageParam(message: UserMessage): MessageParam {
   }
 }
 
-function assistantMessageToMessageParam(message: AssistantMessage): MessageParam {
+export function assistantMessageToMessageParam(
+  message: AssistantMessage,
+  _addCache = false,
+  _enablePromptCaching = false,
+): MessageParam {
   return {
     role: 'assistant',
     content: message.message?.content ?? [],
   }
 }
 
-function messagesToApiFormat(messages: (UserMessage | AssistantMessage)[]): MessageParam[] {
+// 对齐上游实现：按 claude-code/src/services/api/claude.ts:3059 原样复刻
+export function addCacheBreakpoints(
+  messages: (UserMessage | AssistantMessage)[],
+  _enablePromptCaching = false,
+): MessageParam[] {
   return messages.map(msg => {
     if (msg.type === 'user') {
       return userMessageToMessageParam(msg)
@@ -246,7 +258,7 @@ export async function* queryModelWithStreaming({
   const params = {
     model: options.model,
     max_tokens: maxOutputTokens,
-    messages: messagesToApiFormat(normalizeMessagesForAPI(messages)), // 归一化消息格式
+    messages: addCacheBreakpoints(normalizeMessagesForAPI(messages)), // 归一化消息格式
     ...(systemPrompt.length > 0
       ? {
           system: systemPrompt.join('\n\n'),
