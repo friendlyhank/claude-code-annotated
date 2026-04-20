@@ -261,40 +261,6 @@ export function normalizeMessagesForAPI(
     // 取出消息正文
     const content = message.message?.content
 
-    // 对齐上游实现：确保 assistant 消息有非空 content
-    // 参考 src/utils/messages.ts:4973-5017 ensureNonEmptyAssistantContent
-    if (role === 'assistant') {
-      // 最后一条消息允许为空（用于 prefill），但需要有 content 字段
-      const isLastMessage = i === messages.length - 1
-
-      // content 不存在或为空数组的情况
-      if (content === undefined || content === null) {
-        // content 不存在，填充占位文本
-        result.push({
-          role,
-          content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
-        })
-        continue
-      }
-
-      if (Array.isArray(content) && content.length === 0) {
-        if (isLastMessage) {
-          // 最后一条消息允许空数组（用于 prefill）
-          result.push({
-            role,
-            content: [],
-          })
-        } else {
-          // 非最后一条消息，填充占位文本
-          result.push({
-            role,
-            content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
-          })
-        }
-        continue
-      }
-    }
-
     if (typeof content === 'string') {
       result.push({ role, content })
       continue
@@ -308,8 +274,33 @@ export function normalizeMessagesForAPI(
       continue
     }
 
-    // content 不存在且不是 assistant 的情况，跳过
-    // （user 消息必须有 content，如果没有则跳过）
+    // content 不存在的情况
+    // 对齐上游实现：assistant 消息默认空数组，后续 ensureNonEmptyAssistantContent 处理
+    if (role === 'assistant') {
+      result.push({
+        role,
+        content: [],
+      })
+    }
+    // user 消息没有 content 则跳过
+  }
+
+  // 对齐上游实现：ensureNonEmptyAssistantContent 逻辑
+  // 参考 src/utils/messages.ts:4973-5017
+  // 非最后一条 assistant 消息的空 content 填充占位文本
+  if (result.length > 0) {
+    for (let i = 0; i < result.length - 1; i++) {
+      const msg = result[i]
+      if (msg.role === 'assistant') {
+        const content = msg.content
+        if (Array.isArray(content) && content.length === 0) {
+          result[i] = {
+            role: 'assistant',
+            content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }],
+          }
+        }
+      }
+    }
   }
 
   return result
