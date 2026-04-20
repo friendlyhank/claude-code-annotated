@@ -82,7 +82,7 @@ export function assistantMessageToMessageParam(
 ): MessageParam {
   return {
     role: 'assistant',
-    content: message.message?.content ?? [],
+    content: message.message.content,
   }
 }
 

@@ -313,20 +313,16 @@ export function normalizeMessagesForAPI(
     }
 
     if (message.type === 'assistant') {
-      // content 处理：assistant 消息默认空数组
+      // 对齐上游实现：按 claude-code/src/utils/messages.ts:2226-2264 原样复刻
+      // 设计原因：确保 content 始终是数组，且是数组类型
       const content = message.message?.content
-      if (content === undefined || content === null) {
-        // 对齐上游实现：assistant 消息无 content 时设为空数组
-        result.push({
-          ...message,
-          message: {
-            ...message.message,
-            content: [],
-          },
-        } as AssistantMessage)
-      } else {
-        result.push(message as AssistantMessage)
-      }
+      result.push({
+        ...message,
+        message: {
+          ...message.message,
+          content: Array.isArray(content) ? content : [],
+        },
+      } as AssistantMessage)
       continue
     }
   }
