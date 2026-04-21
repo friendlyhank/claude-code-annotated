@@ -1,6 +1,6 @@
 # 复刻流水日志
 
-> 最后更新：2026-04-19
+> 最后更新：2026-04-21
 
 ## 已完成清单
 
@@ -26,6 +26,7 @@
 | toolExecution 核心链路 | 2026-04-16 | runToolUse 实现真正的工具调用：查找→校验→权限→call→映射 |
 | FileEditTool 实现 | 2026-04-19 | validateInput + call 主链路 + utils 全量；constants/types/prompt/utils/FileEditTool 5 文件 |
 | FileWriteTool 实现 | 2026-04-19 | validateInput + call 主链路；prompt/FileWriteTool 2 文件 + diff.ts/fileRead.ts 新建 |
+| 日志与调试系统 | 2026-04-21 | log.ts + debug.ts + debugFilter.ts + errorLogSink.ts + bufferedWriter.ts + sentry.ts 等 12 文件 |
 
 ## 知识点记录
 
@@ -90,6 +91,10 @@
 - safeResolvePath 安全路径解析（UNC 阻断、特殊文件类型检测、符号链接解析、ENOENT 容错）
 - diff.ts &/$ 转义模式（diff 库对 & 和 $ 解析错误，需要 token 替换后还原）
 - checkWritePermissionForTool 权限检查模式（deny 规则优先、内部可编辑路径检查、安全路径检查）
+- 结构化日志系统（分级 log/info/warn/error/debug + DEBUG 环境变量过滤）
+- 缓冲写入器模式（BufferedWriter 批量落盘 + 定时刷盘 + 进程退出保证）
+- 错误上报机制（Sentry 集成 + 本地落盘双写）
+- 清理注册表模式（cleanupRegistry 统一注册 process.on('exit') 钩子）
 
 ### 已识别/已建模（仅阅读源码，未实现）
 
@@ -140,6 +145,7 @@
 
 | 日期 | 进度变化 | 备注 |
 |---|---|---|
+| 2026-04-21 | 1.32% → 1.49% | 日志与调试系统完成：log.ts + debug.ts + debugFilter.ts + errorLogSink.ts + bufferedWriter.ts + sentry.ts 等 12 文件，Code=929 |
 | 2026-04-19 | 1.24% → 1.32% | FileWriteTool 完成：prompt.ts + FileWriteTool.ts + diff.ts + fileRead.ts；fsOperations 补充 safeResolvePath；filesystem 新增 checkWritePermissionForTool |
 | 2026-04-18 | 1.23% → 1.24% | FileEditTool 完成：constants/types/prompt/utils/FileEditTool 5 文件 + semanticBoolean.ts |
 | 2026-04-16 | 0.69% → 0.70% | API tools 参数传递修复：claude.ts toolsToApiFormat、query.ts tools 传递、REPL.tsx getTools()；完整 REPL → API → 工具执行链路验证通过 ✅ |

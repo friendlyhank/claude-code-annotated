@@ -1,14 +1,14 @@
 # 目标路径清单
 
-> 最后更新：2026-04-19
+> 最后更新：2026-04-21
 
 ## 总体进度
 
 | 指标 | 值 |
 |---|---:|
 | 目标文件代码数 | 537,782 |
-| 累计复刻目标文件代码数 | 7,098 |
-| 覆盖率 | **1.32%** |
+| 累计复刻目标文件代码数 | 8,027 |
+| 覆盖率 | **1.49%** |
 
 > 注：代码数使用 tokei 的 Code 列（排除注释和空行）
 
@@ -105,7 +105,24 @@
 |---|---:|---:|---:|
 | `src/services/api/claude.ts` | 3,416 | 467 | 14% |
 | `src/services/api/client.ts` | 255 | 29 | 11% |
+| `src/services/api/logging.ts` | ~130 | 103 | 79% |
 | `src/services/api/` (其他) | ~2,000 | 0 | 0% |
+
+### 日志与调试系统
+
+| 目标文件路径 | 目标文件代码数 | 已复刻 | 覆盖率 |
+|---|---:|---:|---:|
+| `src/utils/log.ts` | ~140 | 113 | 81% |
+| `src/utils/debug.ts` | ~240 | 196 | 82% |
+| `src/utils/debugFilter.ts` | ~120 | 96 | 80% |
+| `src/utils/errorLogSink.ts` | ~200 | 162 | 81% |
+| `src/utils/bufferedWriter.ts` | ~100 | 83 | 83% |
+| `src/utils/cachePaths.ts` | ~45 | 37 | 82% |
+| `src/utils/cleanupRegistry.ts` | ~20 | 15 | 75% |
+| `src/utils/process.ts` | ~65 | 51 | 78% |
+| `src/utils/sentry.ts` | ~120 | 98 | 82% |
+| `src/utils/sinks.ts` | ~20 | 15 | 75% |
+| `src/utils/slowOperations.ts` | ~25 | 21 | 84% |
 
 **阶段 2 小计**：~15,265 行目标
 
