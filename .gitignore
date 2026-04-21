@@ -6,3 +6,8 @@ node_modules
 .trae/
 .codebuddy/
 .opencode/
+
+# graphify cache
+graphify-out/cache/
+src/graphify-out/
+.graphify_*.json
