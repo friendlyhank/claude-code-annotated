@@ -3,7 +3,6 @@
 // ============================================================================
 // Claude 模型 API 调用层，负责与 Anthropic 模型交互。
 //
-// 对齐上游实现：按 claude-code/src/services/api/claude.ts 原样复刻
 // 设计原因：
 // 1. 使用 Beta API 的流式接口实现实时响应
 // 2. 逐块处理 message_start、content_block_*、message_delta 等事件
@@ -13,15 +12,23 @@ import { randomUUID, type UUID } from 'crypto'
 import type {
   BetaContentBlock, // 流式事件中的内容块
   BetaMessage, // 流式事件中的消息
-  BetaMessageDeltaUsage,// 流式事件中的使用统计
+  BetaMessageDeltaUsage, // 流式事件中的使用统计
   BetaRawMessageStreamEvent, // 流式事件中的原始消息
+  BetaStopReason, // 流式事件中的停止原因
   BetaToolUnion, // 流式事件中的工具调用
-  BetaUsage,  // 流式事件中的使用统计
+  BetaUsage, // 流式事件中的使用统计
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
 import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
 import Anthropic from '@anthropic-ai/sdk'
 import { getAnthropicClient } from './client.js'
+import {
+  EMPTY_USAGE,
+  logAPIError,
+  logAPIQuery,
+  logAPISuccessAndDuration,
+  type NonNullableUsage,
+} from './logging.js'
 import type { Tools } from '../../Tool.js'
 import type {
   AssistantMessage,
@@ -35,6 +42,8 @@ import {
   normalizeContentFromAPI,
   normalizeMessagesForAPI,
 } from '../../utils/messages.js'
+import { logForDebugging } from 'src/utils/debug.js'
+import type { QuerySource } from 'src/constants/querySource.js'
 
 // ============================================================================
 // 类型定义
@@ -43,6 +52,7 @@ import {
 type Options = {
   model: string
   isNonInteractiveSession: boolean // 是否为非交互式会话
+  querySource?: QuerySource
   [key: string]: unknown
 }
 
@@ -144,18 +154,6 @@ async function toolsToApiFormat(tools: Tools): Promise<BetaToolUnion[]> {
   return result
 }
 
-// ============================================================================
-// 辅助函数：Usage 累加
-// 对齐上游实现：按源码原样复刻
-
-const EMPTY_USAGE: MutableUsage = {
-  input_tokens: 0,
-  output_tokens: 0,
-}
-
-// 累加 usage 数据
-// 对齐上游实现：支持 BetaUsage 和 BetaMessageDeltaUsage 两种输入
-// 设计原因：message_start 使用 BetaUsage，message_delta 使用 BetaMessageDeltaUsage
 function updateUsage(
   current: MutableUsage,
   incoming: BetaUsage | BetaMessageDeltaUsage | undefined,
@@ -200,8 +198,6 @@ function toAssistantMessage(
 
 // ============================================================================
 // 主函数：流式查询
-// 对齐上游实现：按 claude-code/src/services/api/claude.ts:739-2500 原样复刻
-
 export async function* queryModelWithStreaming({
   messages,
   systemPrompt,
@@ -254,10 +250,13 @@ export async function* queryModelWithStreaming({
   // 边界处理：tools 为空数组时传递空数组，让模型知道没有工具可用
   const toolsForApi = tools ? await toolsToApiFormat(tools) : undefined
 
+  // 对齐上游实现：先归一化消息，再用于 params 和 logMessageCount
+  const messagesForAPI = normalizeMessagesForAPI(messages)
+
   const params = {
     model: options.model,
     max_tokens: maxOutputTokens,
-    messages: addCacheBreakpoints(normalizeMessagesForAPI(messages)), // 归一化消息格式
+    messages: addCacheBreakpoints(messagesForAPI),
     ...(systemPrompt.length > 0
       ? {
           system: systemPrompt.join('\n\n'),
@@ -267,6 +266,13 @@ export async function* queryModelWithStreaming({
     // 边界处理：undefined 时不传递 tools 参数
     ...(toolsForApi && toolsForApi.length > 0 ? { tools: toolsForApi } : {}),
   }
+
+  logAPIQuery({
+    model: options.model, // 模型名称
+    messagesLength: messages.length, // 消息长度
+    temperature: 1, // 温度参数
+    querySource: options.querySource, // 查询来源
+  })
 
   // ============================================================================
   // 流式 API 调用
@@ -290,8 +296,15 @@ export async function* queryModelWithStreaming({
     requestId = result.request_id
     stream = result.data
   } catch (error) {
-    // 对齐上游实现：用户中断不是错误，直接重新抛出
-    // 设计原因：保持与上游相同的错误处理行为
+    const durationMs = Date.now() - start
+    logAPIError({
+      error,
+      model: options.model,
+      messageCount: messages.length,
+      durationMs,
+      attempt: 1,
+      requestId,
+    })
     throw error
   }
 
@@ -302,8 +315,8 @@ export async function* queryModelWithStreaming({
   let isFirstChunk = true
 
   for await (const part of stream) {
-    // 对齐上游实现：首 chunk 记录
     if (isFirstChunk) {
+      logForDebugging('Stream started - received first chunk')
       isFirstChunk = false
     }
 
@@ -431,17 +444,9 @@ export async function* queryModelWithStreaming({
       case 'message_delta': {
         usage = updateUsage(usage, part.usage)
         stopReason = part.delta?.stop_reason ?? null
-
-        // 对齐上游实现：message_delta 可能包含 stop_reason 错误信息
-        // 设计原因：max_tokens 和 model_context_window_exceeded 需要特殊处理
-        // TODO: 已阅读源码，但不在今日最小闭环内
-        // 上游会 yield createAssistantAPIErrorMessage 处理 max_output_tokens 错误
         break
       }
 
-      // ========================================================================
-      // message_stop 事件
-      // 对齐上游实现：流结束，无需额外处理
       case 'message_stop':
         break
     }
@@ -456,4 +461,25 @@ export async function* queryModelWithStreaming({
       ...(part.type === 'message_start' ? { ttftMs } : undefined),
     } as StreamEvent
   }
+
+  const logMessageCount = messagesForAPI.length
+  void (options as { getToolPermissionContext?: () => Promise<{ mode: string }> })
+    .getToolPermissionContext?.()
+    .then(permissionContext => {
+      // 对齐上游实现：记录 API 成功和持续时间
+      logAPISuccessAndDuration({
+        model:
+          (partialMessage?.model as string | undefined) ?? options.model,
+        usage: usage as NonNullableUsage,
+        start, // 记录 API 开始时间，用于计算持续时间
+        startIncludingRetries: start,
+        ttftMs,
+        attempt: 1,
+        messageCount: logMessageCount,
+        requestId: requestId ?? null,
+        stopReason: stopReason as BetaStopReason | null,
+        costUSD: 0,
+        ...(permissionContext ? { permissionMode: permissionContext.mode } : {}),
+      })
+    })
 }

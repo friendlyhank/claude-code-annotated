@@ -1,52 +1,88 @@
 /**
  * 文件系统操作抽象层
  *
- * 当前实现 FileReadTool/FileWriteTool 所需的核心函数
- * TODO: readFileBytes、getPathsForPermissionCheck 等待后续补齐
+ * 源码复刻: claude-code/src/utils/fsOperations.ts
+ * 当前实现工具和调试模式所需的核心函数
  */
 
-import { stat, readFile as readFileAsync } from 'fs/promises'
+import * as fs from 'fs'
+import {
+  mkdir as mkdirPromise,
+  readdir as readdirPromise,
+  stat as statPromise,
+} from 'fs/promises'
 
-/**
- * 文件系统实现接口
- * 对齐上游实现：包含工具所需的同步/异步操作
- */
-interface FsImplementation {
+export type FsOperations = {
   stat(path: string): Promise<{ isDirectory(): boolean; mtimeMs: number; size: number }>
-  readFile(
-    path: string,
-    options: { encoding: string; signal?: AbortSignal },
-  ): Promise<string>
+  readdir(path: string): Promise<fs.Dirent[]>
+  readFile(path: string, options: { encoding: string; signal?: AbortSignal }): Promise<string>
   readFileSync(path: string, options: { encoding: string }): string
-  /** 同步获取文件 stat */
-  statSync(path: string): { isDirectory(): boolean; mtimeMs: number; size: number; isFIFO(): boolean; isSocket(): boolean; isCharacterDevice(): boolean; isBlockDevice(): boolean }
-  /** 不跟踪符号链接的 stat */
-  lstatSync(path: string): { isDirectory(): boolean; isSymbolicLink(): boolean; isFIFO(): boolean; isSocket(): boolean; isCharacterDevice(): boolean; isBlockDevice(): boolean }
-  /** 解析符号链接的真实路径 */
+  statSync(path: string): fs.Stats
+  lstatSync(path: string): fs.Stats
   realpathSync(path: string): string
-  /** 异步创建目录 */
   mkdir(path: string, options?: { mode?: number }): Promise<void>
+  mkdirSync(path: string, options?: { mode?: number }): void
+  appendFileSync(path: string, data: string, options?: { mode?: number }): void
   cwd(): string
 }
 
-/**
- * 获取文件系统实现
- * 对齐上游实现：抽象文件系统操作，便于测试和平台适配
- */
-export function getFsImplementation(): FsImplementation {
-  // eslint-disable-next-line custom-rules/no-sync-fs
-  const nodeFs = require('fs')
-  return {
-    stat: stat as FsImplementation['stat'],
-    readFile: readFileAsync as FsImplementation['readFile'],
-    readFileSync: nodeFs.readFileSync,
-    statSync: nodeFs.statSync,
-    lstatSync: nodeFs.lstatSync,
-    realpathSync: nodeFs.realpathSync,
-    mkdir: (path, options) =>
-      nodeFs.promises.mkdir(path, { recursive: true, ...options }),
-    cwd: () => process.cwd(),
+const NodeFsOperations: FsOperations = {
+  stat: statPromise as FsOperations['stat'],
+  readdir: (path) => readdirPromise(path, { withFileTypes: true }),
+  readFile: (path, options) =>
+    new Promise((resolve, reject) => {
+      fs.readFile(path, { encoding: options.encoding as BufferEncoding }, (err, data) => {
+        if (err) reject(err)
+        else resolve(data as string)
+      })
+    }),
+  readFileSync: (path, options) => fs.readFileSync(path, { encoding: options.encoding as BufferEncoding }),
+  statSync: (path) => fs.statSync(path),
+  lstatSync: (path) => fs.lstatSync(path),
+  realpathSync: (path) => fs.realpathSync(path).normalize('NFC'),
+  mkdir: (path, options) =>
+    mkdirPromise(path, { recursive: true, ...options }).then(() => {}),
+  mkdirSync: (path, options) => {
+    try {
+      fs.mkdirSync(path, { recursive: true, ...options })
+    } catch (e) {
+      if (getErrnoCode(e) !== 'EEXIST') throw e
+    }
+  },
+  appendFileSync: (path, data, options) => {
+    if (options?.mode !== undefined) {
+      try {
+        const fd = fs.openSync(path, 'ax', options.mode)
+        try {
+          fs.appendFileSync(fd, data)
+        } finally {
+          fs.closeSync(fd)
+        }
+        return
+      } catch (e) {
+        if (getErrnoCode(e) !== 'EEXIST') throw e
+      }
+    }
+    fs.appendFileSync(path, data)
+  },
+  cwd: () => process.cwd(),
+}
+
+let activeFs: FsOperations = NodeFsOperations
+
+export function getFsImplementation(): FsOperations {
+  return activeFs
+}
+
+export function setFsImplementation(implementation: FsOperations): void {
+  activeFs = implementation
+}
+
+export function getErrnoCode(e: unknown): string | undefined {
+  if (e && typeof e === 'object' && 'code' in e && typeof e.code === 'string') {
+    return e.code
   }
+  return undefined
 }
 
 /**
@@ -59,7 +95,7 @@ export function getFsImplementation(): FsImplementation {
  * 4. 文件不存在时返回原始路径，允许文件创建操作
  */
 export function safeResolvePath(
-  fs: FsImplementation,
+  fs: FsOperations,
   filePath: string,
 ): { resolvedPath: string; isSymlink: boolean; isCanonical: boolean } {
   // 阻止 UNC 路径，防止 Windows 上触发网络请求

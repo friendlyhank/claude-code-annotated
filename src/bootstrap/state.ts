@@ -9,23 +9,19 @@
  * - 支持测试时重置状态
  */
 
-// ========================================
-// 状态类型定义
-// ========================================
+import { randomUUID } from 'crypto'
+import type { SessionId } from '../types/ids.js'
 
 type State = {
-  originalCwd: string // 会话启动时的初始目录，用作稳定的项目锚点，在特定场景下会被更新。
+  originalCwd: string// 会话启动时的初始目录，用作稳定的项目锚点，在特定场景下会被更新。
   cwd: string // 当前工作目录，会随用户操作（如 cd）随时变化。
   isInteractive: boolean // 是否为交互式会话
   clientType: string // 客户端类型，如 'cli' 或 'web'
   sessionSource: string | undefined // 会话来源，如 'cli' 或 'web'，根据客户端类型自动设置
-  startTime: number // 会话开始时间（毫秒）
+  startTime: number// 会话开始时间（毫秒）
+  sessionId: SessionId // 会话 ID，用于标识当前会话的唯一字符串
 }
-
-// ========================================
-// 初始状态
-// ========================================
-
+// 获取初始状态
 function getInitialState(): State {
   const resolvedCwd =
     typeof process !== 'undefined' && typeof process.cwd === 'function'
@@ -39,23 +35,22 @@ function getInitialState(): State {
     clientType: 'cli',
     sessionSource: undefined,
     startTime: Date.now(),
+    sessionId: randomUUID() as SessionId,
   }
 }
-
-// ========================================
 // 全局状态实例
-// ========================================
-
 const STATE: State = getInitialState()
 
-// ========================================
-// 交互模式
-// ========================================
+// 获取会话 ID
+export function getSessionId(): SessionId {
+  return STATE.sessionId
+}
 
 export function getIsNonInteractiveSession(): boolean {
   return !STATE.isInteractive
 }
 
+// 获取是否为交互式会话
 export function getIsInteractive(): boolean {
   return STATE.isInteractive
 }
@@ -63,11 +58,7 @@ export function getIsInteractive(): boolean {
 export function setIsInteractive(value: boolean): void {
   STATE.isInteractive = value
 }
-
-// ========================================
-// 客户端类型
-// ========================================
-
+// 获取客户端类型
 export function getClientType(): string {
   return STATE.clientType
 }
@@ -75,11 +66,7 @@ export function getClientType(): string {
 export function setClientType(type: string): void {
   STATE.clientType = type
 }
-
-// ========================================
-// 工作目录
-// ========================================
-
+// 获取原始工作目录
 export function getOriginalCwd(): string {
   return STATE.originalCwd
 }
@@ -95,11 +82,7 @@ export function getCwdState(): string {
 export function setCwdState(cwd: string): void {
   STATE.cwd = cwd.normalize('NFC')
 }
-
-// ========================================
-// 会话源
-// ========================================
-
+// 获取会话来源
 export function getSessionSource(): string | undefined {
   return STATE.sessionSource
 }
@@ -107,22 +90,11 @@ export function getSessionSource(): string | undefined {
 export function setSessionSource(source: string | undefined): void {
   STATE.sessionSource = source
 }
-
-// ========================================
-// 时间统计
-// ========================================
-
+// 获取总持续时间
 export function getTotalDuration(): number {
   return Date.now() - STATE.startTime
 }
-
-// ========================================
-// 测试支持
-// ========================================
-
-/**
- * 仅用于测试：重置状态到初始值
- */
+// 重置状态，仅用于测试重置状态到初始值
 export function resetStateForTests_ONLY(): void {
   const newState = getInitialState()
   Object.assign(STATE, newState)

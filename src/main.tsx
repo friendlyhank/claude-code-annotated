@@ -111,14 +111,11 @@ export async function main(): Promise<void> {
 /**
  * 主命令定义
  *
- * 参考 claude-code/src/main.tsx 第 1219 行 async function run()
  */
 async function run(): Promise<CommanderCommand> {
   // TODO: profileCheckpoint('run_function_start')
 
-  // ========================================
-  // 创建 Commander 程序 (源码第 1220-1239 行)
-  // ========================================
+  // 创建帮助配置
   function createSortedHelpConfig(): {
     sortSubcommands: true
     sortOptions: true
@@ -140,10 +137,7 @@ async function run(): Promise<CommanderCommand> {
 
   // TODO: profileCheckpoint('run_commander_initialized')
 
-  // ========================================
   // preAction hook - 在命令执行前初始化
-  // 参考: 源码第 1242-1308 行
-  // ========================================
   program.hook('preAction', async () => {
     // TODO: profileCheckpoint('preAction_start')
     // TODO: await Promise.all([ensureMdmSettingsLoaded(), ensureKeychainPrefetchCompleted()])
@@ -151,7 +145,12 @@ async function run(): Promise<CommanderCommand> {
     // TODO: await init()
     // TODO: profileCheckpoint('preAction_after_init')
     // TODO: process.title = 'claude'
-    // TODO: initSinks()
+
+    // Attach logging sinks so subcommand handlers can use logEvent/logError.
+    const { initSinks } = await import('./utils/sinks.js')
+    // 初始化日志记录器
+    initSinks()
+
     // TODO: profileCheckpoint('preAction_after_sinks')
     // TODO: runMigrations()
     // TODO: profileCheckpoint('preAction_after_migrations')
