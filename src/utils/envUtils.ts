@@ -1,7 +1,6 @@
 /**
  * 环境变量工具函数
  *
- * 源码复刻: claude-code/src/utils/envUtils.ts
  * 设计原因：集中管理环境变量读取和判断逻辑
  */
 
@@ -9,6 +8,7 @@ import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'os'
 import { join } from 'path'
 
+// 获取Claude配置目录或默认目录
 export const getClaudeConfigHomeDir = memoize(
   (): string => {
     return (
@@ -18,6 +18,7 @@ export const getClaudeConfigHomeDir = memoize(
   () => process.env.CLAUDE_CONFIG_DIR,
 )
 
+// 判断环境变量是否为真值
 export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
   if (!envVar) return false
   if (typeof envVar === 'boolean') return envVar
@@ -25,6 +26,7 @@ export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
 }
 
+// 判断环境变量是否为假值
 export function isEnvDefinedFalsy(
   envVar: string | boolean | undefined,
 ): boolean {
@@ -33,12 +35,4 @@ export function isEnvDefinedFalsy(
   if (!envVar) return false
   const normalizedValue = envVar.toLowerCase().trim()
   return ['0', 'false', 'no', 'off'].includes(normalizedValue)
-}
-
-export function hasEmbeddedSearchTools(): boolean {
-  if (!isEnvTruthy(process.env.EMBEDDED_SEARCH_TOOLS)) return false
-  const e = process.env.CLAUDE_CODE_ENTRYPOINT
-  return (
-    e !== 'sdk-ts' && e !== 'sdk-py' && e !== 'sdk-cli' && e !== 'local-agent'
-  )
 }

@@ -1,17 +1,17 @@
 /**
  * 文件系统操作抽象层
  *
- * 源码复刻: claude-code/src/utils/fsOperations.ts
  * 当前实现工具和调试模式所需的核心函数
  */
 
 import * as fs from 'fs'
 import {
-  mkdir as mkdirPromise,
-  readdir as readdirPromise,
-  stat as statPromise,
+  mkdir as mkdirPromise, // 递归创建目录
+  readdir as readdirPromise, // 读取目录内容
+  stat as statPromise, // 获取文件或目录的统计信息
 } from 'fs/promises'
 
+// 文件系统操作抽象层类型定义
 export type FsOperations = {
   stat(path: string): Promise<{ isDirectory(): boolean; mtimeMs: number; size: number }>
   readdir(path: string): Promise<fs.Dirent[]>

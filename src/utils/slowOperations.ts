@@ -1,10 +1,10 @@
 /**
  * 慢操作工具函数
  *
- * 源码复刻: claude-code/src/utils/slowOperations.ts
  * 当前只实现调试模式所需的部分
  */
 
+// 字符串化 JSON 值
 export function jsonStringify(
   value: unknown,
   replacer?:

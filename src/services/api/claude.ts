@@ -297,6 +297,7 @@ export async function* queryModelWithStreaming({
     stream = result.data
   } catch (error) {
     const durationMs = Date.now() - start
+    // 记录api错误日志
     logAPIError({
       error,
       model: options.model,

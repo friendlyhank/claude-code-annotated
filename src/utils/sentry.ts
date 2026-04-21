@@ -1,7 +1,6 @@
 /**
  * Sentry 集成模块
  *
- * 源码复刻: claude-code/src/utils/sentry.ts
  * 当 SENTRY_DSN 环境变量设置时初始化 Sentry SDK
  */
 
@@ -9,6 +8,7 @@ import { logForDebugging } from './debug.js'
 
 let initialized = false
 
+// 初始化 Sentry SDK
 export function initSentry(): void {
   if (initialized) {
     return
@@ -63,6 +63,7 @@ export function initSentry(): void {
   }
 }
 
+// 捕获异常到 Sentry
 export function captureException(error: unknown, context?: Record<string, unknown>): void {
   if (!initialized) {
     return
@@ -81,6 +82,7 @@ export function captureException(error: unknown, context?: Record<string, unknow
   }
 }
 
+// 设置标签到 Sentry
 export function setTag(key: string, value: string): void {
   if (!initialized) return
   try {
@@ -91,6 +93,7 @@ export function setTag(key: string, value: string): void {
   }
 }
 
+// 设置用户到 Sentry
 export function setUser(user: { id?: string; email?: string; username?: string }): void {
   if (!initialized) return
   try {
@@ -101,6 +104,7 @@ export function setUser(user: { id?: string; email?: string; username?: string }
   }
 }
 
+// 关闭 Sentry SDK
 export async function closeSentry(timeoutMs = 2000): Promise<void> {
   if (!initialized) return
   try {

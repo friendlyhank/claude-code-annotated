@@ -1,7 +1,6 @@
 /**
  * 调试日志过滤器
  *
- * 源码复刻: claude-code/src/utils/debugFilter.ts
  * 设计原因：
  * - 支持按类别过滤调试日志
  * - 支持 --debug=pattern 语法
@@ -9,12 +8,14 @@
 
 import memoize from 'lodash-es/memoize.js'
 
+// 调试日志过滤器类型
 export type DebugFilter = {
   include: string[]
   exclude: string[]
   isExclusive: boolean
 }
 
+// 解析调试日志过滤器字符串
 export const parseDebugFilter = memoize(
   (filterString?: string): DebugFilter | null => {
     if (!filterString || filterString.trim() === '') {
@@ -47,6 +48,7 @@ export const parseDebugFilter = memoize(
   },
 )
 
+// 从调试日志消息中提取类别
 export function extractDebugCategories(message: string): string[] {
   const categories: string[] = []
 
@@ -83,6 +85,7 @@ export function extractDebugCategories(message: string): string[] {
   return Array.from(new Set(categories))
 }
 
+// 判断是否显示调试日志消息的类别
 export function shouldShowDebugCategories(
   categories: string[],
   filter: DebugFilter | null,
@@ -102,6 +105,7 @@ export function shouldShowDebugCategories(
   }
 }
 
+// 判断是否显示调试日志消息
 export function shouldShowDebugMessage(
   message: string,
   filter: DebugFilter | null,

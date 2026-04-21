@@ -15,8 +15,10 @@ import { getFsImplementation } from './fsOperations.js'
 import { writeToStderr } from './process.js'
 import { jsonStringify } from './slowOperations.js'
 
+// 调试日志级别
 export type DebugLogLevel = 'verbose' | 'debug' | 'info' | 'warn' | 'error'
 
+// 调试日志级别顺序
 const LEVEL_ORDER: Record<DebugLogLevel, number> = {
   verbose: 0,
   debug: 1,
@@ -25,6 +27,7 @@ const LEVEL_ORDER: Record<DebugLogLevel, number> = {
   error: 4,
 }
 
+// 获取最小调试日志级别
 export const getMinDebugLogLevel = memoize((): DebugLogLevel => {
   const raw = process.env.CLAUDE_CODE_DEBUG_LOG_LEVEL?.toLowerCase().trim()
   if (raw && Object.hasOwn(LEVEL_ORDER, raw)) {
@@ -35,6 +38,7 @@ export const getMinDebugLogLevel = memoize((): DebugLogLevel => {
 
 let runtimeDebugEnabled = false
 
+// 是否在调试模式下运行
 export const isDebugMode = memoize((): boolean => {
   return (
     runtimeDebugEnabled ||
@@ -48,6 +52,7 @@ export const isDebugMode = memoize((): boolean => {
   )
 })
 
+// 启用调试日志记录
 export function enableDebugLogging(): boolean {
   const wasActive = isDebugMode() || process.env.USER_TYPE === 'ant'
   runtimeDebugEnabled = true
@@ -55,6 +60,7 @@ export function enableDebugLogging(): boolean {
   return wasActive
 }
 
+// 获取调试日志过滤器
 export const getDebugFilter = memoize((): DebugFilter | null => {
   const debugArg = process.argv.find(arg => arg.startsWith('--debug='))
   if (!debugArg) {
@@ -64,10 +70,12 @@ export const getDebugFilter = memoize((): DebugFilter | null => {
   return parseDebugFilter(filterPattern)
 })
 
+// 是否将调试日志写入标准错误
 export const isDebugToStdErr = memoize((): boolean => {
   return process.argv.includes('--debug-to-stderr')
 })
 
+// 获取调试日志文件路径
 export const getDebugFilePath = memoize((): string | null => {
   for (let i = 0; i < process.argv.length; i++) {
     const arg = process.argv[i]!
@@ -81,6 +89,7 @@ export const getDebugFilePath = memoize((): string | null => {
   return null
 })
 
+// 是否应该记录调试日志消息
 function shouldLogDebugMessage(message: string): boolean {
   if (process.env.NODE_ENV === 'test' && !isDebugToStdErr()) {
     return false
@@ -106,6 +115,8 @@ let hasFormattedOutput = false
 export function setHasFormattedOutput(value: boolean): void {
   hasFormattedOutput = value
 }
+
+// 是否格式化调试日志输出
 export function getHasFormattedOutput(): boolean {
   return hasFormattedOutput
 }
@@ -113,6 +124,7 @@ export function getHasFormattedOutput(): boolean {
 let debugWriter: BufferedWriter | null = null
 let pendingWrite: Promise<void> = Promise.resolve()
 
+// 异步追加调试日志内容
 async function appendAsync(
   needMkdir: boolean,
   dir: string,
@@ -128,6 +140,7 @@ async function appendAsync(
 
 function noop(): void {}
 
+// 获取调试日志写入器
 function getDebugWriter(): BufferedWriter {
   if (!debugWriter) {
     let ensuredDir: string | null = null
@@ -165,11 +178,13 @@ function getDebugWriter(): BufferedWriter {
   return debugWriter
 }
 
+// 刷新调试日志缓冲区
 export async function flushDebugLogs(): Promise<void> {
   debugWriter?.flush()
   await pendingWrite
 }
 
+// 记录调试日志消息
 export function logForDebugging(
   message: string,
   { level }: { level: DebugLogLevel } = {
@@ -196,6 +211,7 @@ export function logForDebugging(
   getDebugWriter().write(output)
 }
 
+// 获取调试日志文件路径
 export function getDebugLogPath(): string {
   return (
     getDebugFilePath() ??
@@ -204,6 +220,7 @@ export function getDebugLogPath(): string {
   )
 }
 
+// 更新最新调试日志符号链接
 const updateLatestDebugLogSymlink = memoize(async (): Promise<void> => {
   try {
     const debugLogPath = getDebugLogPath()
@@ -217,6 +234,7 @@ const updateLatestDebugLogSymlink = memoize(async (): Promise<void> => {
   }
 })
 
+// 记录ANT用户错误日志
 export function logAntError(context: string, error: unknown): void {
   if (process.env.USER_TYPE !== 'ant') {
     return

@@ -1,15 +1,17 @@
 /**
  * 错误日志系统
  *
- * 源码复刻: claude-code/src/utils/log.ts
  * 设计原因：错误日志记录到内存和文件
  */
 
 import { logForDebugging } from './debug.js'
 
+// 内存错误日志缓冲区
 const MAX_IN_MEMORY_ERRORS = 100
+// 内存错误日志缓冲区
 let inMemoryErrorLog: Array<{ error: string; timestamp: string }> = []
 
+// 添加错误日志到内存缓冲区
 function addToInMemoryErrorLog(errorInfo: {
   error: string
   timestamp: string
@@ -20,6 +22,7 @@ function addToInMemoryErrorLog(errorInfo: {
   inMemoryErrorLog.push(errorInfo)
 }
 
+// 错误日志接收器
 export type ErrorLogSink = {
   logError: (error: Error) => void
   logMCPError: (serverName: string, error: unknown) => void
@@ -28,6 +31,7 @@ export type ErrorLogSink = {
   getMCPLogsPath: (serverName: string) => string
 }
 
+// 错误日志队列
 type QueuedErrorEvent =
   | { type: 'error'; error: Error }
   | { type: 'mcpError'; serverName: string; error: unknown }
@@ -36,6 +40,7 @@ type QueuedErrorEvent =
 const errorQueue: QueuedErrorEvent[] = []
 let errorLogSink: ErrorLogSink | null = null
 
+// 初始化错误日志接收器
 export function attachErrorLogSink(newSink: ErrorLogSink): void {
   if (errorLogSink !== null) {
     return
@@ -62,11 +67,13 @@ export function attachErrorLogSink(newSink: ErrorLogSink): void {
   }
 }
 
+// 转换为Error对象
 function toError(error: unknown): Error {
   if (error instanceof Error) return error
   return new Error(String(error))
 }
 
+// 记录错误日志
 export function logError(error: unknown): void {
   const err = toError(error)
   try {
@@ -94,10 +101,12 @@ export function logError(error: unknown): void {
   }
 }
 
+// 获取内存缓冲区中的错误日志
 export function getInMemoryErrors(): { error: string; timestamp: string }[] {
   return [...inMemoryErrorLog]
 }
 
+// 记录MCP错误日志
 export function logMCPError(serverName: string, error: unknown): void {
   try {
     if (errorLogSink === null) {
@@ -111,6 +120,7 @@ export function logMCPError(serverName: string, error: unknown): void {
   }
 }
 
+// 记录MCP调试日志
 export function logMCPDebug(serverName: string, message: string): void {
   try {
     if (errorLogSink === null) {
@@ -124,10 +134,12 @@ export function logMCPDebug(serverName: string, message: string): void {
   }
 }
 
+// 日期转换为文件名
 export function dateToFilename(date: Date): string {
   return date.toISOString().replace(/[:.]/g, '-')
 }
 
+// 重置错误日志系统
 export function _resetErrorLogForTesting(): void {
   errorLogSink = null
   errorQueue.length = 0

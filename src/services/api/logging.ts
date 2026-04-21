@@ -1,27 +1,22 @@
 /**
  * API 请求日志记录
  *
- * 源码复刻: claude-code/src/services/api/logging.ts
  * 简化实现：专注于调试日志输出
  */
 
 import type { BetaStopReason } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { logForDebugging } from '../../utils/debug.js'
+import type { NonNullableUsage } from '../../entrypoints/sdk/sdkUtilityTypes.js'
+import { EMPTY_USAGE } from './emptyUsage.js'
+import { classifyAPIError } from './errors.js'
 
-export type NonNullableUsage = {
-  input_tokens: number
-  output_tokens: number
-  cache_read_input_tokens?: number
-  cache_creation_input_tokens?: number
-}
+export type { NonNullableUsage }
+export { EMPTY_USAGE }
 
-export const EMPTY_USAGE: NonNullableUsage = {
-  input_tokens: 0,
-  output_tokens: 0,
-}
-
+// 全局缓存策略 tool_based, system_prompt, none
 export type GlobalCacheStrategy = 'tool_based' | 'system_prompt' | 'none'
 
+// 获取错误信息
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message
@@ -29,24 +24,12 @@ function getErrorMessage(error: unknown): string {
   return String(error)
 }
 
-function classifyAPIError(error: unknown): string {
-  if (error instanceof Error) {
-    if (error.message.includes('rate_limit')) return 'rate_limit'
-    if (error.message.includes('authentication')) return 'authentication_error'
-    if (error.message.includes('overloaded')) return 'overloaded'
-    if (error.message.includes('timeout')) return 'timeout'
-    if (error.message.includes('network')) return 'network_error'
-    return 'api_error'
-  }
-  return 'unknown_error'
-}
-
 export function logAPIQuery({
-  model,
-  messagesLength,
-  temperature,
-  betas,
-  querySource,
+  model, // 模型名称
+  messagesLength, // 消息数量
+  temperature, // 温度参数
+  betas, // 超参数
+  querySource, // 查询来源
 }: {
   model: string
   messagesLength: number
@@ -60,14 +43,15 @@ export function logAPIQuery({
   )
 }
 
+// 记录 API 错误日志
 export function logAPIError({
-  error,
-  model,
-  messageCount,
-  durationMs,
-  attempt,
-  requestId,
-  status,
+  error, // 错误对象
+  model, // 模型名称
+  messageCount, // 消息数量
+  durationMs, // 错误持续时间
+  attempt, // 尝试次数
+  requestId, // 请求ID
+  status, // 状态码
 }: {
   error: unknown
   model: string
@@ -87,21 +71,22 @@ export function logAPIError({
   logForDebugging(`API error message: ${errStr}`, { level: 'error' })
 }
 
+// 记录 API 成功日志
 export function logAPISuccessAndDuration({
-  model,
-  start,
-  startIncludingRetries,
-  ttftMs,
-  usage,
-  attempt,
-  messageCount,
-  requestId,
-  stopReason,
-  costUSD,
-}: {
+  model, // 模型名称
+  start, // 记录开始时间，用于计算持续时间
+  startIncludingRetries, // 记录开始时间，用于计算包含重试的持续时间
+  ttftMs, // 总时间（TTFT）毫秒
+  usage, // 消耗的令牌数量
+  attempt, // 尝试次数
+  messageCount, // 消息数量
+  requestId, // 请求ID
+  stopReason, // 停止原因
+  costUSD, // 成本（美元）
+ }: {
   model: string
   start: number
-  startIncludingRetries: number // 记录开始时间，用于计算包含重试的持续时间
+  startIncludingRetries: number 
   ttftMs: number | null
   usage: NonNullableUsage
   attempt: number

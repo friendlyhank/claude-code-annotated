@@ -1,7 +1,6 @@
 /**
  * 错误日志接收器实现
  *
- * 源码复刻: claude-code/src/utils/errorLogSink.ts
  */
 
 import axios from 'axios'
@@ -16,22 +15,27 @@ import { attachErrorLogSink, dateToFilename } from './log.js'
 import { jsonStringify } from './slowOperations.js'
 import { captureException } from './sentry.js'
 
+// 错误日志文件名
 const DATE = dateToFilename(new Date())
 
+// 获取错误日志文件路径
 export function getErrorsPath(): string {
   return join(CACHE_PATHS.errors(), DATE + '.jsonl')
 }
 
+// 获取MCP日志文件路径
 export function getMCPLogsPath(serverName: string): string {
   return join(CACHE_PATHS.mcpLogs(serverName), DATE + '.jsonl')
 }
 
+// JSONL写入器
 type JsonlWriter = {
   write: (obj: object) => void
   flush: () => void
   dispose: () => void
 }
 
+// 创建JSONL写入器
 function createJsonlWriter(options: {
   writeFn: (content: string) => void
   flushIntervalMs?: number
@@ -47,14 +51,17 @@ function createJsonlWriter(options: {
   }
 }
 
+// 日志写入器缓存
 const logWriters = new Map<string, JsonlWriter>()
 
+// 刷新所有日志写入器
 export function _flushLogWritersForTesting(): void {
   for (const writer of logWriters.values()) {
     writer.flush()
   }
 }
 
+// 清除所有日志写入器
 export function _clearLogWritersForTesting(): void {
   for (const writer of logWriters.values()) {
     writer.dispose()
@@ -62,6 +69,7 @@ export function _clearLogWritersForTesting(): void {
   logWriters.clear()
 }
 
+// 获取日志写入器
 function getLogWriter(path: string): JsonlWriter {
   let writer = logWriters.get(path)
   if (!writer) {
@@ -84,6 +92,7 @@ function getLogWriter(path: string): JsonlWriter {
   return writer
 }
 
+// 追加日志消息
 function appendToLog(path: string, message: object): void {
   if (process.env.USER_TYPE !== 'ant') {
     return
@@ -101,6 +110,7 @@ function appendToLog(path: string, message: object): void {
   getLogWriter(path).write(messageWithTimestamp)
 }
 
+// 从响应数据中提取服务器消息
 function extractServerMessage(data: unknown): string | undefined {
   if (typeof data === 'string') {
     return data
@@ -122,6 +132,7 @@ function extractServerMessage(data: unknown): string | undefined {
   return undefined
 }
 
+// 记录错误日志
 function logErrorImpl(error: Error): void {
   const errorStr = error.stack || error.message
 
@@ -147,6 +158,7 @@ function logErrorImpl(error: Error): void {
   captureException(error)
 }
 
+// 记录MCP错误日志
 function logMCPErrorImpl(serverName: string, error: unknown): void {
   logForDebugging(`MCP server "${serverName}" ${error}`, { level: 'error' })
 
@@ -164,6 +176,7 @@ function logMCPErrorImpl(serverName: string, error: unknown): void {
   getLogWriter(logFile).write(errorInfo)
 }
 
+// 记录MCP调试日志
 function logMCPDebugImpl(serverName: string, message: string): void {
   logForDebugging(`MCP server "${serverName}": ${message}`)
 
@@ -179,6 +192,7 @@ function logMCPDebugImpl(serverName: string, message: string): void {
   getLogWriter(logFile).write(debugInfo)
 }
 
+// 初始化错误日志接收器
 export function initializeErrorLogSink(): void {
   attachErrorLogSink({
     logError: logErrorImpl,

@@ -18,7 +18,8 @@ import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
 import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
-import { hasEmbeddedSearchTools, isEnvTruthy } from './utils/envUtils.js'
+import { hasEmbeddedSearchTools } from './utils/embeddedTools.js'
+import { isEnvTruthy } from './utils/envUtils.js'
 import type { ToolPermissionContext } from './types/permissions.js'
 import {
   ALL_AGENT_DISALLOWED_TOOLS,
