@@ -26,6 +26,8 @@ import {
   EMPTY_USAGE,
   logAPIError,
   logAPIQuery,
+  logAPIRequest, //  为了方便调试，这里没按目标源码复刻
+  logAPIResponse, // 为了方便调试，这里没按目标源码复刻
   logAPISuccessAndDuration,
   type NonNullableUsage,
 } from './logging.js'
@@ -268,10 +270,18 @@ export async function* queryModelWithStreaming({
   }
 
   logAPIQuery({
-    model: options.model, // 模型名称
-    messagesLength: messages.length, // 消息长度
-    temperature: 1, // 温度参数
-    querySource: options.querySource, // 查询来源
+    model: options.model,
+    messagesLength: messages.length,
+    temperature: 1,
+    querySource: options.querySource,
+  })
+
+  // 为了方便调试，这里没按目标源码复刻
+  logAPIRequest({
+    model: options.model,
+    messages: messagesForAPI,
+    systemPrompt: systemPrompt.length > 0 ? systemPrompt.join('\n\n') : undefined,
+    tools: toolsForApi,
   })
 
   // ============================================================================
@@ -449,6 +459,13 @@ export async function* queryModelWithStreaming({
       }
 
       case 'message_stop':
+        // 为了方便调试，这里没按目标源码复刻
+        logAPIResponse({
+          requestId,
+          content: contentBlocks,
+          usage,
+          stopReason,
+        })
         break
     }
 

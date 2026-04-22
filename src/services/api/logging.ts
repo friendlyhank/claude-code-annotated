@@ -111,3 +111,72 @@ export function logAPISuccessAndDuration({
     { level: 'verbose' },
   )
 }
+
+// 为了方便调试，这里没按目标源码复刻
+export function logAPIRequest({
+  requestId,
+  model,
+  messages,
+  systemPrompt,
+  tools,
+}: {
+  requestId?: string | null
+  model: string
+  messages: unknown
+  systemPrompt?: string
+  tools?: unknown
+}): void {
+  logForDebugging(
+    `API request${requestId ? ` [${requestId}]` : ''}: model=${model}`,
+    { level: 'debug' },
+  )
+  if (systemPrompt) {
+    logForDebugging(
+      `API request${requestId ? ` [${requestId}]` : ''} system prompt:\n${systemPrompt}`,
+      { level: 'debug' },
+    )
+  }
+  logForDebugging(
+    `API request${requestId ? ` [${requestId}]` : ''} messages:\n${JSON.stringify(messages, null, 2)}`,
+    { level: 'debug' },
+  )
+  if (tools) {
+    logForDebugging(
+      `API request${requestId ? ` [${requestId}]` : ''} tools:\n${JSON.stringify(tools, null, 2)}`,
+      { level: 'debug' },
+    )
+  }
+}
+
+// 为了方便调试，这里没按目标源码复刻
+export function logAPIResponse({
+  requestId,
+  content,
+  usage,
+  stopReason,
+}: {
+  requestId?: string | null
+  content: unknown
+  usage?: {
+    input_tokens: number
+    output_tokens: number
+    cache_read_input_tokens?: number
+    cache_creation_input_tokens?: number
+  }
+  stopReason?: string | null
+}): void {
+  logForDebugging(
+    `API response${requestId ? ` [${requestId}]` : ''}: stop_reason=${stopReason ?? 'N/A'}`,
+    { level: 'debug' },
+  )
+  if (usage) {
+    logForDebugging(
+      `API response${requestId ? ` [${requestId}]` : ''} usage: input=${usage.input_tokens}, output=${usage.output_tokens}, cache_read=${usage.cache_read_input_tokens ?? 0}, cache_creation=${usage.cache_creation_input_tokens ?? 0}`,
+      { level: 'debug' },
+    )
+  }
+  logForDebugging(
+    `API response${requestId ? ` [${requestId}]` : ''} content:\n${JSON.stringify(content, null, 2)}`,
+    { level: 'debug' },
+  )
+}
