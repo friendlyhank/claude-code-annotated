@@ -372,7 +372,6 @@ export type ToolPermissionRulesBySource = {
 
 /**
  * 工具权限检查所需上下文
- * 对齐上游实现：按源码 ToolPermissionContext 原样复刻
  * 
  * 设计原因：
  * 1. 包含权限模式、规则、目录等完整信息
@@ -384,7 +383,7 @@ export type ToolPermissionContext = {
   readonly additionalWorkingDirectories: ReadonlyMap<
     string,
     AdditionalWorkingDirectory
-  >
+  > // 额外的工作目录映射
   readonly alwaysAllowRules: ToolPermissionRulesBySource // 总允许规则
   readonly alwaysDenyRules: ToolPermissionRulesBySource // 总拒绝规则
   readonly alwaysAskRules: ToolPermissionRulesBySource // 总询问规则

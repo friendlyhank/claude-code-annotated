@@ -261,8 +261,6 @@ export type SetToolJSXFn = (
 
 /**
  * 工具执行上下文 - 包含执行工具所需的全部状态和配置
- *
- * 对齐上游实现：按 claude-code/src/Tool.ts ToolUseContext 原样复刻
  * 设计原因：
  * 1. 集中管理工具执行所需的所有依赖
  * 2. 支持子代理继承和修改上下文

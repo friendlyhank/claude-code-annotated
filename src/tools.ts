@@ -218,7 +218,6 @@ export function filterToolsByDenyRules<
 
 /**
  * 获取当前权限上下文下的可用工具列表
- * 对齐上游实现：按 claude-code/src/tools.ts getTools 原样复刻
  *
  * 处理流程：
  * 1. CLAUDE_CODE_SIMPLE 模式：仅返回 Bash/Read/Edit

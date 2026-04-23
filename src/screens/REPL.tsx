@@ -1,7 +1,6 @@
 /**
  * Claude Code Annotated - REPL 主界面
  *
- * 源码复刻参考: claude-code/src/screens/REPL.tsx
  *
  * 功能:
  * - 主交互界面
@@ -29,24 +28,27 @@ import {
   handlePromptSubmit,
   type PromptInputHelpers,
 } from '../utils/handlePromptSubmit.js'
-import { asSystemPrompt } from '../utils/systemPromptType.js'
+import { getSystemPrompt } from '../constants/prompts.js'
+import { buildEffectiveSystemPrompt } from '../utils/systemPrompt.js'
+import { getSystemContext, getUserContext } from '../context.js'
+import { useMainLoopModel } from '../hooks/useMainLoopModel.js'
 
 // ========================================
 // 类型定义
 // ========================================
 
 export type Props = {
-  debug?: boolean
-  initialMessages?: Message[]
+  debug?: boolean // 是否开启调试模式
+  initialMessages?: Message[] // 初始消息
+  systemPrompt?: string // 系统提示
+  appendSystemPrompt?: string // 追加系统提示，用于自定义能力或上下文
+  mainThreadAgentDefinition?: undefined // 主线程智能体定义，用于自定义智能体行为或能力
+  onBeforeQuery?: ( // 在查询前调用，用于自定义查询前的行为
+    input: string,
+    newMessages: Message[],
+  ) => Promise<boolean>
+  onTurnComplete?: (messages: Message[]) => void | Promise<void> // 在查询后调用，用于自定义查询后的行为
 }
-
-const DEFAULT_SYSTEM_PROMPT = asSystemPrompt([
-  'You are Claude Code Annotated, a replica-in-progress of Claude Code.',
-])
-const DEFAULT_MAIN_LOOP_MODEL =
-  process.env.ANTHROPIC_MODEL ??
-  process.env.ANTHROPIC_DEFAULT_SONNET_MODEL ??
-  'claude-sonnet-4-6'
 
 function createMessageUUID(): UUID {
   return randomUUID() as UUID
@@ -156,44 +158,19 @@ function createDefaultPermissionContext(): ToolPermissionContext {
   }
 }
 
-// 对齐上游职责：REPL 负责在交互层准备 toolUseContext，再把它交给 query() 消费。
-// 对齐上游实现：使用 getTools() 获取工具列表
-// 参考 claude-code/src/screens/REPL.tsx:3154-3250 getToolUseContext 函数
-function createReplToolUseContext(
-  messages: Message[],
-  debug: boolean,
-  abortController: AbortController,
-): ToolUseContext {
-  // 对齐上游实现：从权限上下文获取工具列表
-  // 参考 claude-code/src/screens/REPL.tsx:3170-3180 computeTools()
-  const permissionContext = createDefaultPermissionContext()
-  const tools: Tools = getTools(permissionContext)
-
-  return {
-    options: {
-      commands: [],
-      debug,
-      mainLoopModel: DEFAULT_MAIN_LOOP_MODEL,
-      tools,
-      verbose: debug,
-      isNonInteractiveSession: false,
-    },
-    abortController,
-    getAppState: () => ({ toolPermissionContext: permissionContext }),
-    setAppState: _updater => {},
-    setInProgressToolUseIDs: _updater => {},
-    setResponseLength: _updater => {},
-    updateFileHistoryState: _updater => {},
-    updateAttributionState: _updater => {},
-    messages,
-  }
-}
-
 // ========================================
 // REPL 组件
 // ========================================
 
-export function REPL({ debug = false, initialMessages }: Props): ReactNode {
+export function REPL({
+  debug = false, // 是否开启调试模式
+  initialMessages, // 初始消息
+  systemPrompt: customSystemPrompt, // 自定义系统提示词
+  appendSystemPrompt, // 追加系统提示词
+  mainThreadAgentDefinition, // 主线程智能定义
+  onBeforeQuery, // 查询前回调
+  onTurnComplete, // 回合结束回调
+}: Props): ReactNode {
   const { exit } = useApp()
  
   const [input, setInput] = useState('') // 设置输入状态
@@ -215,6 +192,43 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     null,
   )
   const messagesRef = useRef<Message[]>(initialMessages ?? [])
+
+  const mainLoopModel = useMainLoopModel()
+
+  // 对齐上游实现：getToolUseContext 作为 useCallback
+  const getToolUseContext = useCallback(
+    (
+      messages: Message[],
+      _newMessages: Message[],
+      abortController: AbortController,
+      _mainLoopModel: string,
+    ): ToolUseContext => {
+      const permissionContext = createDefaultPermissionContext()
+      const tools: Tools = getTools(permissionContext)
+
+      return {
+        options: {
+          commands: [],
+          debug,
+          mainLoopModel,
+          tools,
+          verbose: debug,
+          isNonInteractiveSession: false,
+          customSystemPrompt,
+          appendSystemPrompt,
+        },
+        abortController,
+        getAppState: () => ({ toolPermissionContext: permissionContext }),
+        setAppState: _updater => {},
+        setInProgressToolUseIDs: _updater => {},
+        setResponseLength: _updater => {},
+        updateFileHistoryState: _updater => {},
+        updateAttributionState: _updater => {},
+        messages,
+      }
+    },
+    [debug, customSystemPrompt, appendSystemPrompt, mainLoopModel],
+  )
 
   const appendMessage = useCallback((message: Message): void => {
     const next = [...messagesRef.current, message]
@@ -274,17 +288,43 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
       messagesIncludingNewMessages: Message[],
       queryAbortController: AbortController,
     ): Promise<void> => {
+      // 获取工具使用上下文
+      const toolUseContext = getToolUseContext(
+        messagesRef.current,
+        [],
+        queryAbortController,
+        mainLoopModel,
+      )
+      const freshTools = toolUseContext.options.tools
+
+      const [defaultSystemPrompt, userContext, systemContext] = await Promise.all([
+        getSystemPrompt(
+          freshTools,
+          mainLoopModel,
+          Array.from(
+            createDefaultPermissionContext().additionalWorkingDirectories.keys(),
+          ),
+        ),
+        getUserContext(),
+        getSystemContext(),
+      ])
+
+      const systemPrompt = buildEffectiveSystemPrompt({
+        mainThreadAgentDefinition,
+        toolUseContext,
+        customSystemPrompt,
+        defaultSystemPrompt,
+        appendSystemPrompt,
+      })
+      toolUseContext.renderedSystemPrompt = systemPrompt
+
       const iterator = query({
         messages: messagesIncludingNewMessages,
-        systemPrompt: DEFAULT_SYSTEM_PROMPT,
-        userContext: {},
-        systemContext: {},
+        systemPrompt,
+        userContext,
+        systemContext,
         canUseTool: async () => ({ result: true } as const),
-        toolUseContext: createReplToolUseContext(
-          messagesRef.current,
-          debug,
-          queryAbortController,
-        ),
+        toolUseContext,
         querySource: 'repl' as QuerySource,
       })
 
@@ -314,8 +354,10 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
         // 流式请求过程，处理查询事件
         onQueryEvent(step.value)
       }
+
+      await onTurnComplete?.(messagesRef.current)
     },
-    [appendMessage, debug, onQueryEvent],
+    [appendMessage, onQueryEvent, customSystemPrompt, appendSystemPrompt, mainThreadAgentDefinition, getToolUseContext, onTurnComplete, mainLoopModel],
   )
 
   // 处理查询
@@ -369,10 +411,9 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
         helpers,
         onInputChange: setInput,
         messages: messagesRef.current,
-        mainLoopModel: DEFAULT_MAIN_LOOP_MODEL,
+        mainLoopModel,
         querySource: 'repl' as QuerySource,
-        getToolUseContext: (messages, _newMessages, controller, _mainLoopModel) =>
-          createReplToolUseContext(messages, debug, controller),
+        getToolUseContext,
         setUserInputOnProcessing,
         setAbortController,
         onQuery,
@@ -392,7 +433,7 @@ export function REPL({ debug = false, initialMessages }: Props): ReactNode {
     } finally {
       setIsProcessing(false)
     }
-  }, [appendMessage, debug, input, isProcessing, onQuery])
+  }, [appendMessage, input, isProcessing, onQuery, getToolUseContext, mainLoopModel])
 
   useInput(
     (char, key) => {
