@@ -11,3 +11,4 @@ node_modules
 graphify-out/cache/
 src/graphify-out/
 .graphify_*.json
+log/
