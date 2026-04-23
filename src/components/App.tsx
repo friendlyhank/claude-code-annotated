@@ -1,14 +1,14 @@
 /**
  * Claude Code Annotated - App 包装组件
  *
- * 源码复刻参考: claude-code/src/components/App.tsx
  *
  * 功能:
  * - 提供顶层上下文包装
- * - FPS 指标、统计、状态管理（TODO）
+ * - FPS 指标、统计、状态管理
  */
 
 import React, { type ReactNode } from 'react'
+import { type AppState, AppStateProvider } from '../state/AppState.js'
 
 // ========================================
 // 类型定义
@@ -16,11 +16,11 @@ import React, { type ReactNode } from 'react'
 
 export type Props = {
   // TODO: 添加 fps 指标
-  // getFpsMetrics?: () => FpsMetrics | undefined
+  getFpsMetrics?: () => unknown
   // TODO: 添加统计存储
-  // stats?: StatsStore
-  // TODO: 添加初始状态
-  // initialState?: AppState
+  stats?: unknown
+  // 初始状态
+  initialState?: AppState
   children: ReactNode
 }
 
@@ -36,11 +36,15 @@ export type Props = {
  * - 统计存储
  * - 应用状态
  */
-export function App({ children }: Props): ReactNode {
-  // TODO: 添加上下文提供者
-  // - FpsMetricsProvider
-  // - StatsProvider
-  // - AppStateProvider
-
-  return <>{children}</>
+export function App({
+  getFpsMetrics,
+  stats,
+  initialState,
+  children,
+}: Props): ReactNode {
+  return (
+    <AppStateProvider initialState={initialState}>
+      {children}
+    </AppStateProvider>
+  )
 }
