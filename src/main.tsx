@@ -175,6 +175,11 @@ async function run(): Promise<CommanderCommand> {
       () => true,
     )
     .option(
+      '--debug-file <path>',
+      'Write debug logs to a specific file path (implicitly enables debug mode)',
+      () => true,
+    )
+    .option(
       '--verbose',
       'Override verbose mode setting from config',
       () => true,
