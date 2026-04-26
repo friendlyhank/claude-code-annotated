@@ -195,7 +195,7 @@ export function REPL({
 
   const mainLoopModel = useMainLoopModel()
 
-  // 对齐上游实现：getToolUseContext 作为 useCallback
+  // 获取工具使用上下文
   const getToolUseContext = useCallback(
     (
       messages: Message[],

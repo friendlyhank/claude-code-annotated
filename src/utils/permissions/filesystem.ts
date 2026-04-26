@@ -8,7 +8,6 @@
 import type { Tool } from '../../Tool.js'
 import type {
   PermissionDecision,
-  PermissionResult,
   ToolPermissionContext,
 } from '../../types/permissions.js'
 
@@ -22,7 +21,7 @@ export function checkReadPermissionForTool(
   _tool: Pick<Tool, 'name' | 'mcpInfo'>,
   input: Record<string, unknown>,
   _permissionContext: ToolPermissionContext,
-): PermissionResult {
+): PermissionDecision {
   return { behavior: 'allow', updatedInput: input }
 }
 
@@ -78,4 +77,35 @@ export function matchingRuleForInput(
   _ruleType: 'allow' | 'deny',
 ): null {
   return null
+}
+
+/**
+ * 规范化模式到指定路径
+ * 对齐上游实现：按 claude-code/src/utils/permissions/filesystem.ts 原样复刻
+ *
+ * 当前为简化实现：返回空数组
+ * TODO: 完整实现需包含模式根路径匹配逻辑
+ */
+export function normalizePatternsToPath(
+  _patternsByRoot: Map<string | null, string[]>,
+  _root: string,
+): string[] {
+  // 简化实现：返回空数组
+  // 完整实现需要遍历 patternsByRoot 并规范化每个模式
+  return []
+}
+
+/**
+ * 获取文件读取忽略模式
+ * 对齐上游实现：按 claude-code/src/utils/permissions/filesystem.ts 原样复刻
+ *
+ * 当前为简化实现：返回空 Map
+ * TODO: 完整实现需从权限上下文收集 deny 规则
+ */
+export function getFileReadIgnorePatterns(
+  _toolPermissionContext: ToolPermissionContext,
+): Map<string | null, string[]> {
+  // 简化实现：返回空 Map
+  // 完整实现需要从权限上下文中提取 read deny 规则
+  return new Map()
 }

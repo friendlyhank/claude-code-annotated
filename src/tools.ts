@@ -76,7 +76,6 @@ function createPlaceholderTool(name: string, description: string) {
 
 /**
  * 预定义的工具预设
- * 对齐上游实现：按 claude-code/src/tools.ts TOOL_PRESETS 原样复刻
  */
 export const TOOL_PRESETS = ['default'] as const
 

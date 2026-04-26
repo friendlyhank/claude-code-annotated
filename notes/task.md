@@ -4,7 +4,14 @@
 
 ## 任务列表
 
-### 任务 1：BashTool 核心实现（优先级：high）
+### 任务 1：ripgrep 集成（优先级：high）
+
+- **状态**：`doing`
+- **源码位置**：`claude-code/src/utils/ripgrep.ts`
+- **完成标准**：GlobTool 和 GrepTool 使用 ripgrep 进行搜索
+- **验证方式**：对比 ripgrep 和 fs 实现的搜索结果一致性
+
+### 任务 2：BashTool 核心实现（优先级：high）
 
 - **状态**：`doing`
 - **源码位置**：`claude-code/src/tools/BashTool/BashTool.tsx`
@@ -12,13 +19,6 @@
 - **验证方式**：输入 `command: "echo hello"`，输出 "hello"
 - **当前进度**：简单版已实现（call 主链路 + exec + ShellCommand），16% 覆盖率
 - **待补齐**：权限检查、后台任务、sandbox、sed 编辑、UI 渲染
-
-### 任务 2：ripgrep 集成（优先级：high）
-
-- **状态**：`backlog`
-- **源码位置**：`claude-code/src/utils/ripgrep.ts`
-- **完成标准**：GlobTool 和 GrepTool 使用 ripgrep 进行搜索
-- **验证方式**：对比 ripgrep 和 fs 实现的搜索结果一致性
 
 ### 任务 3：QueryEngine 类实现（优先级：high）
 

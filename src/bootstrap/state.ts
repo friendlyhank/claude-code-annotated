@@ -99,3 +99,23 @@ export function resetStateForTests_ONLY(): void {
   const newState = getInitialState()
   Object.assign(STATE, newState)
 }
+
+// 慢操作记录
+type SlowOperation = {
+  description: string
+  duration: number
+}
+
+const slowOperations: SlowOperation[] = []
+
+export function addSlowOperation(description: string, duration: number): void {
+  slowOperations.push({ description, duration })
+}
+
+export function getSlowOperations(): SlowOperation[] {
+  return [...slowOperations]
+}
+
+export function clearSlowOperations(): void {
+  slowOperations.length = 0
+}

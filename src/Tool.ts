@@ -1,7 +1,6 @@
 /**
  * Tool module - Core tool system types and buildTool factory.
  *
- * 对齐上游实现：按 claude-code/src/Tool.ts 原样复刻
  * 设计原因：
  * 1. Tool 类型定义工具的完整接口
  * 2. ToolUseContext 是工具执行的核心上下文
@@ -811,7 +810,6 @@ type AnyToolDef = ToolDef<any, any, any>
 /**
  * 从部分定义构建完整 Tool
  *
- * 对齐上游实现：按 claude-code/src/Tool.ts buildTool 原样复刻
  * 设计原因：
  * 1. 填充安全默认值
  * 2. 调用者无需 ?.() ?? default

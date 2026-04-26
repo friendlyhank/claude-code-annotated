@@ -327,17 +327,12 @@ async function* queryLoop(
 
     // ============================================================================
     // 获取当前模型
-    // 对齐上游实现：按 claude-code/src/query.ts:615-625 原样复刻
     // TODO: 实现完整的模型选择逻辑（plan mode 检查 200k token 等）
     const currentModel = toolUseContext.options.mainLoopModel
 
-    // ============================================================================
     // API 调用
-    // 对齐上游实现：按 claude-code/src/query.ts:690-840 原样复刻
-
     try {
       // 对齐上游实现：构建 callModel 参数
-      // 参考 claude-code/src/query.ts:690-770
       // 调用queryModelWithStreaming 获取流式响应
       for await (const message of deps.callModel({
         messages: messagesForQuery,
