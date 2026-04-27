@@ -1,4 +1,4 @@
-- 最新已处理提交：`1e1e98c9c377335cae64e9b1385bc30bebf15338`
+- 最新已处理提交：`93f50b8fbc933e004f85b294ba07870cf3e698ce`
 
 1. 架构设计和核心流程
    - 文档：`notes/reviews/01-architecture-and-core-flow.md`
@@ -35,17 +35,23 @@
    - 单个工具调用的完整执行链路：查找→校验→权限→调用→结果映射
    - 工具输入规范化与安全 JSON 解析
    - lazySchema 延迟 Schema 构建：延迟 Zod schema 从模块初始化到首次访问，缓存后复用
-   - 4.1 glob 搜索工具实现
-       - 文档：`notes/reviews/04-01-glob-search-tool.md`
-       - GlobTool 完整实现：buildTool 工厂模式落地、延迟 Schema 构建、路径相对化策略
-       - 输入验证边界处理：UNC 路径安全检查、目录存在性检查、目录类型检查
-       - 结果截断与提示：100 文件上限、truncated 标记、建议更具体路径
-       - glob 搜索核心实现：文件名模式匹配、递归目录遍历、并发安全
-       - 路径工具函数：expandPath 路径展开、toRelativePath 相对化、getCwd 工作目录管理
-       - 文件工具函数：isENOENT 错误判断、suggestPathUnderCwd 路径建议、getFsImplementation 文件系统抽象
-       - 当前局限：简化 glob 实现（待 ripgrep 集成）、.gitignore 未完全支持
-   - 4.2 mcp 工具实现
-       - 文档：`notes/reviews/04-02-mcp-tool-implementation.md`
+    - 4.1 glob 搜索工具实现
+        - 文档：`notes/reviews/04-01-glob-search-tool.md`
+        - GlobTool 完整实现：buildTool 工厂模式落地、延迟 Schema 构建、路径相对化策略
+        - 输入验证边界处理：UNC 路径安全检查、目录存在性检查、目录类型检查
+        - 结果截断与提示：100 文件上限、truncated 标记、建议更具体路径
+        - ripgrep 高性能搜索集成：system/builtin/embedded 三种模式、超时重试机制、EAGAIN 错误恢复
+        - glob 核心实现：extractGlobBaseDirectory 静态目录提取、ripgrep --files --glob 调用
+        - 路径工具函数：expandPath 路径展开、toRelativePath 相对化、getCwd 工作目录管理
+        - 文件工具函数：isENOENT 错误判断、suggestPathUnderCwd 路径建议、getFsImplementation 文件系统抽象
+    - 4.2 grep 搜索工具实现
+        - 文档：`notes/reviews/04-02-grep-search-tool.md`
+        - GrepTool 完整实现：文件内容正则搜索、三种输出模式（content/files_with_matches/count）
+        - ripgrep 集成：高性能正则搜索、VCS 目录排除、结果按修改时间排序
+        - 输入验证与权限检查：路径存在性验证、只读工具统一权限入口
+        - 输出处理：相对路径转换、250 行默认上限、结果格式化
+    - 4.3 mcp 工具实现
+        - 文档：`notes/reviews/04-03-mcp-tool-implementation.md`
        - MCP 名称解析/构建：mcpInfoFromString 信息解析、buildMcpToolName 工具名构建、getToolNameForPermissionCheck 权限检查用名称提取
        - MCP 名称规范化：normalizeNameForMCP 合规化、getMcpPrefix 前缀生成、getMcpDisplayName/extractMcpToolDisplayName 显示名提取
        - Tool 类型 MCP 扩展：isMcp 标记、mcpInfo 元数据、inputJSONSchema JSON Schema 直通、mcpMeta 结构化内容透传
@@ -54,16 +60,16 @@
        - MCP 流式处理：mcp_tool_use/mcp_tool_result 内容块识别与透传
        - MCP API 适配：inputJSONSchema 直接透传绕过 Zod 转换
        - 当前局限：MCP 客户端连接未实现、mcpClients/mcpResources 为 TODO 占位、MCPProgress 类型为 any 桩
-   - 4.3 read 工具实现
-       - 文档：`notes/reviews/04-03-read-tool-implementation.md`
+    - 4.4 read 工具实现
+        - 文档：`notes/reviews/04-04-read-tool-implementation.md`
        - FileReadTool 完整实现：buildTool 工厂落地、lazySchema 延迟构建、多类型输出判别联合
        - 输入验证与安全防护：二进制扩展名拒绝、设备文件黑名单、UNC 路径标记
        - 文本文件按行范围读取：快速路径（<10MB 整文件内存分割）与流式路径（>=10MB 增量扫描）
        - 文件未变更去重：mtimeMs 比对 + offset/limit 匹配，返回 file_unchanged 节省 token
        - 多媒体扩展预留：image/notebook/pdf 输出 schema 已定义，实现为 TODO
        - macOS 截图薄空格处理、二进制文件安全风险提示、语义数字预处理
-   - 4.4 Edit 工具实现
-       - 文档：`notes/reviews/04-04-edit-tool-implementation.md`
+    - 4.5 Edit 工具实现
+        - 文档：`notes/reviews/04-05-edit-tool-implementation.md`
        - FileEditTool 完整实现：精确字符串替换（old_string → new_string）
        - 验证链（10 步）：相同内容拒绝 → deny 规则 → UNC 安全 → 文件大小限制 → 文件存在性 → 先读后写 → 修改时间检查 → 引号规范化查找 → 多匹配检测
        - 执行链：加载文件 → 确认未修改 → 引号规范化匹配 → 弯引号风格保持 → 生成 patch → 写入磁盘 → 更新读取时间戳
@@ -71,16 +77,16 @@
        - diff 工具函数：getPatchForDisplay 展示用 patch 生成、&/$ 转义处理
        - 先读后写原则 + 修改时间防冲突（mtimeMs 比对 + 内容比较兜底）
        - 当前局限：fileHistory 备份撤销、LSP 通知、VSCode 集成、日志事件待补齐
-   - 4.5 Write 工具实现
-       - 文档：`notes/reviews/04-05-write-tool-implementation.md`
+    - 4.6 Write 工具实现
+        - 文档：`notes/reviews/04-06-write-tool-implementation.md`
        - FileWriteTool 完整实现：全量文件写入（创建/覆盖）
        - 验证链：deny 规则 → UNC 安全 → 文件存在性 → 先读后写 → 修改时间检查
        - 执行链：确保父目录 → 同步加载文件 → 确认未修改 → 写入磁盘（始终 LF 行尾）→ 更新读取时间戳
        - 行尾策略：模型发送的 content 包含明确行尾，不保留旧文件行尾风格（避免跨平台损坏）
        - 输出区分 create/update：新文件返回空 structuredPatch，已有文件生成 diff patch
        - 当前局限：fileHistory 备份撤销、LSP 通知、VSCode 集成、日志事件待补齐
-   - 4.6 Bash 工具实现
-       - 文档：`notes/reviews/04-06-bash-tool-implementation.md`
+    - 4.7 Bash 工具实现
+        - 文档：`notes/reviews/04-07-bash-tool-implementation.md`
        - BashTool 完整实现：buildTool 工厂落地、lazySchema 延迟构建、命令分类体系
        - 命令分类：搜索类/读取类/列表类/静默类/中性类，用于只读判断和 UI 折叠显示
        - 执行主链路：exec 调用 → ShellCommand 执行 → interpretCommandResult 退出码解释 → CWD 恢复检查
@@ -91,8 +97,7 @@
        - Shell 执行引擎：exec 命令执行入口、findSuitableShell 查找可用 shell、getShellConfig 缓存配置
        - ShellCommand 命令生命周期：spawn 包装、stdout/stderr 收集、退出码处理、中断信号响应、超时控制、进程组 kill
        - 当前局限：sandbox 集成、完整权限检查、PowerShell 支持、输出持久化待补齐
-
-5. 模型调用与 Anthropic API 适配
+ 5. 模型调用与 Anthropic API 适配
    - 文档：`notes/reviews/05-api-client-layer.md`
    - 查询依赖注入把查询层与外部 I/O 解耦
    - Anthropic 适配层负责消息归一化、流式事件处理、assistant 消息回填和工具定义转换为 API 格式
@@ -144,6 +149,7 @@
    - MCP 权限匹配支持服务器级规则：规则 "mcp__server" 匹配该服务器所有工具，通配符 "mcp__server__*" 同效
 
 9. 日志系统与可观测性
+   - 文档：`notes/reviews/09-logging-and-observability.md`
    - 调试日志系统：logForDebugging 核心 API、日志级别过滤（verbose/debug/info/warn/error）
    - 调试模式检测：--debug/-d/--debug=filter/--debug-to-stderr/--debug-file=path
    - 缓冲写入器：减少频繁 I/O，支持立即模式和缓冲模式
@@ -151,13 +157,31 @@
    - 错误日志接收器：内存缓冲 + 文件持久化，支持 MCP 错误/调试日志
    - 全局清理注册表：进程退出时执行清理操作（如刷新日志缓冲）
    - API 请求日志：记录查询参数、错误、成功、请求/响应内容
+    - 慢操作日志：slowLogging 标记模板、AntSlowLogger 计时器、阈值配置（环境变量/开发模式/生产模式）
+    - 慢操作包装函数：jsonStringify、jsonParse、clone、cloneDeep、writeFileSync_DEPRECATED
+    - 慢操作阈值分级：环境变量覆盖 → 开发模式 20ms → Ants 内部 300ms → 外部默认 Infinity
+    - 标记模板惰性构建：slowLogging\`op(${value})\` 仅在超阈值时构建描述和捕获堆栈
+    - 重入保护：isLogging 标志防止 logForDebugging 触发递归慢操作日志
+   - 慢操作记录存储：addSlowOperation、getSlowOperations、clearSlowOperations
 
-10. 系统提示词构建
-    - 系统提示词分层：简单介绍 → 系统配置 → 任务 → 操作 → 使用工具 → 语气风格 → 输出效率 → 环境信息
-    - 环境信息计算：工作目录、git 状态、平台、Shell、OS 版本、模型描述、知识截止日期
-    - 有效系统提示词构建：优先级为 agent > custom > default，appendSystemPrompt 始终追加
-    - 模型营销名称映射：Opus/Sonnet/Haiku 对应具体版本号
-    - 知识截止日期：不同模型对应不同截止日期
+10. 提示词工程系统
+    - 10.1 系统提示词构建
+        - 文档：`notes/reviews/10-01-system-prompt.md`
+        - 系统提示词分层：简单介绍 → 系统配置 → 任务 → 操作 → 使用工具 → 语气风格 → 输出效率 → 环境信息
+        - 环境信息计算：工作目录、git 状态、平台、Shell、OS 版本、模型描述、知识截止日期
+        - 有效系统提示词构建：优先级为 agent > custom > default，appendSystemPrompt 始终追加
+        - 模型营销名称映射：Opus/Sonnet/Haiku 对应具体版本号
+        - 知识截止日期：不同模型对应不同截止日期
+        - 系统提示词类型：asSystemPrompt 类型断言、SystemPrompt 类型定义
+    - 10.2 工具提示词设计
+        - 文档：`notes/reviews/10-02-tool-prompts.md`
+        - 工具描述模板：各工具独立的 prompt.ts 定义使用说明和约束
+        - FileReadTool 提示词：文件读取规范、行格式说明、偏移量策略、多媒体支持
+        - FileEditTool 提示词：精确替换规则、验证链说明、先读后写原则
+        - FileWriteTool 提示词：全量写入规范、行尾策略、创建/更新区分
+        - BashTool 提示词：命令执行规范、并发策略、路径引用、超时配置
+        - GlobTool 提示词：glob 模式匹配、结果排序、截断策略
+        - GrepTool 提示词：正则搜索模式、输出格式、VCS 目录排除
 
 11. 错误处理与崩溃报告
     - Sentry 集成：错误捕获、标签设置、用户设置、敏感头过滤
@@ -165,8 +189,39 @@
     - 内存错误缓冲：最多保留 100 条错误记录
     - 错误日志队列：支持延迟初始化，先入队列后消费
 
-12. 缓存与路径管理
-    - 缓存路径管理：基于 env-paths 的标准缓存目录
-    - 项目目录隔离：按 cwd 生成隔离的缓存目录
-    - 路径安全处理：非法字符替换、长度限制、哈希后缀
-    - 缓存类型：错误日志、消息、MCP 日志分别存储
+12. 工具函数与基础设施
+    - 12.1 搜索引擎基础设施
+        - 文档：`notes/reviews/12-01-search-engine-infrastructure.md`
+        - ripgrep 配置自动选择：system（系统 rg）/builtin（vendor 目录）/embedded（Bun 编译）三种模式
+        - 高性能文件搜索：比 Node.js 原生方法快得多，支持大型 monorepo（200k+ 文件）
+        - 超时与重试机制：平台自适应超时（WSL 60s/其他 20s）、EAGAIN 错误检测、单线程降级重试
+        - 流式处理：ripGrepStream 增量返回结果（fzf change:reload 模式）、ripGrepFileCount 内存优化（仅计数换行符）
+        - 进程生命周期管理：spawn 包装、stdout/stderr 截断、超时升级 SIGKILL、AbortSignal 响应
+        - macOS 代码签名：codesignRipgrepIfNecessary 解决 quarantine 问题、xattr 清除隔离属性
+        - 结果归一化：退出码语义（0=匹配/1=无匹配/2=用法错误）、部分结果返回、超时错误区分
+    - 12.2 平台检测与环境适配
+        - 文档：`notes/reviews/12-02-platform-and-environment.md`
+        - 平台检测：getPlatform 支持 macOS/Windows/WSL/Linux、WSL 版本检测、Linux 发行版信息
+        - Bundled 模式检测：isRunningWithBun、isInBundledMode 检测 Bun 编译独立可执行文件
+        - 嵌入式搜索工具：hasEmbeddedSearchTools、embeddedSearchToolsBinaryPath bfs/ugrep 嵌入检测
+        - 可执行文件查找：which 异步/同步版本、Bun.which 优先、findExecutable 替代 spawn-rx
+        - 环境变量工具：isEnvTruthy、isEnvFalsy 布尔环境变量解析
+    - 12.3 缓存与路径管理
+        - 文档：`notes/reviews/12-03-cache-and-path-management.md`
+        - 缓存路径管理：基于 env-paths 的标准缓存目录
+        - 项目目录隔离：按 cwd 生成隔离的缓存目录
+        - 路径安全处理：非法字符替换、长度限制、哈希后缀
+        - 缓存类型：错误日志、消息、MCP 日志分别存储
+        - 工作目录管理：getCwd/setCwd 工作目录访问、toRelativePath 相对路径转换
+    - 12.4 进程与执行引擎
+        - 文档：`notes/reviews/12-04-process-and-execution.md`
+        - 跨平台执行工具：execFileNoThrow 始终 resolve、execSyncWithDefaults_DEPRECATED 同步执行包装
+        - 进程输出处理：EPIPE 错误处理、stdout/stderr 安全写入
+        - 进程退出处理：exitWithError 错误退出、peekForStdinData 标准输入检查
+        - 清理注册表：registerCleanup 注册清理函数、runCleanupFunctions 进程退出时执行清理
+    - 12.5 字符串与数据格式化工具
+        - 文档：`notes/reviews/12-05-string-and-formatting.md`
+        - 字符串工具函数：escapeRegExp、capitalize、plural、safeJoinLines、EndTruncatingAccumulator、countCharInString
+        - JSON 工具函数：safeJsonStringify、safeJsonParse 带 try-catch 保护
+        - 语义数字处理：prettifyNumber 数字格式化、semanticNumber 语义数字转换
+        - 语义布尔值处理：semanticBoolean 布尔值规范化

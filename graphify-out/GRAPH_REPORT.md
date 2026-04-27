@@ -1,11 +1,12 @@
-# Graph Report - .  (2026-04-21)
+# Graph Report - claude-code-annotated  (2026-04-27)
 
 ## Corpus Check
-- Corpus is ~40,962 words - fits in a single context window. You may not need a graph.
+- 112 files · ~51,322 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 375 nodes · 437 edges · 49 communities detected
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.7)
+- 480 nodes · 820 edges · 18 communities detected
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -25,318 +26,131 @@
 - [[_COMMUNITY_Community 13|Community 13]]
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
-- [[_COMMUNITY_Community 16|Community 16]]
-- [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
-- [[_COMMUNITY_Community 20|Community 20]]
-- [[_COMMUNITY_Community 21|Community 21]]
-- [[_COMMUNITY_Community 22|Community 22]]
-- [[_COMMUNITY_Community 23|Community 23]]
-- [[_COMMUNITY_Community 24|Community 24]]
-- [[_COMMUNITY_Community 25|Community 25]]
-- [[_COMMUNITY_Community 26|Community 26]]
-- [[_COMMUNITY_Community 27|Community 27]]
-- [[_COMMUNITY_Community 28|Community 28]]
-- [[_COMMUNITY_Community 29|Community 29]]
-- [[_COMMUNITY_Community 30|Community 30]]
-- [[_COMMUNITY_Community 31|Community 31]]
-- [[_COMMUNITY_Community 32|Community 32]]
-- [[_COMMUNITY_Community 33|Community 33]]
-- [[_COMMUNITY_Community 34|Community 34]]
-- [[_COMMUNITY_Community 35|Community 35]]
-- [[_COMMUNITY_Community 36|Community 36]]
-- [[_COMMUNITY_Community 37|Community 37]]
-- [[_COMMUNITY_Community 38|Community 38]]
-- [[_COMMUNITY_Community 39|Community 39]]
-- [[_COMMUNITY_Community 40|Community 40]]
-- [[_COMMUNITY_Community 41|Community 41]]
-- [[_COMMUNITY_Community 42|Community 42]]
-- [[_COMMUNITY_Community 43|Community 43]]
-- [[_COMMUNITY_Community 44|Community 44]]
-- [[_COMMUNITY_Community 45|Community 45]]
-- [[_COMMUNITY_Community 46|Community 46]]
-- [[_COMMUNITY_Community 47|Community 47]]
-- [[_COMMUNITY_Community 48|Community 48]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `getTools()` - 6 edges
-2. `getPatchForEdits()` - 5 edges
-3. `getLogWriter()` - 5 edges
-4. `permissionRuleValueFromString()` - 5 edges
-5. `getAllBaseTools()` - 4 edges
-6. `getPreReadInstruction()` - 4 edges
-7. `getDefaultEditDescription()` - 4 edges
-8. `readFileSyncWithMetadata()` - 4 edges
-9. `logErrorImpl()` - 4 edges
-10. `logForDebugging()` - 4 edges
+1. `logForDebugging()` - 18 edges
+2. `getSystemPrompt()` - 9 edges
+3. `getCwd()` - 9 edges
+4. `computeSimpleEnvInfo()` - 8 edges
+5. `exec()` - 8 edges
+6. `EndTruncatingAccumulator` - 8 edges
+7. `getFsImplementation()` - 8 edges
+8. `getTools()` - 7 edges
+9. `getPatchForEdits()` - 6 edges
+10. `prependBullets()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Graph Report (God Nodes and Community Structure)` --conceptually_related_to--> `Wiki Navigation Index`  [INFERRED]
-  graphify-out/GRAPH_REPORT.md → graphify-out/wiki/index.md
-- `getPreReadInstruction()` --calls--> `getWriteToolDescription()`  [EXTRACTED]
-  src/tools/FileEditTool/prompt.ts → src/tools/FileWriteTool/prompt.ts
+- `jsonStringify()` --calls--> `logForDebugging()`  [INFERRED]
+  src/utils/slowOperations.ts → src/utils/debug.ts
+- `getFileModificationTimeAsync()` --calls--> `getFsImplementation()`  [INFERRED]
+  src/utils/file.ts → src/utils/fsOperations.ts
+- `detectVcs()` --calls--> `getFsImplementation()`  [INFERRED]
+  src/utils/platform.ts → src/utils/fsOperations.ts
+- `buildTool()` --calls--> `createPlaceholderTool()`  [INFERRED]
+  src/Tool.ts → src/tools.ts
+- `normalizeFileEditInput()` --calls--> `expandPath()`  [INFERRED]
+  src/tools/FileEditTool/utils.ts → src/utils/path.ts
 
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (8): getCwd(), pwd(), escapeForDiff(), getPatchForDisplay(), detectEncodingForResolvedPath(), detectLineEndingsForString(), readFileSync(), readFileSyncWithMetadata()
+Cohesion: 0.05
+Nodes (12): toAssistantMessage(), createUserTextMessage(), executeUserInput(), handlePromptSubmit(), ensureNonEmptyAssistantContent(), filterTrailingThinkingFromLastAssistant(), isThinkingBlock(), normalizeContentFromAPI() (+4 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (13): applyCurlyDoubleQuotes(), applyCurlySingleQuotes(), applyEditToFile(), areFileEditsEquivalent(), areFileEditsInputsEquivalent(), findActualString(), getPatchForEdit(), getPatchForEdits() (+5 more)
+Cohesion: 0.05
+Nodes (26): extractBaseCommand(), heuristicallyExtractBaseCommand(), interpretCommandResult(), getCwd(), pwd(), runWithCwdOverride(), execSyncWithDefaults_DEPRECATED(), main() (+18 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.11
-Nodes (11): getProjectDir(), sanitizePath(), appendToLog(), createJsonlWriter(), extractServerMessage(), getErrorsPath(), getLogWriter(), getMCPLogsPath() (+3 more)
+Cohesion: 0.07
+Nodes (33): createBufferedWriter(), registerCleanup(), getDebugLogPath(), getDebugWriter(), logAntError(), logForDebugging(), shouldLogDebugMessage(), extractDebugCategories() (+25 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.1
-Nodes (7): getDebugWriter(), logAntError(), logForDebugging(), shouldLogDebugMessage(), extractDebugCategories(), shouldShowDebugCategories(), shouldShowDebugMessage()
+Cohesion: 0.06
+Nodes (25): escapeForDiff(), getPatchForDisplay(), errorMessage(), getErrnoCode(), isENOENT(), ShellError, addLineNumbers(), convertLeadingTabsToSpaces() (+17 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.14
-Nodes (7): assembleToolPool(), createPlaceholderTool(), filterToolsByDenyRules(), getAllBaseTools(), getMergedTools(), getTools(), getToolsForDefaultPreset()
+Cohesion: 0.07
+Nodes (11): getProjectDir(), sanitizePath(), enableDebugLogging(), _clearLogWritersForTesting(), readFileForEdit(), detectEncodingForResolvedPath(), detectLineEndingsForString(), readFileSync() (+3 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.11
-Nodes (0): 
+Cohesion: 0.1
+Nodes (16): execFileNoThrow(), execFileNoThrowWithCwd(), addToInMemoryErrorLog(), attachErrorLogSink(), logError(), logMCPDebug(), logMCPError(), toError() (+8 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.12
-Nodes (4): main(), run(), getInitialState(), resetStateForTests_ONLY()
+Cohesion: 0.08
+Nodes (9): callInner(), MaxFileReadTokenExceededError, formatFileSize(), getDefaultFileReadingLimits(), getEnvMaxTokens(), FileTooLargeError, readFileInRange(), readFileInRangeFast() (+1 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.13
-Nodes (3): extractBaseCommand(), heuristicallyExtractBaseCommand(), interpretCommandResult()
+Cohesion: 0.11
+Nodes (12): AppStateProvider(), useAppState(), useAppStateStore(), useAppStore(), useSetAppState(), getDefaultAppState(), getFileReadIgnorePatterns(), normalizePatternsToPath() (+4 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.18
-Nodes (12): escapeRuleContent(), findFirstUnescapedChar(), findLastUnescapedChar(), normalizeLegacyToolName(), permissionRuleValueFromString(), permissionRuleValueToString(), unescapeRuleContent(), getAskRuleForTool() (+4 more)
+Cohesion: 0.12
+Nodes (19): buildMcpToolName(), getMcpDisplayName(), getMcpPrefix(), getToolNameForPermissionCheck(), mcpInfoFromString(), normalizeNameForMCP(), escapeRuleContent(), findFirstUnescapedChar() (+11 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.12
-Nodes (2): getErrorMessage(), logAPIError()
+Cohesion: 0.18
+Nodes (15): computeSimpleEnvInfo(), getActionsSection(), getHooksSection(), getKnowledgeCutoff(), getMarketingNameForModel(), getOutputEfficiencySection(), getShellInfoLine(), getSimpleDoingTasksSection() (+7 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.14
-Nodes (3): MaxFileReadTokenExceededError, getDefaultFileReadingLimits(), getEnvMaxTokens()
+Cohesion: 0.11
+Nodes (7): execSync_DEPRECATED(), AntSlowLogger, buildDescription(), callerFrame(), jsonStringify(), addSlowOperation(), whichNodeSync()
 
 ### Community 11 - "Community 11"
-Cohesion: 0.24
-Nodes (4): ensureNonEmptyAssistantContent(), filterTrailingThinkingFromLastAssistant(), isThinkingBlock(), normalizeMessagesForAPI()
+Cohesion: 0.25
+Nodes (9): hasEmbeddedSearchTools(), isEnvTruthy(), assembleToolPool(), createPlaceholderTool(), filterToolsByDenyRules(), getAllBaseTools(), getMergedTools(), getTools() (+1 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.22
-Nodes (4): FileTooLargeError, readFileInRange(), readFileInRangeFast(), readFileInRangeStreaming()
+Cohesion: 0.21
+Nodes (6): render(), exitWithError(), exitWithMessage(), gracefulShutdown(), renderAndRun(), launchRepl()
 
 ### Community 13 - "Community 13"
-Cohesion: 0.29
+Cohesion: 0.36
 Nodes (5): getDefaultEditDescription(), getEditToolDescription(), getPreReadInstruction(), getWriteToolDescription(), isCompactLinePrefixEnabled()
 
 ### Community 14 - "Community 14"
-Cohesion: 0.31
-Nodes (6): addToInMemoryErrorLog(), attachErrorLogSink(), logError(), logMCPDebug(), logMCPError(), toError()
-
-### Community 15 - "Community 15"
-Cohesion: 0.28
-Nodes (3): exec(), findSuitableShell(), getShellConfig()
-
-### Community 16 - "Community 16"
-Cohesion: 0.25
-Nodes (2): createDefaultPermissionContext(), createReplToolUseContext()
-
-### Community 17 - "Community 17"
-Cohesion: 0.32
-Nodes (4): exitWithError(), exitWithMessage(), gracefulShutdown(), renderAndRun()
-
-### Community 18 - "Community 18"
 Cohesion: 0.36
 Nodes (5): handleEPIPE(), registerProcessOutputErrorHandlers(), writeOut(), writeToStderr(), writeToStdout()
 
-### Community 19 - "Community 19"
-Cohesion: 0.43
-Nodes (5): buildMcpToolName(), getMcpDisplayName(), getMcpPrefix(), getToolNameForPermissionCheck(), normalizeNameForMCP()
-
-### Community 20 - "Community 20"
-Cohesion: 0.4
-Nodes (3): getErrnoCode(), isENOENT(), ShellError
-
-### Community 21 - "Community 21"
+### Community 15 - "Community 15"
 Cohesion: 0.5
 Nodes (2): next(), returnValue()
 
-### Community 22 - "Community 22"
-Cohesion: 0.5
-Nodes (0): 
-
-### Community 23 - "Community 23"
-Cohesion: 0.83
-Nodes (3): createUserTextMessage(), executeUserInput(), handlePromptSubmit()
-
-### Community 24 - "Community 24"
-Cohesion: 0.5
-Nodes (0): 
-
-### Community 25 - "Community 25"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 26 - "Community 26"
-Cohesion: 1.0
-Nodes (2): glob(), globToRegex()
-
-### Community 27 - "Community 27"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 28 - "Community 28"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 29 - "Community 29"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 30 - "Community 30"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 31 - "Community 31"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 32 - "Community 32"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 33 - "Community 33"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 34 - "Community 34"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 35 - "Community 35"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 36 - "Community 36"
+### Community 18 - "Community 18"
 Cohesion: 1.0
 Nodes (2): Graphify Knowledge Graph System, Graphify Output Directory
 
-### Community 37 - "Community 37"
+### Community 19 - "Community 19"
 Cohesion: 1.0
 Nodes (2): Graph Report (God Nodes and Community Structure), Wiki Navigation Index
-
-### Community 38 - "Community 38"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 39 - "Community 39"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 40 - "Community 40"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 41 - "Community 41"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 42 - "Community 42"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 43 - "Community 43"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 44 - "Community 44"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 45 - "Community 45"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 46 - "Community 46"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 47 - "Community 47"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 48 - "Community 48"
-Cohesion: 1.0
-Nodes (0): 
 
 ## Knowledge Gaps
 - **3 isolated node(s):** `Graphify Knowledge Graph System`, `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index`
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 27`** (2 nodes): `replLauncher.tsx`, `launchRepl()`
+- **Thin community `Community 15`** (5 nodes): `lastX()`, `next()`, `returnValue()`, `toArray()`, `generators.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 28`** (2 nodes): `hasBinaryExtension()`, `files.ts`
+- **Thin community `Community 18`** (2 nodes): `Graphify Knowledge Graph System`, `Graphify Output Directory`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 29`** (2 nodes): `semanticNumber()`, `semanticNumber.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 30`** (2 nodes): `semanticBoolean()`, `semanticBoolean.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 31`** (2 nodes): `lazySchema()`, `lazySchema.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 32`** (2 nodes): `systemPromptType.ts`, `asSystemPrompt()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 33`** (2 nodes): `matchWildcardPattern()`, `shellRuleMatching.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 34`** (2 nodes): `App.tsx`, `App()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 35`** (2 nodes): `cli.tsx`, `main()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 36`** (2 nodes): `Graphify Knowledge Graph System`, `Graphify Output Directory`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 37`** (2 nodes): `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (1 nodes): `build.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (1 nodes): `utils.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (1 nodes): `tools.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (1 nodes): `global.d.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (1 nodes): `index.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 43`** (1 nodes): `querySource.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 44`** (1 nodes): `messages.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 45`** (1 nodes): `apiLimits.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 46`** (1 nodes): `types.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (1 nodes): `sdkUtilityTypes.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (1 nodes): `transitions.ts`
+- **Thin community `Community 19`** (2 nodes): `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `logForDebugging()` connect `Community 2` to `Community 10`, `Community 14`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
+- **Why does `readFileForEdit()` connect `Community 4` to `Community 3`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Are the 14 inferred relationships involving `logForDebugging()` (e.g. with `.[Symbol.dispose]()` and `initSentry()`) actually correct?**
+  _`logForDebugging()` has 14 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 7 inferred relationships involving `getCwd()` (e.g. with `resetCwdIfOutsideProject()` and `computeSimpleEnvInfo()`) actually correct?**
+  _`getCwd()` has 7 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 6 inferred relationships involving `exec()` (e.g. with `pwd()` and `getOriginalCwd()`) actually correct?**
+  _`exec()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Graphify Knowledge Graph System`, `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index` to the rest of the system?**
   _3 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Should `Community 4` be split into smaller, more focused modules?**
-  _Cohesion score 0.14 - nodes in this community are weakly interconnected._
-- **Should `Community 5` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._

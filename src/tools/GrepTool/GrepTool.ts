@@ -1,7 +1,6 @@
 /**
  * GrepTool - 文件内容搜索工具
  *
- * 对齐上游实现：按 claude-code/src/tools/GrepTool/GrepTool.ts 原样复刻
  * 当前为简化实现：仅包含核心功能
  * TODO: 完整实现待后续补齐
  */
@@ -23,6 +22,7 @@ import { plural } from '../../utils/stringUtils.js'
 import { GREP_TOOL_NAME, getDescription } from './prompt.js'
 import { renderToolUseMessage, renderToolResultMessage, renderToolUseErrorMessage } from './UI.js'
 
+// 输入参数校验
 const inputSchema = lazySchema(() =>
   z.strictObject({
     pattern: z.string().describe('The regular expression pattern to search for'),
@@ -32,9 +32,12 @@ const inputSchema = lazySchema(() =>
 )
 type InputSchema = ReturnType<typeof inputSchema>
 
+// VCS_DIRECTORIES_TO_EXCLUDE 用于排除版本控制目录，避免搜索到版本控制文件
 const VCS_DIRECTORIES_TO_EXCLUDE = ['.git', '.svn', '.hg', '.bzr', '.jj', '.sl'] as const
+// DEFAULT_HEAD_LIMIT 用于限制默认返回的文件内容长度
 const DEFAULT_HEAD_LIMIT = 250
 
+// 输出参数校验
 const outputSchema = lazySchema(() =>
   z.object({
     mode: z.enum(['content', 'files_with_matches', 'count']).optional(),
@@ -48,21 +51,21 @@ type OutputSchema = ReturnType<typeof outputSchema>
 type Output = z.infer<OutputSchema>
 
 export const GrepTool = buildTool({
-  name: GREP_TOOL_NAME,
+  name: GREP_TOOL_NAME, // 工具名称
   searchHint: 'search file contents with regex (ripgrep)',
-  maxResultSizeChars: 20_000,
-  strict: true,
+  maxResultSizeChars: 20_000, // 最大返回结果字符数
+  strict: true, // 是否严格模式
   async description(_input, _options) {
     return getDescription()
   },
-  userFacingName(_input) {
+  userFacingName(_input) { // 用户可见名称
     return 'Search'
   },
-  getToolUseSummary(input) {
+  getToolUseSummary(input) { // 工具使用摘要
     if (!input?.pattern) return null
     return input.pattern.length > 80 ? input.pattern.slice(0, 77) + '...' : input.pattern
   },
-  getActivityDescription(input) {
+  getActivityDescription(input) { // 活动描述
     const summary = this.getToolUseSummary?.(input)
     return summary ? `Searching for ${summary}` : 'Searching'
   },
@@ -78,26 +81,28 @@ export const GrepTool = buildTool({
   isReadOnly(_input) {
     return true
   },
-  toAutoClassifierInput(input) {
+  toAutoClassifierInput(input) { // 自动分类输入
     return input.path ? `${input.pattern} in ${input.path}` : input.pattern
   },
-  isSearchOrReadCommand(_input) {
+  isSearchOrReadCommand(_input) { // 是否为搜索或读取命令
     return { isSearch: true, isRead: false }
   },
   getPath({ path }): string {
     return path || getCwd()
   },
-  async preparePermissionMatcher({ pattern }) {
+  async preparePermissionMatcher({ pattern }) { // 准备权限匹配器
     return rulePattern => matchWildcardPattern(rulePattern, pattern)
   },
-  async validateInput({ path }, _context): Promise<ValidationResult> {
+  async validateInput({ path }, _context): Promise<ValidationResult> { // 验证输入
     if (path) {
       const fs = getFsImplementation()
+      // 绝对路径
       const absolutePath = expandPath(path)
       if (absolutePath.startsWith('\\\\') || absolutePath.startsWith('//')) {
         return { result: true }
       }
       try {
+        // 检查路径是否存在
         await fs.stat(absolutePath)
       } catch (e: unknown) {
         if (isENOENT(e)) {
@@ -115,13 +120,14 @@ export const GrepTool = buildTool({
   async prompt(_options) {
     return getDescription()
   },
-  renderToolUseMessage,
-  renderToolUseErrorMessage,
-  renderToolResultMessage,
-  extractSearchText({ mode, content, filenames }) {
+  renderToolUseMessage, // 渲染工具使用消息
+  renderToolUseErrorMessage, // 渲染工具使用错误消息
+  renderToolResultMessage, // 渲染工具结果消息
+  extractSearchText({ mode, content, filenames }) { // 提取搜索文本
     if (mode === 'content' && content) return content
     return filenames.join('\n')
   },
+  // 映射工具结果到工具结果块参数
   mapToolResultToToolResultBlockParam({ mode = 'files_with_matches', numFiles, filenames, content }, toolUseID): ToolResultBlockParam {
     if (mode === 'content') {
       return { tool_use_id: toolUseID, type: 'tool_result', content: content || 'No matches found' }
@@ -135,6 +141,7 @@ export const GrepTool = buildTool({
       content: `Found ${numFiles} ${plural(numFiles, 'file')}\n${filenames.join('\n')}`,
     }
   },
+  // 调用工具
   async call({ pattern, path, output_mode = 'files_with_matches' }, context, _canUseTool, _parentMessage, _onProgress): Promise<ToolResult<Output>> {
     const absolutePath = path ? expandPath(path) : getCwd()
     const args = ['--hidden']
@@ -158,8 +165,10 @@ export const GrepTool = buildTool({
       args.push(pattern)
     }
 
+    // 调用 ripgrep 工具
     const results = await ripGrep(args, absolutePath, context.abortController.signal)
 
+    // 按文件内容搜索，返回匹配的文件路径
     if (output_mode === 'files_with_matches') {
       const stats = await Promise.allSettled(results.map(_ => getFsImplementation().stat(_)))
       const sortedMatches = results

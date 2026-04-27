@@ -1,7 +1,5 @@
 /**
  * ripgrep 工具封装
- *
- * 对齐上游实现：按 claude-code/src/utils/ripgrep.ts 原样复刻
  * 设计原因：
  * 1. 高性能文件搜索（比 Node.js 原生方法快得多）
  * 2. 支持 system/builtin/embedded 三种模式
@@ -349,9 +347,10 @@ export async function ripGrepStream(
   })
 }
 
+// 调用 ripgrep 工具
 export async function ripGrep(
-  args: string[],
-  target: string,
+  args: string[], // ripgrep 命令行参数
+  target: string, // 搜索目标路径
   abortSignal: AbortSignal,
 ): Promise<string[]> {
   await codesignRipgrepIfNecessary()
