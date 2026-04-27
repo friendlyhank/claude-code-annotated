@@ -1,156 +1,164 @@
-# Graph Report - claude-code-annotated  (2026-04-27)
+# Graph Report - .  (2026-04-27)
 
 ## Corpus Check
-- 112 files · ~51,322 words
+- 113 files · ~51,322 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 480 nodes · 820 edges · 18 communities detected
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.8)
+- 605 nodes · 1432 edges · 19 communities detected
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Community 0|Community 0]]
-- [[_COMMUNITY_Community 1|Community 1]]
-- [[_COMMUNITY_Community 2|Community 2]]
-- [[_COMMUNITY_Community 3|Community 3]]
-- [[_COMMUNITY_Community 4|Community 4]]
-- [[_COMMUNITY_Community 5|Community 5]]
-- [[_COMMUNITY_Community 6|Community 6]]
-- [[_COMMUNITY_Community 7|Community 7]]
-- [[_COMMUNITY_Community 8|Community 8]]
-- [[_COMMUNITY_Community 9|Community 9]]
-- [[_COMMUNITY_Community 10|Community 10]]
-- [[_COMMUNITY_Community 11|Community 11]]
-- [[_COMMUNITY_Community 12|Community 12]]
-- [[_COMMUNITY_Community 13|Community 13]]
-- [[_COMMUNITY_Community 14|Community 14]]
-- [[_COMMUNITY_Community 15|Community 15]]
-- [[_COMMUNITY_Community 18|Community 18]]
-- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Tool Execution Core|Tool Execution Core]]
+- [[_COMMUNITY_Logging and Debug|Logging and Debug]]
+- [[_COMMUNITY_Tool Assembly|Tool Assembly]]
+- [[_COMMUNITY_API Client|API Client]]
+- [[_COMMUNITY_File Read Utils|File Read Utils]]
+- [[_COMMUNITY_Shell and State|Shell and State]]
+- [[_COMMUNITY_Bash and Edit Utils|Bash and Edit Utils]]
+- [[_COMMUNITY_Filesystem Ops|Filesystem Ops]]
+- [[_COMMUNITY_Platform and Ripgrep|Platform and Ripgrep]]
+- [[_COMMUNITY_Permissions|Permissions]]
+- [[_COMMUNITY_Slow Ops and Exec|Slow Ops and Exec]]
+- [[_COMMUNITY_System Prompts|System Prompts]]
+- [[_COMMUNITY_String Utils|String Utils]]
+- [[_COMMUNITY_AGENTS.md Docs|AGENTS.md Docs]]
+- [[_COMMUNITY_REPL Launcher|REPL Launcher]]
+- [[_COMMUNITY_State Store|State Store]]
+- [[_COMMUNITY_Tool Prompts|Tool Prompts]]
+- [[_COMMUNITY_App Component|App Component]]
+- [[_COMMUNITY_CLI Entry|CLI Entry]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `logForDebugging()` - 18 edges
-2. `getSystemPrompt()` - 9 edges
-3. `getCwd()` - 9 edges
-4. `computeSimpleEnvInfo()` - 8 edges
-5. `exec()` - 8 edges
-6. `EndTruncatingAccumulator` - 8 edges
-7. `getFsImplementation()` - 8 edges
-8. `getTools()` - 7 edges
-9. `getPatchForEdits()` - 6 edges
-10. `prependBullets()` - 6 edges
+1. `logForDebugging()` - 19 edges
+2. `getSystemPrompt()` - 10 edges
+3. `getCwd()` - 10 edges
+4. `computeSimpleEnvInfo()` - 9 edges
+5. `exec()` - 9 edges
+6. `EndTruncatingAccumulator` - 9 edges
+7. `getFsImplementation()` - 9 edges
+8. `Claude Code CLI 复刻项目` - 9 edges
+9. `getTools()` - 8 edges
+10. `getPatchForEdits()` - 7 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `jsonStringify()` --calls--> `logForDebugging()`  [INFERRED]
-  src/utils/slowOperations.ts → src/utils/debug.ts
-- `getFileModificationTimeAsync()` --calls--> `getFsImplementation()`  [INFERRED]
-  src/utils/file.ts → src/utils/fsOperations.ts
-- `detectVcs()` --calls--> `getFsImplementation()`  [INFERRED]
-  src/utils/platform.ts → src/utils/fsOperations.ts
-- `buildTool()` --calls--> `createPlaceholderTool()`  [INFERRED]
-  src/Tool.ts → src/tools.ts
+- `createPlaceholderTool()` --calls--> `buildTool()`  [INFERRED]
+  /Users/hank/tsproject/claude-code-annotated/src/tools.ts → /Users/hank/tsproject/claude-code-annotated/src/Tool.ts
+- `getPatchForEdits()` --calls--> `convertLeadingTabsToSpaces()`  [INFERRED]
+  /Users/hank/tsproject/claude-code-annotated/src/tools/FileEditTool/utils.ts → /Users/hank/tsproject/claude-code-annotated/src/utils/file.ts
+- `getSnippetForPatch()` --calls--> `addLineNumbers()`  [INFERRED]
+  /Users/hank/tsproject/claude-code-annotated/src/tools/FileEditTool/utils.ts → /Users/hank/tsproject/claude-code-annotated/src/utils/file.ts
 - `normalizeFileEditInput()` --calls--> `expandPath()`  [INFERRED]
-  src/tools/FileEditTool/utils.ts → src/utils/path.ts
+  /Users/hank/tsproject/claude-code-annotated/src/tools/FileEditTool/utils.ts → /Users/hank/tsproject/claude-code-annotated/src/utils/path.ts
+- `normalizeFileEditInput()` --calls--> `readFileSync()`  [INFERRED]
+  /Users/hank/tsproject/claude-code-annotated/src/tools/FileEditTool/utils.ts → /Users/hank/tsproject/claude-code-annotated/src/utils/fileRead.ts
+
+## Hyperedges (group relationships)
+- **技术栈组合** — agentsmd_bun, agentsmd_typescript, agentsmd_react_ink [EXTRACTED 1.00]
+- **工具集组件** — agentsmd_file_read_tool, agentsmd_file_edit_tool, agentsmd_file_write_tool, agentsmd_glob_tool, agentsmd_bash_tool [EXTRACTED 1.00]
+- **复刻原则要点** — agentsmd_source_truth, agentsmd_chinese_annotation [EXTRACTED 1.00]
 
 ## Communities
 
-### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (12): toAssistantMessage(), createUserTextMessage(), executeUserInput(), handlePromptSubmit(), ensureNonEmptyAssistantContent(), filterTrailingThinkingFromLastAssistant(), isThinkingBlock(), normalizeContentFromAPI() (+4 more)
-
-### Community 1 - "Community 1"
-Cohesion: 0.05
-Nodes (26): extractBaseCommand(), heuristicallyExtractBaseCommand(), interpretCommandResult(), getCwd(), pwd(), runWithCwdOverride(), execSyncWithDefaults_DEPRECATED(), main() (+18 more)
-
-### Community 2 - "Community 2"
+### Community 0 - "Tool Execution Core"
 Cohesion: 0.07
-Nodes (33): createBufferedWriter(), registerCleanup(), getDebugLogPath(), getDebugWriter(), logAntError(), logForDebugging(), shouldLogDebugMessage(), extractDebugCategories() (+25 more)
+Nodes (20): lastX(), next(), returnValue(), toArray(), createUserTextMessage(), executeUserInput(), handlePromptSubmit(), isWithheldMaxOutputTokens() (+12 more)
 
-### Community 3 - "Community 3"
-Cohesion: 0.06
-Nodes (25): escapeForDiff(), getPatchForDisplay(), errorMessage(), getErrnoCode(), isENOENT(), ShellError, addLineNumbers(), convertLeadingTabsToSpaces() (+17 more)
-
-### Community 4 - "Community 4"
-Cohesion: 0.07
-Nodes (11): getProjectDir(), sanitizePath(), enableDebugLogging(), _clearLogWritersForTesting(), readFileForEdit(), detectEncodingForResolvedPath(), detectLineEndingsForString(), readFileSync() (+3 more)
-
-### Community 5 - "Community 5"
-Cohesion: 0.1
-Nodes (16): execFileNoThrow(), execFileNoThrowWithCwd(), addToInMemoryErrorLog(), attachErrorLogSink(), logError(), logMCPDebug(), logMCPError(), toError() (+8 more)
-
-### Community 6 - "Community 6"
+### Community 1 - "Logging and Debug"
 Cohesion: 0.08
-Nodes (9): callInner(), MaxFileReadTokenExceededError, formatFileSize(), getDefaultFileReadingLimits(), getEnvMaxTokens(), FileTooLargeError, readFileInRange(), readFileInRangeFast() (+1 more)
+Nodes (36): registerCleanup(), runCleanupFunctions(), appendAsync(), enableDebugLogging(), flushDebugLogs(), getDebugLogPath(), getDebugWriter(), getHasFormattedOutput() (+28 more)
 
-### Community 7 - "Community 7"
-Cohesion: 0.11
-Nodes (12): AppStateProvider(), useAppState(), useAppStateStore(), useAppStore(), useSetAppState(), getDefaultAppState(), getFileReadIgnorePatterns(), normalizePatternsToPath() (+4 more)
+### Community 2 - "Tool Assembly"
+Cohesion: 0.08
+Nodes (31): embeddedSearchToolsBinaryPath(), hasEmbeddedSearchTools(), isEnvDefinedFalsy(), isEnvTruthy(), getToolUseSummary(), userFacingName(), checkReadPermissionForTool(), checkWritePermissionForTool() (+23 more)
 
-### Community 8 - "Community 8"
+### Community 3 - "API Client"
+Cohesion: 0.07
+Nodes (26): normalizeToolInput(), addCacheBreakpoints(), assistantMessageToMessageParam(), toAssistantMessage(), toolsToApiFormat(), updateUsage(), userMessageToMessageParam(), getAnthropicClient() (+18 more)
+
+### Community 4 - "File Read Utils"
+Cohesion: 0.08
+Nodes (30): escapeForDiff(), getPatchForDisplay(), unescapeFromDiff(), addLineNumbers(), convertLeadingTabsToSpaces(), findSimilarFile(), getFileModificationTime(), getFileModificationTimeAsync() (+22 more)
+
+### Community 5 - "Shell and State"
+Cohesion: 0.09
+Nodes (35): getCwd(), pwd(), runWithCwdOverride(), asAgentId(), asSessionId(), toAgentId(), main(), run() (+27 more)
+
+### Community 6 - "Bash and Edit Utils"
+Cohesion: 0.08
+Nodes (33): isSearchOrReadBashCommand(), isSilentBashCommand(), DEFAULT_SEMANTIC(), extractBaseCommand(), heuristicallyExtractBaseCommand(), interpretCommandResult(), errorMessage(), getErrnoCode() (+25 more)
+
+### Community 7 - "Filesystem Ops"
 Cohesion: 0.12
-Nodes (19): buildMcpToolName(), getMcpDisplayName(), getMcpPrefix(), getToolNameForPermissionCheck(), mcpInfoFromString(), normalizeNameForMCP(), escapeRuleContent(), findFirstUnescapedChar() (+11 more)
+Nodes (25): createBufferedWriter(), getProjectDir(), sanitizePath(), appendToLog(), _clearLogWritersForTesting(), createJsonlWriter(), extractServerMessage(), _flushLogWritersForTesting() (+17 more)
 
-### Community 9 - "Community 9"
-Cohesion: 0.18
-Nodes (15): computeSimpleEnvInfo(), getActionsSection(), getHooksSection(), getKnowledgeCutoff(), getMarketingNameForModel(), getOutputEfficiencySection(), getShellInfoLine(), getSimpleDoingTasksSection() (+7 more)
+### Community 8 - "Platform and Ripgrep"
+Cohesion: 0.13
+Nodes (24): isInBundledMode(), isRunningWithBun(), execFileNoThrow(), execFileNoThrowWithCwd(), getErrorMessage(), addToInMemoryErrorLog(), attachErrorLogSink(), dateToFilename() (+16 more)
 
-### Community 10 - "Community 10"
-Cohesion: 0.11
-Nodes (7): execSync_DEPRECATED(), AntSlowLogger, buildDescription(), callerFrame(), jsonStringify(), addSlowOperation(), whichNodeSync()
+### Community 9 - "Permissions"
+Cohesion: 0.15
+Nodes (22): buildMcpToolName(), extractMcpToolDisplayName(), getMcpDisplayName(), getMcpPrefix(), getToolNameForPermissionCheck(), mcpInfoFromString(), normalizeNameForMCP(), escapeRuleContent() (+14 more)
 
-### Community 11 - "Community 11"
-Cohesion: 0.25
-Nodes (9): hasEmbeddedSearchTools(), isEnvTruthy(), assembleToolPool(), createPlaceholderTool(), filterToolsByDenyRules(), getAllBaseTools(), getMergedTools(), getTools() (+1 more)
+### Community 10 - "Slow Ops and Exec"
+Cohesion: 0.12
+Nodes (15): execSyncWithDefaults_DEPRECATED(), execSync_DEPRECATED(), findExecutable(), AntSlowLogger, buildDescription(), callerFrame(), clone(), cloneDeep() (+7 more)
 
-### Community 12 - "Community 12"
+### Community 11 - "System Prompts"
 Cohesion: 0.21
-Nodes (6): render(), exitWithError(), exitWithMessage(), gracefulShutdown(), renderAndRun(), launchRepl()
+Nodes (18): getLocalISODate(), getSessionStartDate(), computeSimpleEnvInfo(), getActionsSection(), getHooksSection(), getKnowledgeCutoff(), getMarketingNameForModel(), getOutputEfficiencySection() (+10 more)
 
-### Community 13 - "Community 13"
-Cohesion: 0.36
-Nodes (5): getDefaultEditDescription(), getEditToolDescription(), getPreReadInstruction(), getWriteToolDescription(), isCompactLinePrefixEnabled()
+### Community 12 - "String Utils"
+Cohesion: 0.15
+Nodes (11): readFileForEdit(), capitalize(), countCharInString(), EndTruncatingAccumulator, escapeRegExp(), firstLineOf(), normalizeFullWidthDigits(), normalizeFullWidthSpace() (+3 more)
 
-### Community 14 - "Community 14"
-Cohesion: 0.36
-Nodes (5): handleEPIPE(), registerProcessOutputErrorHandlers(), writeOut(), writeToStderr(), writeToStdout()
+### Community 13 - "AGENTS.md Docs"
+Cohesion: 0.13
+Nodes (17): BashTool, 构建系统, Bun Runtime, 中文注释辅助学习, 开发命令, CLI入口点, FileEditTool, FileReadTool (+9 more)
 
-### Community 15 - "Community 15"
-Cohesion: 0.5
-Nodes (2): next(), returnValue()
+### Community 14 - "REPL Launcher"
+Cohesion: 0.23
+Nodes (10): createRoot(), render(), exitWithError(), exitWithMessage(), getRenderContext(), gracefulShutdown(), gracefulShutdownSync(), renderAndRun() (+2 more)
 
-### Community 18 - "Community 18"
-Cohesion: 1.0
-Nodes (2): Graphify Knowledge Graph System, Graphify Output Directory
+### Community 15 - "State Store"
+Cohesion: 0.32
+Nodes (7): AppStateProvider(), useAppState(), useAppStateStore(), useAppStore(), useSetAppState(), getDefaultAppState(), createStore()
 
-### Community 19 - "Community 19"
-Cohesion: 1.0
-Nodes (2): Graph Report (God Nodes and Community Structure), Wiki Navigation Index
+### Community 16 - "Tool Prompts"
+Cohesion: 0.33
+Nodes (6): getDefaultEditDescription(), getEditToolDescription(), getPreReadInstruction(), getWriteToolDescription(), isCompactLinePrefixEnabled(), renderPromptTemplate()
+
+### Community 17 - "App Component"
+Cohesion: 0.67
+Nodes (1): App()
+
+### Community 18 - "CLI Entry"
+Cohesion: 0.67
+Nodes (1): main()
 
 ## Knowledge Gaps
-- **3 isolated node(s):** `Graphify Knowledge Graph System`, `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index`
+- **10 isolated node(s):** `TypeScript`, `Graphify知识图谱`, `开发命令`, `源码事实原则`, `中文注释辅助学习` (+5 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 15`** (5 nodes): `lastX()`, `next()`, `returnValue()`, `toArray()`, `generators.ts`
+- **Thin community `App Component`** (3 nodes): `App()`, `App.tsx`, `App.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 18`** (2 nodes): `Graphify Knowledge Graph System`, `Graphify Output Directory`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 19`** (2 nodes): `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index`
+- **Thin community `CLI Entry`** (3 nodes): `main()`, `cli.tsx`, `cli.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `logForDebugging()` connect `Community 2` to `Community 10`, `Community 14`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
-- **Why does `readFileForEdit()` connect `Community 4` to `Community 3`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `logForDebugging()` connect `Logging and Debug` to `Slow Ops and Exec`, `Filesystem Ops`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+- **Why does `readFileForEdit()` connect `String Utils` to `Tool Execution Core`, `Tool Assembly`, `Bash and Edit Utils`, `Filesystem Ops`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Are the 14 inferred relationships involving `logForDebugging()` (e.g. with `.[Symbol.dispose]()` and `initSentry()`) actually correct?**
   _`logForDebugging()` has 14 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 7 inferred relationships involving `getCwd()` (e.g. with `resetCwdIfOutsideProject()` and `computeSimpleEnvInfo()`) actually correct?**
   _`getCwd()` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `exec()` (e.g. with `pwd()` and `getOriginalCwd()`) actually correct?**
   _`exec()` has 6 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Graphify Knowledge Graph System`, `Graph Report (God Nodes and Community Structure)`, `Wiki Navigation Index` to the rest of the system?**
-  _3 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+- **What connects `TypeScript`, `Graphify知识图谱`, `开发命令` to the rest of the system?**
+  _10 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Tool Execution Core` be split into smaller, more focused modules?**
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
